@@ -10,6 +10,8 @@ import Combine
 
 class FriendsViewController: UIViewController {
     
+    // MARK: - Properties
+    
     // ViewModel
     private let viewModel = FriendsViewModel()
     
@@ -25,7 +27,10 @@ class FriendsViewController: UIViewController {
     private let nameLabel = UILabel()
     private let kokoIdLabel = UILabel()
     private let tableView = UITableView()
+    private let emptyStateView = UIView()
 
+    // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViewModel()
@@ -40,11 +45,14 @@ class FriendsViewController: UIViewController {
         updateHeaderLayout()
     }
     
+    // MARK: - Setup
+    
     private func setupViewModel() {
         // 使用 Combine 訂閱選項變更
         viewModel.$selectedOption
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] option in
-                self?.updateMenu()
+                self?.menuButton?.menu = self?.viewModel.createMenu() // 更新選單狀態
                 self?.updateView(for: option)
             }
             .store(in: &cancellables)
@@ -54,6 +62,14 @@ class FriendsViewController: UIViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
                 self?.updateHeaderView()
+            }
+            .store(in: &cancellables)
+        
+        // 使用 Combine 訂閱好友資料載入完成
+        viewModel.friendsDataLoadedPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] in
+                self?.tableView.reloadData()
             }
             .store(in: &cancellables)
         
@@ -68,7 +84,74 @@ class FriendsViewController: UIViewController {
     
     private func loadData() {
         viewModel.loadUserData()
+        viewModel.selectOption(viewModel.selectedOption)
     }
+    
+    private func updateView(for option: FriendsViewModel.ViewOption) {
+        // 載入資料並根據選項更新畫面
+        viewModel.loadFriendsData(for: option, updateSelection: false)
+        
+        switch option {
+        case .noFriends:
+            // 顯示無好友畫面
+            emptyStateView.isHidden = false
+            tableView.isHidden = true
+        case .friendsListOnly:
+            // 顯示只有好友列表（暫不實作）
+            print("切換到：只有好友列表")
+        case .friendsListWithInvitation:
+            // 顯示好友列表含邀請
+            emptyStateView.isHidden = true
+            tableView.isHidden = false
+        }
+    }
+}
+
+// MARK: - UITableViewDataSource
+
+extension FriendsViewController: UITableViewDataSource {
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return viewModel.numberOfSections
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return viewModel.numberOfRows(in: section)
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        if viewModel.isRequestSection(indexPath.section) {
+            // Requests section
+            let cell = tableView.dequeueReusableCell(withIdentifier: FriendRequestTableViewCell.identifier, for: indexPath) as! FriendRequestTableViewCell
+            if let friend = viewModel.friendRequest(at: indexPath.row) {
+                cell.configure(with: friend)
+            }
+            return cell
+        } else {
+            // Friends section
+            let cell = tableView.dequeueReusableCell(withIdentifier: FriendTableViewCell.identifier, for: indexPath) as! FriendTableViewCell
+            if let friend = viewModel.confirmedFriend(at: indexPath.row) {
+                cell.configure(with: friend)
+            }
+            return cell
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return viewModel.titleForHeader(in: section)
+    }
+}
+
+// MARK: - UITableViewDelegate
+
+extension FriendsViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+}
+
+// MARK: - UI Layout
+
+extension FriendsViewController {
     
     private func setupNavigationBar() {
         // 創建選單按鈕
@@ -89,33 +172,12 @@ class FriendsViewController: UIViewController {
         navigationItem.leftBarButtonItem = menuButton
     }
     
-    private func updateMenu() {
-        // 更新選單狀態
-        menuButton?.menu = viewModel.createMenu()
-    }
-    
-    private func updateView(for option: FriendsViewModel.ViewOption) {
-        // 根據選項更新畫面內容
-        switch option {
-        case .noFriends:
-            // 顯示無好友畫面
-            print("切換到：無好友畫面")
-        case .friendsListOnly:
-            // 顯示只有好友列表
-            print("切換到：只有好友列表")
-        case .friendsListWithInvitation:
-            // 顯示好友列表含邀請
-            print("切換到：好友列表含邀請")
-        }
-    }
-    
-    // MARK: - UI Setup
-    
     private func setupUI() {
         view.backgroundColor = .white
         
         setupTableView()
         setupHeaderView()
+        setupEmptyStateView()
     }
     
     private func setupHeaderView() {
@@ -183,7 +245,14 @@ class FriendsViewController: UIViewController {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "FriendCell")
+        
+        // 設定 Cell 高度
+        tableView.estimatedRowHeight = 80
+        
+        // 註冊自訂 Cells
+        tableView.register(FriendTableViewCell.self, forCellReuseIdentifier: FriendTableViewCell.identifier)
+        tableView.register(FriendRequestTableViewCell.self, forCellReuseIdentifier: FriendRequestTableViewCell.identifier)
+        
         view.addSubview(tableView)
         
         // TableView Constraints
@@ -230,26 +299,48 @@ class FriendsViewController: UIViewController {
         // 重新設定 tableHeaderView 以觸發更新
         tableView.tableHeaderView = headerView
     }
-}
-
-// MARK: - UITableViewDataSource
-
-extension FriendsViewController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 0 // 暫時返回 0，之後會加入好友列表資料
-    }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "FriendCell", for: indexPath)
-        return cell
-    }
-}
-
-// MARK: - UITableViewDelegate
-
-extension FriendsViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
+    private func setupEmptyStateView() {
+        emptyStateView.backgroundColor = .white
+        emptyStateView.translatesAutoresizingMaskIntoConstraints = false
+        emptyStateView.isHidden = true
+        view.addSubview(emptyStateView)
+        
+        // 圖示
+        let iconImageView = UIImageView()
+        iconImageView.image = UIImage(systemName: "person.2.slash")
+        iconImageView.tintColor = .systemGray3
+        iconImageView.contentMode = .scaleAspectFit
+        iconImageView.translatesAutoresizingMaskIntoConstraints = false
+        emptyStateView.addSubview(iconImageView)
+        
+        // 文字標籤
+        let messageLabel = UILabel()
+        messageLabel.text = "尚無好友"
+        messageLabel.font = .systemFont(ofSize: 20, weight: .medium)
+        messageLabel.textColor = .systemGray
+        messageLabel.textAlignment = .center
+        messageLabel.translatesAutoresizingMaskIntoConstraints = false
+        emptyStateView.addSubview(messageLabel)
+        
+        NSLayoutConstraint.activate([
+            // Empty State View
+            emptyStateView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            emptyStateView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            emptyStateView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            emptyStateView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            // Icon
+            iconImageView.centerXAnchor.constraint(equalTo: emptyStateView.centerXAnchor),
+            iconImageView.centerYAnchor.constraint(equalTo: emptyStateView.centerYAnchor, constant: -30),
+            iconImageView.widthAnchor.constraint(equalToConstant: 80),
+            iconImageView.heightAnchor.constraint(equalToConstant: 80),
+            
+            // Message
+            messageLabel.topAnchor.constraint(equalTo: iconImageView.bottomAnchor, constant: 20),
+            messageLabel.leadingAnchor.constraint(equalTo: emptyStateView.leadingAnchor, constant: 20),
+            messageLabel.trailingAnchor.constraint(equalTo: emptyStateView.trailingAnchor, constant: -20)
+        ])
     }
 }
 

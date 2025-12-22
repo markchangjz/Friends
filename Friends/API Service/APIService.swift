@@ -10,6 +10,8 @@ import Foundation
 // MARK: - Protocol
 protocol APIServiceProtocol {
     func fetchManData() async throws -> Person
+    func fetchFriendsData_noFriends() async throws -> [Friend]
+    func fetchFriendsData_hasFriends_hasInvitation() async throws -> [Friend]
 }
 
 // MARK: - APIService Implementation
