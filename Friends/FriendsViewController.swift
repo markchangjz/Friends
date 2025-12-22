@@ -187,7 +187,7 @@ extension FriendsViewController {
     }
     
     private func setupUI() {
-        view.backgroundColor = .white
+        view.backgroundColor = .systemBackground
         
         setupTableView()
         setupHeaderView()
@@ -197,7 +197,7 @@ extension FriendsViewController {
     
     private func setupHeaderView() {
         // Header View 設定
-        headerView.backgroundColor = .white
+        headerView.backgroundColor = .systemBackground
         
         // Avatar ImageView 設定
         avatarImageView.contentMode = .scaleAspectFill
@@ -208,12 +208,12 @@ extension FriendsViewController {
         
         // Name Label 設定
         nameLabel.font = .systemFont(ofSize: 24, weight: .medium)
-        nameLabel.textColor = .black
+        nameLabel.textColor = .label
         headerView.addSubview(nameLabel)
         
         // KOKO ID Label 設定
         kokoIdLabel.font = .systemFont(ofSize: 16, weight: .regular)
-        kokoIdLabel.textColor = .darkGray
+        kokoIdLabel.textColor = .secondaryLabel
         headerView.addSubview(kokoIdLabel)
         
         // 先設定 headerView 的 frame（tableHeaderView 需要明確的尺寸）
@@ -256,7 +256,7 @@ extension FriendsViewController {
     }
     
     private func setupTableView() {
-        tableView.backgroundColor = .white
+        tableView.backgroundColor = .systemBackground
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.delegate = self
         tableView.dataSource = self
@@ -320,7 +320,7 @@ extension FriendsViewController {
     }
     
     private func setupEmptyStateView() {
-        emptyStateView.backgroundColor = .white
+        emptyStateView.backgroundColor = .systemBackground
         
         // 圖示
         let iconImageView = UIImageView()
