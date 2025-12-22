@@ -13,4 +13,9 @@ struct Friend: Decodable {
     let isTop: String
     let fid: String
     let updateDate: String
+    
+    // MARK: - API Response Wrapper
+    struct Response: Decodable {
+        let response: [Friend]
+    }
 }

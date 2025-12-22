@@ -38,12 +38,8 @@ class APIService: APIServiceProtocol {
         let data = try Data(contentsOf: fileURL)
         
         // 提取 response 陣列後再解碼
-        struct Response: Decodable {
-            let response: [Friend]
-        }
-        
         let decoder = JSONDecoder()
-        let result = try decoder.decode(Response.self, from: data)
+        let result = try decoder.decode(Friend.Response.self, from: data)
         return result.response
     }
 }
