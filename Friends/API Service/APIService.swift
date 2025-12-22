@@ -42,6 +42,21 @@ class APIService: APIServiceProtocol {
         let result = try decoder.decode(Friend.Response.self, from: data)
         return result.response
     }
+    
+    func fetchFriendsData_hasFriends_hasInvitation() async throws -> [Friend] {
+        let url = Bundle.main.url(forResource: "friend3", withExtension: "json")
+        
+        guard let fileURL = url else {
+            throw APIError.fileNotFound
+        }
+        
+        let data = try Data(contentsOf: fileURL)
+        
+        // 提取 response 陣列後再解碼
+        let decoder = JSONDecoder()
+        let result = try decoder.decode(Friend.Response.self, from: data)
+        return result.response
+    }
 }
 
 // MARK: - Error Types
