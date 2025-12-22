@@ -14,6 +14,8 @@ class FriendRequestTableViewCell: UITableViewCell {
     // UI 元件
     private let avatarImageView: UIImageView = {
         let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "person.crop.circle")
+        imageView.tintColor = .systemGray3
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         imageView.layer.cornerRadius = 20
@@ -110,6 +112,10 @@ class FriendRequestTableViewCell: UITableViewCell {
     
     func configure(with friend: Friend) {
         nameLabel.text = friend.name
+        
+        // 設定預設頭像
+        avatarImageView.image = UIImage(systemName: "person.crop.circle")
+        avatarImageView.tintColor = .systemGray3
     }
     
     override func prepareForReuse() {

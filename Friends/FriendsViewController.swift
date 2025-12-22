@@ -200,6 +200,8 @@ extension FriendsViewController {
         headerView.backgroundColor = .systemBackground
         
         // Avatar ImageView 設定
+        avatarImageView.image = UIImage(systemName: "person.crop.circle.fill")
+        avatarImageView.tintColor = .systemGray3
         avatarImageView.contentMode = .scaleAspectFill
         avatarImageView.clipsToBounds = true
         avatarImageView.layer.cornerRadius = 30
