@@ -12,6 +12,8 @@ protocol APIServiceProtocol {
     func fetchManData() async throws -> Person
     func fetchFriendsData_noFriends() async throws -> [Friend]
     func fetchFriendsData_hasFriends_hasInvitation() async throws -> [Friend]
+    func fetchFriendsData1() async throws -> [Friend]
+    func fetchFriendsData2() async throws -> [Friend]
 }
 
 // MARK: - APIService Implementation
@@ -53,6 +55,42 @@ class APIService: APIServiceProtocol {
         try await Task.sleep(nanoseconds: 500_000_000)
         
         let url = Bundle.main.url(forResource: "friend3", withExtension: "json")
+        
+        guard let fileURL = url else {
+            throw APIError.fileNotFound
+        }
+        
+        let data = try Data(contentsOf: fileURL)
+        
+        // 提取 response 陣列後再解碼
+        let decoder = JSONDecoder()
+        let result = try decoder.decode(Friend.Response.self, from: data)
+        return result.response
+    }
+    
+    func fetchFriendsData1() async throws -> [Friend] {
+        // 模擬網路延遲 0.5 秒
+        try await Task.sleep(nanoseconds: 500_000_000)
+        
+        let url = Bundle.main.url(forResource: "friend1", withExtension: "json")
+        
+        guard let fileURL = url else {
+            throw APIError.fileNotFound
+        }
+        
+        let data = try Data(contentsOf: fileURL)
+        
+        // 提取 response 陣列後再解碼
+        let decoder = JSONDecoder()
+        let result = try decoder.decode(Friend.Response.self, from: data)
+        return result.response
+    }
+    
+    func fetchFriendsData2() async throws -> [Friend] {
+        // 模擬網路延遲 0.5 秒
+        try await Task.sleep(nanoseconds: 500_000_000)
+        
+        let url = Bundle.main.url(forResource: "friend2", withExtension: "json")
         
         guard let fileURL = url else {
             throw APIError.fileNotFound

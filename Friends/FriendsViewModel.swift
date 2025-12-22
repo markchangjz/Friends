@@ -100,7 +100,7 @@ class FriendsViewModel {
     func loadFriendsData(for option: ViewOption) {
         Task {
             do {
-                let friendsData: [Friend]
+                var friendsData: [Friend]
                 
                 switch option {
                 case .noFriends:
@@ -108,8 +108,24 @@ class FriendsViewModel {
                 case .friendsListWithInvitation:
                     friendsData = try await apiService.fetchFriendsData_hasFriends_hasInvitation()
                 case .friendsListOnly:
-                    // 暫不實作
-                    friendsData = []
+                    // 並行取得兩個資料來源
+                    async let friendsData1 = apiService.fetchFriendsData1()
+                    async let friendsData2 = apiService.fetchFriendsData2()
+                    let (data1, data2) = try await (friendsData1, friendsData2)
+                    friendsData = mergeFriends(data1, data2)
+                }
+                
+                friendsData.sort { lhs, rhs in
+                    // 優先級 1: isTop (true 在前)
+                    if lhs.isTop != rhs.isTop {
+                        return lhs.isTop
+                    }
+                    // 優先級 2: updateDate (新到舊)
+                    if lhs.updateDate != rhs.updateDate {
+                        return lhs.updateDate > rhs.updateDate
+                    }
+                    // 優先級 3: fid (小到大)
+                    return lhs.fid < rhs.fid
                 }
                 
                 await MainActor.run {
@@ -210,5 +226,29 @@ class FriendsViewModel {
         // 分類：status = .requestSent 為邀請，status = .accepted 或 .pending 為已確認好友
         self.friendRequests = friendsData.filter { $0.status == .requestSent }
         self.confirmedFriends = friendsData.filter { $0.status == .accepted || $0.status == .pending }
+    }
+    
+    /// 合併多個好友資料來源，當 fid 相同時保留 updateDate 最新的
+    private func mergeFriends(_ friends1: [Friend], _ friends2: [Friend]) -> [Friend] {
+        var friendsDict: [String: Friend] = [:] // key: fid, value: Friend
+        
+        // 將兩個陣列合併處理
+        let allFriends = friends1 + friends2
+        
+        for friend in allFriends {
+            // 如果 fid 不存在，直接加入
+            guard let existingFriend = friendsDict[friend.fid] else {
+                friendsDict[friend.fid] = friend
+                continue
+            }
+            
+            // 如果 fid 已存在，比較 updateDate，保留較新的
+            if friend.updateDate > existingFriend.updateDate {
+                friendsDict[friend.fid] = friend
+            }
+        }
+        
+        // 回傳字典的所有值（已去重且保留最新的）
+        return Array(friendsDict.values)
     }
 }
