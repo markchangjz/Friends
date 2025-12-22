@@ -29,6 +29,9 @@ class FriendsViewModel {
     // 當前選中的選項 - 使用 @Published 自動發布變更
     @Published private(set) var selectedOption: ViewOption = .noFriends
     
+    // 搜尋文字 - 使用 @Published 自動發布變更
+    @Published var searchText: String = ""
+    
     // 資料載入狀態 - 使用 PassthroughSubject 發布事件
     let dataLoadedPublisher = PassthroughSubject<Void, Never>()
     
@@ -61,6 +64,12 @@ class FriendsViewModel {
     
     // 好友資料
     private(set) var friends: [Friend] = []
+    
+    // 原始未過濾的資料
+    private var allFriendRequests: [Friend] = []
+    private var allConfirmedFriends: [Friend] = []
+    
+    // 根據搜尋過濾後的資料
     private(set) var friendRequests: [Friend] = []
     private(set) var confirmedFriends: [Friend] = []
     
@@ -224,8 +233,29 @@ class FriendsViewModel {
         self.friends = friendsData
         
         // 分類：status = .requestSent 為邀請，status = .accepted 或 .pending 為已確認好友
-        self.friendRequests = friendsData.filter { $0.status == .requestSent }
-        self.confirmedFriends = friendsData.filter { $0.status == .accepted || $0.status == .pending }
+        self.allFriendRequests = friendsData.filter { $0.status == .requestSent }
+        self.allConfirmedFriends = friendsData.filter { $0.status == .accepted || $0.status == .pending }
+        
+        // 初始化時套用當前的搜尋條件
+        filterFriends()
+    }
+    
+    /// 根據搜尋文字過濾好友資料
+    func filterFriends() {
+        if searchText.isEmpty {
+            // 沒有搜尋文字，顯示所有資料
+            friendRequests = allFriendRequests
+            confirmedFriends = allConfirmedFriends
+        } else {
+            // 有搜尋文字，根據 name 進行過濾（不區分大小寫）
+            let lowercasedSearch = searchText.lowercased()
+            friendRequests = allFriendRequests.filter { 
+                $0.name.lowercased().contains(lowercasedSearch) 
+            }
+            confirmedFriends = allConfirmedFriends.filter { 
+                $0.name.lowercased().contains(lowercasedSearch) 
+            }
+        }
     }
     
     /// 合併多個好友資料來源，當 fid 相同時保留 updateDate 最新的

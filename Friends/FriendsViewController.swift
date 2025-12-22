@@ -21,6 +21,9 @@ class FriendsViewController: UIViewController {
     // 選單按鈕引用
     private var menuButton: UIBarButtonItem?
     
+    // 搜尋控制器
+    private let searchController = UISearchController(searchResultsController: nil)
+    
     // UI 元件
     private let headerView = UIView()
     private let avatarImageView = UIImageView()
@@ -86,6 +89,17 @@ class FriendsViewController: UIViewController {
             .receive(on: DispatchQueue.main)
             .sink { error in
                 print("載入資料失敗：\(error.localizedDescription)")
+            }
+            .store(in: &cancellables)
+        
+        // 使用 Combine 訂閱搜尋文字變更
+        viewModel.$searchText
+            .receive(on: DispatchQueue.main)
+            .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.viewModel.filterFriends()
+                self?.updateUIState()
+                self?.tableView.reloadData()
             }
             .store(in: &cancellables)
     }
@@ -184,6 +198,15 @@ extension FriendsViewController {
         
         // 設置為左側導航欄按鈕
         navigationItem.leftBarButtonItem = menuButton
+        
+        // 設置搜尋控制器
+        searchController.searchResultsUpdater = self
+        searchController.obscuresBackgroundDuringPresentation = false
+        searchController.searchBar.placeholder = "搜尋好友姓名"
+        
+        // 將搜尋控制器加入導航欄
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
     }
     
     private func setupUI() {
@@ -369,6 +392,15 @@ extension FriendsViewController {
             loadingIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             loadingIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
+    }
+}
+
+// MARK: - UISearchResultsUpdating
+
+extension FriendsViewController: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        // 更新 ViewModel 的搜尋文字
+        viewModel.searchText = searchController.searchBar.text ?? ""
     }
 }
 
