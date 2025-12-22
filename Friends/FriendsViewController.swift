@@ -97,21 +97,21 @@ class FriendsViewController: UIViewController {
     
     private func updateUIState() {
         // 根據實際載入的好友資料數量決定 UI 顯示狀態
+        tableView.isHidden = false
+        
         if viewModel.hasFriends {
-            // 有好友資料，顯示列表
+            // 有好友資料，隱藏空狀態
             emptyStateView.isHidden = true
-            tableView.isHidden = false
         } else {
-            // 無好友資料，顯示空狀態畫面
+            // 無好友資料，在 TableView 上顯示空狀態畫面
             emptyStateView.isHidden = false
-            tableView.isHidden = true
         }
     }
     
     private func showLoading() {
         // 統一使用 loadingIndicator 顯示載入狀態
         emptyStateView.isHidden = true
-        tableView.isHidden = true
+        tableView.isHidden = false
         loadingIndicator.startAnimating()
     }
     
@@ -321,9 +321,6 @@ extension FriendsViewController {
     
     private func setupEmptyStateView() {
         emptyStateView.backgroundColor = .white
-        emptyStateView.translatesAutoresizingMaskIntoConstraints = false
-        emptyStateView.isHidden = true
-        view.addSubview(emptyStateView)
         
         // 圖示
         let iconImageView = UIImageView()
@@ -342,13 +339,11 @@ extension FriendsViewController {
         messageLabel.translatesAutoresizingMaskIntoConstraints = false
         emptyStateView.addSubview(messageLabel)
         
+        // 設置為 tableView 的 backgroundView
+        tableView.backgroundView = emptyStateView
+        emptyStateView.isHidden = true
+        
         NSLayoutConstraint.activate([
-            // Empty State View
-            emptyStateView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            emptyStateView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            emptyStateView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            emptyStateView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
             // Icon
             iconImageView.centerXAnchor.constraint(equalTo: emptyStateView.centerXAnchor),
             iconImageView.centerYAnchor.constraint(equalTo: emptyStateView.centerYAnchor, constant: -30),
