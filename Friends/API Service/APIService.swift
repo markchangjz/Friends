@@ -46,6 +46,9 @@ class APIService: APIServiceProtocol {
     }
     
     func fetchFriendsData_hasFriends_hasInvitation() async throws -> [Friend] {
+        // 模擬網路延遲 0.5 秒
+        try await Task.sleep(nanoseconds: 500_000_000)
+        
         let url = Bundle.main.url(forResource: "friend3", withExtension: "json")
         
         guard let fileURL = url else {

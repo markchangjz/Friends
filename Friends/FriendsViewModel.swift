@@ -119,6 +119,7 @@ class FriendsViewModel {
             } catch {
                 await MainActor.run {
                     self.errorPublisher.send(error)
+                    self.friendsDataLoadedPublisher.send()
                 }
             }
         }

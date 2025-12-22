@@ -28,6 +28,8 @@ class FriendsViewController: UIViewController {
     private let kokoIdLabel = UILabel()
     private let tableView = UITableView()
     private let emptyStateView = UIView()
+    private let refreshControl = UIRefreshControl()
+    private let loadingIndicator = UIActivityIndicatorView(style: .large)
 
     // MARK: - Lifecycle
     
@@ -54,7 +56,8 @@ class FriendsViewController: UIViewController {
             .sink { [weak self] option in
                 // 更新選單狀態
                 self?.menuButton?.menu = self?.viewModel.createMenu()
-                // 載入資料
+                // 顯示 loading 並載入資料
+                self?.showLoading()
                 self?.viewModel.loadFriendsData(for: option)
             }
             .store(in: &cancellables)
@@ -73,6 +76,8 @@ class FriendsViewController: UIViewController {
             .sink { [weak self] in
                 self?.updateUIState()
                 self?.tableView.reloadData()
+                self?.refreshControl.endRefreshing()
+                self?.loadingIndicator.stopAnimating()
             }
             .store(in: &cancellables)
         
@@ -101,6 +106,18 @@ class FriendsViewController: UIViewController {
             emptyStateView.isHidden = false
             tableView.isHidden = true
         }
+    }
+    
+    private func showLoading() {
+        // 統一使用 loadingIndicator 顯示載入狀態
+        emptyStateView.isHidden = true
+        tableView.isHidden = true
+        loadingIndicator.startAnimating()
+    }
+    
+    @objc private func handleRefresh() {
+        // 下拉刷新：不調用 showLoading，refreshControl 會自動顯示
+        viewModel.loadFriendsData(for: viewModel.selectedOption)
     }
 }
 
@@ -175,6 +192,7 @@ extension FriendsViewController {
         setupTableView()
         setupHeaderView()
         setupEmptyStateView()
+        setupLoadingIndicator()
     }
     
     private func setupHeaderView() {
@@ -245,6 +263,10 @@ extension FriendsViewController {
         
         // 設定 Cell 高度
         tableView.estimatedRowHeight = 80
+        
+        // 設定下拉更新
+        refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
+        tableView.refreshControl = refreshControl
         
         // 註冊自訂 Cells
         tableView.register(FriendTableViewCell.self, forCellReuseIdentifier: FriendTableViewCell.identifier)
@@ -339,5 +361,18 @@ extension FriendsViewController {
             messageLabel.trailingAnchor.constraint(equalTo: emptyStateView.trailingAnchor, constant: -20)
         ])
     }
+    
+    private func setupLoadingIndicator() {
+        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
+        loadingIndicator.hidesWhenStopped = true
+        loadingIndicator.color = .systemGray
+        view.addSubview(loadingIndicator)
+        
+        NSLayoutConstraint.activate([
+            loadingIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            loadingIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        ])
+    }
 }
+
 
