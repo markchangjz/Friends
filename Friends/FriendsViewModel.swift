@@ -11,6 +11,12 @@ import Combine
 
 class FriendsViewModel {
     
+    enum UIState {
+        case loading
+        case noFriends
+        case hasFriends
+    }
+    
     // 定義三種檢視選項
     enum ViewOption: String {
         case noFriends = "無好友畫面"
