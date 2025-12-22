@@ -41,15 +41,18 @@ class FriendsViewModel {
     
     // 載入用戶資料
     func loadUserData() {
-        apiService.fetchManData { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let person):
-                self.userName = person.name
-                self.userKokoId = person.kokoid
-                self.dataLoadedPublisher.send()
-            case .failure(let error):
-                self.errorPublisher.send(error)
+        Task {
+            do {
+                let person = try await apiService.fetchManData()
+                await MainActor.run {
+                    self.userName = person.name
+                    self.userKokoId = person.kokoid
+                    self.dataLoadedPublisher.send()
+                }
+            } catch {
+                await MainActor.run {
+                    self.errorPublisher.send(error)
+                }
             }
         }
     }

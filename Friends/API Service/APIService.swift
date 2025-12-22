@@ -9,28 +9,23 @@ import Foundation
 
 // MARK: - Protocol
 protocol APIServiceProtocol {
-    func fetchManData(completion: @escaping (Result<Person, Error>) -> Void)
+    func fetchManData() async throws -> Person
 }
 
 // MARK: - APIService Implementation
 class APIService: APIServiceProtocol {
     
-    func fetchManData(completion: @escaping (Result<Person, Error>) -> Void) {
+    func fetchManData() async throws -> Person {
         let url = Bundle.main.url(forResource: "man", withExtension: "json")
         
         guard let fileURL = url else {
-            completion(.failure(APIError.fileNotFound))
-            return
+            throw APIError.fileNotFound
         }
               
-        do {
-            let data = try Data(contentsOf: fileURL)
-            let decoder = JSONDecoder()
-            let person = try decoder.decode(Person.self, from: data)
-            completion(.success(person))
-        } catch {
-            completion(.failure(error))
-        }
+        let data = try Data(contentsOf: fileURL)
+        let decoder = JSONDecoder()
+        let person = try decoder.decode(Person.self, from: data)
+        return person
     }
 }
 
