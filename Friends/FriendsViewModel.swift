@@ -49,6 +49,11 @@ class FriendsViewModel {
         }
     }
     
+    // 是否有任何好友資料（包含邀請和已確認好友）
+    var hasFriends: Bool {
+        return !friends.isEmpty
+    }
+    
     // MARK: - Private Properties
     
     // API Service
@@ -92,11 +97,7 @@ class FriendsViewModel {
         }
     }
     
-    func loadFriendsData(for option: ViewOption, updateSelection: Bool = true) {
-        if updateSelection && selectedOption != option {
-            selectedOption = option
-        }
-        
+    func loadFriendsData(for option: ViewOption) {
         Task {
             do {
                 let friendsData: [Friend]

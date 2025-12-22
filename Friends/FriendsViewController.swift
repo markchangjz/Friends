@@ -52,8 +52,10 @@ class FriendsViewController: UIViewController {
         viewModel.$selectedOption
             .receive(on: DispatchQueue.main)
             .sink { [weak self] option in
-                self?.menuButton?.menu = self?.viewModel.createMenu() // 更新選單狀態
-                self?.updateView(for: option)
+                // 更新選單狀態
+                self?.menuButton?.menu = self?.viewModel.createMenu()
+                // 載入資料
+                self?.viewModel.loadFriendsData(for: option)
             }
             .store(in: &cancellables)
         
@@ -69,6 +71,7 @@ class FriendsViewController: UIViewController {
         viewModel.friendsDataLoadedPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
+                self?.updateUIState()
                 self?.tableView.reloadData()
             }
             .store(in: &cancellables)
@@ -87,22 +90,16 @@ class FriendsViewController: UIViewController {
         viewModel.selectOption(viewModel.selectedOption)
     }
     
-    private func updateView(for option: FriendsViewModel.ViewOption) {
-        // 載入資料並根據選項更新畫面
-        viewModel.loadFriendsData(for: option, updateSelection: false)
-        
-        switch option {
-        case .noFriends:
-            // 顯示無好友畫面
-            emptyStateView.isHidden = false
-            tableView.isHidden = true
-        case .friendsListOnly:
-            // 顯示只有好友列表（暫不實作）
-            print("切換到：只有好友列表")
-        case .friendsListWithInvitation:
-            // 顯示好友列表含邀請
+    private func updateUIState() {
+        // 根據實際載入的好友資料數量決定 UI 顯示狀態
+        if viewModel.hasFriends {
+            // 有好友資料，顯示列表
             emptyStateView.isHidden = true
             tableView.isHidden = false
+        } else {
+            // 無好友資料，顯示空狀態畫面
+            emptyStateView.isHidden = false
+            tableView.isHidden = true
         }
     }
 }
