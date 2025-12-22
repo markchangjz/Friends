@@ -34,6 +34,12 @@ class FriendsViewController: UIViewController {
         loadData()
     }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        // 當螢幕尺寸改變時，重新調整 header 佈局
+        updateHeaderLayout()
+    }
+    
     private func setupViewModel() {
         // 使用 Combine 訂閱選項變更
         viewModel.$selectedOption
@@ -115,46 +121,58 @@ class FriendsViewController: UIViewController {
     private func setupHeaderView() {
         // Header View 設定
         headerView.backgroundColor = .white
-        headerView.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: 100)
         
         // Avatar ImageView 設定
         avatarImageView.contentMode = .scaleAspectFill
         avatarImageView.clipsToBounds = true
         avatarImageView.layer.cornerRadius = 30
         avatarImageView.backgroundColor = .systemGray5
-        avatarImageView.translatesAutoresizingMaskIntoConstraints = false
         headerView.addSubview(avatarImageView)
         
         // Name Label 設定
         nameLabel.font = .systemFont(ofSize: 24, weight: .medium)
         nameLabel.textColor = .black
-        nameLabel.translatesAutoresizingMaskIntoConstraints = false
         headerView.addSubview(nameLabel)
         
         // KOKO ID Label 設定
         kokoIdLabel.font = .systemFont(ofSize: 16, weight: .regular)
         kokoIdLabel.textColor = .darkGray
-        kokoIdLabel.translatesAutoresizingMaskIntoConstraints = false
         headerView.addSubview(kokoIdLabel)
         
-        // Header 內部元件的 AutoLayout
-        NSLayoutConstraint.activate([
-            // Avatar ImageView Constraints (右側)
-            avatarImageView.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -30),
-            avatarImageView.centerYAnchor.constraint(equalTo: headerView.centerYAnchor),
-            avatarImageView.widthAnchor.constraint(equalToConstant: 60),
-            avatarImageView.heightAnchor.constraint(equalToConstant: 60),
-            
-            // Name Label Constraints (左側)
-            nameLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 30),
-            nameLabel.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 25),
-            nameLabel.trailingAnchor.constraint(equalTo: avatarImageView.leadingAnchor, constant: -15),
-            
-            // KOKO ID Label Constraints (左側)
-            kokoIdLabel.leadingAnchor.constraint(equalTo: nameLabel.leadingAnchor),
-            kokoIdLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 5),
-            kokoIdLabel.trailingAnchor.constraint(equalTo: nameLabel.trailingAnchor)
-        ])
+        // 先設定 headerView 的 frame（tableHeaderView 需要明確的尺寸）
+        let headerHeight: CGFloat = 100
+        let headerWidth = view.bounds.width
+        headerView.frame = CGRect(x: 0, y: 0, width: headerWidth, height: headerHeight)
+        
+        // 使用 frame-based layout 設定子視圖位置
+        let avatarSize: CGFloat = 60
+        let horizontalPadding: CGFloat = 30
+        let topPadding: CGFloat = 25
+        
+        // Avatar 位置（右側）
+        avatarImageView.frame = CGRect(
+            x: headerWidth - horizontalPadding - avatarSize,
+            y: (headerHeight - avatarSize) / 2,
+            width: avatarSize,
+            height: avatarSize
+        )
+        
+        // Name Label 位置（左側）
+        let labelMaxWidth = headerWidth - horizontalPadding * 2 - avatarSize - 15
+        nameLabel.frame = CGRect(
+            x: horizontalPadding,
+            y: topPadding,
+            width: labelMaxWidth,
+            height: 30
+        )
+        
+        // KOKO ID Label 位置（左側）
+        kokoIdLabel.frame = CGRect(
+            x: horizontalPadding,
+            y: nameLabel.frame.maxY + 5,
+            width: labelMaxWidth,
+            height: 20
+        )
         
         // 設定為 TableView 的 Header
         tableView.tableHeaderView = headerView
@@ -180,6 +198,37 @@ class FriendsViewController: UIViewController {
     private func updateHeaderView() {
         nameLabel.text = viewModel.userName
         kokoIdLabel.text = "KOKO ID：\(viewModel.userKokoId)"
+    }
+    
+    private func updateHeaderLayout() {
+        guard let headerView = tableView.tableHeaderView else { return }
+        
+        let headerHeight: CGFloat = 100
+        let headerWidth = view.bounds.width
+        
+        // 只有當寬度改變時才更新
+        guard headerView.frame.width != headerWidth else { return }
+        
+        headerView.frame.size.width = headerWidth
+        
+        let avatarSize: CGFloat = 60
+        let horizontalPadding: CGFloat = 30
+        
+        // 更新 Avatar 位置（右側）
+        avatarImageView.frame = CGRect(
+            x: headerWidth - horizontalPadding - avatarSize,
+            y: (headerHeight - avatarSize) / 2,
+            width: avatarSize,
+            height: avatarSize
+        )
+        
+        // 更新 Label 位置（左側）
+        let labelMaxWidth = headerWidth - horizontalPadding * 2 - avatarSize - 15
+        nameLabel.frame.size.width = labelMaxWidth
+        kokoIdLabel.frame.size.width = labelMaxWidth
+        
+        // 重新設定 tableHeaderView 以觸發更新
+        tableView.tableHeaderView = headerView
     }
 }
 
