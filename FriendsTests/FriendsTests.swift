@@ -101,25 +101,4 @@ final class FriendsTests: XCTestCase {
         let error = APIError.fileNotFound
         XCTAssertEqual(error.errorDescription, "找不到 JSON 檔案")
     }
-    
-    // MARK: - Helper Methods
-    
-    private func createMockFriend(
-        name: String,
-        status: Friend.FriendStatus,
-        fid: String
-    ) -> Friend {
-        let jsonString = """
-        {
-            "name": "\(name)",
-            "status": \(status.rawValue),
-            "isTop": "0",
-            "fid": "\(fid)",
-            "updateDate": "20231201"
-        }
-        """
-        
-        let data = jsonString.data(using: .utf8)!
-        return try! JSONDecoder().decode(Friend.self, from: data)
-    }
 }
