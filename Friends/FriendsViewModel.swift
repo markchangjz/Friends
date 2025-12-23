@@ -78,6 +78,14 @@ class FriendsViewModel {
     var hasConfirmedFriends: Bool {
         return !displayConfirmedFriends.isEmpty
     }
+    
+    // Requests section 展開狀態
+    var isRequestsSectionExpanded: Bool = true
+    
+    // 好友 section 的索引
+    var friendsSection: Int {
+        return hasFriendRequests ? Section.friends : Section.requests
+    }
 
     // MARK: - Private Properties
     
@@ -276,6 +284,12 @@ class FriendsViewModel {
                 $0.name.lowercased().contains(lowercasedSearch) 
             }
         }
+    }
+    
+    /// 清除搜尋文字並重置過濾
+    func clearSearch() {
+        searchText = ""
+        filterFriends()
     }
     
     // MARK: - Private Methods

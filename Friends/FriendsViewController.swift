@@ -27,14 +27,6 @@ class FriendsViewController: UIViewController {
     // 追蹤是否正在使用真實的 searchController
     private var isUsingRealSearchController = false
     
-    // 追蹤 Requests section 是否展開
-    private var isRequestsSectionExpanded = true
-    
-    // 計算好友 section 的索引
-    private var friendsSection: Int {
-        return viewModel.hasFriendRequests ? 1 : 0
-    }
-    
     // UI 元件
     private lazy var userProfileHeaderView = UserProfileHeaderView(width: view.bounds.width)
     private let tableView = UITableView()
@@ -145,7 +137,7 @@ extension FriendsViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // 如果是好友請求 section，根據展開狀態決定是否顯示資料
         if viewModel.isRequestSection(section) {
-            return isRequestsSectionExpanded ? viewModel.numberOfRows(in: section) : 0
+            return viewModel.isRequestsSectionExpanded ? viewModel.numberOfRows(in: section) : 0
         } else {
             // 如果正在使用真實的 searchController，不顯示假 searchBar cell
             let searchBarCount = isUsingRealSearchController ? 0 : 1
@@ -200,7 +192,7 @@ extension FriendsViewController: UITableViewDelegate {
         
         // Requests section 可折疊，Friends section 不可折疊
         if viewModel.isRequestSection(section) {
-            headerView.configure(title: title, isExpanded: isRequestsSectionExpanded)
+            headerView.configure(title: title, isExpanded: viewModel.isRequestsSectionExpanded)
         } else {
             headerView.configure(title: title, isExpanded: nil)
         }
@@ -229,8 +221,8 @@ extension FriendsViewController: UISearchResultsUpdating {
 
 extension FriendsViewController: SectionHeaderViewDelegate {
     func sectionHeaderViewDidTap(_ headerView: SectionHeaderView) {
-        isRequestsSectionExpanded.toggle()
-        headerView.updateArrowImage(isExpanded: isRequestsSectionExpanded)
+        viewModel.isRequestsSectionExpanded.toggle()
+        headerView.updateArrowImage(isExpanded: viewModel.isRequestsSectionExpanded)
         
         tableView.performBatchUpdates({
             tableView.reloadSections(IndexSet(integer: FriendsViewModel.Section.requests), with: .automatic)
@@ -250,8 +242,7 @@ extension FriendsViewController: UISearchBarDelegate {
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
-        viewModel.searchText = ""
-        viewModel.filterFriends()
+        viewModel.clearSearch()
         updateEmptyState()
         deactivateRealSearchController()
     }
@@ -335,9 +326,9 @@ extension FriendsViewController: UISearchBarDelegate {
     }
     
     private func scrollToFriendsSection() {
-        guard friendsSection < viewModel.numberOfSections else { return }
+        guard viewModel.friendsSection < viewModel.numberOfSections else { return }
         
-        let sectionRect = tableView.rect(forSection: friendsSection)
+        let sectionRect = tableView.rect(forSection: viewModel.friendsSection)
         let targetY = sectionRect.origin.y - tableView.adjustedContentInset.top
         
         UIView.animate(
@@ -375,7 +366,7 @@ extension FriendsViewController: UISearchBarDelegate {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            let searchBarIndexPath = IndexPath(row: 0, section: self.friendsSection)
+            let searchBarIndexPath = IndexPath(row: 0, section: self.viewModel.friendsSection)
             
             if let cell = self.tableView.cellForRow(at: searchBarIndexPath) {
                 let targetFrame = cell.convert(cell.bounds, to: self.view)
