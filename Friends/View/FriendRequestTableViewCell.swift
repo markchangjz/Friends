@@ -41,23 +41,32 @@ class FriendRequestTableViewCell: UITableViewCell {
         return label
     }()
     
-    private let acceptButton: UIButton = {
+    // 定義顏色常數（支援 Dark Mode）
+    private let pinkColor = UIColor(red: 236/255, green: 0/255, blue: 140/255, alpha: 1.0)
+    
+    private lazy var acceptButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setImage(UIImage(systemName: "checkmark"), for: .normal)
-        button.tintColor = .white
-        button.backgroundColor = UIColor(red: 236/255, green: 0/255, blue: 140/255, alpha: 1.0)
-        button.layer.cornerRadius = 20
+        // 設定較小的圖示尺寸，避免被邊框切到
+        let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .medium)
+        button.setImage(UIImage(systemName: "checkmark", withConfiguration: config), for: .normal)
+        button.tintColor = pinkColor
+        button.backgroundColor = .systemBackground
+        button.layer.borderWidth = 2
+        button.layer.cornerRadius = 15  // 寬高為 30，設為 15 形成正圓
         button.clipsToBounds = true
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
-    private let rejectButton: UIButton = {
+    private lazy var rejectButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setImage(UIImage(systemName: "xmark"), for: .normal)
-        button.tintColor = .white
-        button.backgroundColor = .systemGray3
-        button.layer.cornerRadius = 20
+        // 設定較小的圖示尺寸，避免被邊框切到
+        let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .medium)
+        button.setImage(UIImage(systemName: "xmark", withConfiguration: config), for: .normal)
+        button.tintColor = .systemGray
+        button.backgroundColor = .systemBackground
+        button.layer.borderWidth = 2
+        button.layer.cornerRadius = 15  // 寬高為 30，設為 15 形成正圓
         button.clipsToBounds = true
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
@@ -66,6 +75,7 @@ class FriendRequestTableViewCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
+        updateButtonColors()
     }
     
     required init?(coder: NSCoder) {
@@ -99,14 +109,14 @@ class FriendRequestTableViewCell: UITableViewCell {
             // Reject Button
             rejectButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -30),
             rejectButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            rejectButton.widthAnchor.constraint(equalToConstant: 40),
-            rejectButton.heightAnchor.constraint(equalToConstant: 40),
+            rejectButton.widthAnchor.constraint(equalToConstant: 30),
+            rejectButton.heightAnchor.constraint(equalToConstant: 30),
             
             // Accept Button
             acceptButton.trailingAnchor.constraint(equalTo: rejectButton.leadingAnchor, constant: -15),
             acceptButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            acceptButton.widthAnchor.constraint(equalToConstant: 40),
-            acceptButton.heightAnchor.constraint(equalToConstant: 40)
+            acceptButton.widthAnchor.constraint(equalToConstant: 30),
+            acceptButton.heightAnchor.constraint(equalToConstant: 30)
         ])
     }
     
@@ -122,5 +132,23 @@ class FriendRequestTableViewCell: UITableViewCell {
         super.prepareForReuse()
         nameLabel.text = nil
         avatarImageView.image = nil
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        
+        // 當外觀模式改變時（Light/Dark Mode），更新邊框顏色
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            updateButtonColors()
+        }
+    }
+    
+    /// 更新按鈕邊框顏色（支援 Dark Mode）
+    private func updateButtonColors() {
+        // 更新 acceptButton 邊框顏色
+        acceptButton.layer.borderColor = pinkColor.resolvedColor(with: traitCollection).cgColor
+        
+        // 更新 rejectButton 邊框顏色
+        rejectButton.layer.borderColor = UIColor.systemGray.resolvedColor(with: traitCollection).cgColor
     }
 }
