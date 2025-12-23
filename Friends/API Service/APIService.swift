@@ -96,14 +96,11 @@ class APIService: APIServiceProtocol {
 // MARK: - Error Types
 enum APIError: LocalizedError {
     case fileNotFound
-    case emptyResponse
     
     var errorDescription: String? {
         switch self {
         case .fileNotFound:
-            return "找不到 man.json 檔案"
-        case .emptyResponse:
-            return "回應資料為空"
+            return "找不到 JSON 檔案"
         }
     }
 }
