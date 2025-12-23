@@ -76,11 +76,14 @@ class FriendRequestTableViewCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
         updateButtonColors()
+        setupTraitObservation()
     }
     
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         setupUI()
+        updateButtonColors()
+        setupTraitObservation()
     }
     
     private func setupUI() {
@@ -134,12 +137,12 @@ class FriendRequestTableViewCell: UITableViewCell {
         avatarImageView.image = nil
     }
     
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        
-        // 當外觀模式改變時（Light/Dark Mode），更新邊框顏色
-        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
-            updateButtonColors()
+    /// 設定 Trait 變化觀察（iOS 17+ 新 API）
+    private func setupTraitObservation() {
+        // 使用新的 trait change registration API
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, previousTraitCollection: UITraitCollection) in
+            // 當外觀模式改變時（Light/Dark Mode），更新邊框顏色
+            self.updateButtonColors()
         }
     }
     
