@@ -68,14 +68,16 @@ class FriendsViewController: UIViewController {
     
     private func setupViewModel() {
         // 使用 Combine 訂閱選項變更
+        // 使用 dropFirst() 跳過初始值，避免在 setupViewModel 時就觸發載入
         viewModel.$selectedOption
+            .dropFirst()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] option in
                 // 更新選單狀態
                 self?.menuButton?.menu = self?.viewModel.createMenu()
-                // 顯示 loading 並載入資料
+                // 顯示 loading 並同時載入使用者資料和好友資料
                 self?.showLoading()
-                self?.viewModel.loadFriendsData(for: option)
+                self?.viewModel.loadAllData(for: option)
             }
             .store(in: &cancellables)
         
@@ -108,8 +110,10 @@ class FriendsViewController: UIViewController {
     }
     
     private func loadData() {
-        viewModel.loadUserData()
-        viewModel.selectOption(viewModel.selectedOption)
+        // 顯示 loading 狀態
+        showLoading()
+        // 同時載入使用者資料和好友資料，等兩者都完成後才一起顯示
+        viewModel.loadAllData(for: viewModel.selectedOption)
     }
     
     private func updateUIState() {

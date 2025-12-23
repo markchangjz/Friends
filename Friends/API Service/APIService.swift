@@ -20,6 +20,9 @@ protocol APIServiceProtocol {
 class APIService: APIServiceProtocol {
     
     func fetchManData() async throws -> Person {
+        // 模擬網路延遲 0.3 秒
+        try await Task.sleep(nanoseconds: 3_000_000_000)
+        
         let url = Bundle.main.url(forResource: "man", withExtension: "json")
         
         guard let fileURL = url else {

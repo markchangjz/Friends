@@ -113,34 +113,10 @@ class FriendsViewModel {
     func loadFriendsData(for option: ViewOption) {
         Task {
             do {
-                var friendsData: [Friend]
+                // 取得好友資料
+                let friendsData = try await fetchFriendsData(for: option)
                 
-                switch option {
-                case .noFriends:
-                    friendsData = try await apiService.fetchFriendsData_noFriends()
-                case .friendsListWithInvitation:
-                    friendsData = try await apiService.fetchFriendsData_hasFriends_hasInvitation()
-                case .friendsListOnly:
-                    // 並行取得兩個資料來源
-                    async let friendsData1 = apiService.fetchFriendsData1()
-                    async let friendsData2 = apiService.fetchFriendsData2()
-                    let (data1, data2) = try await (friendsData1, friendsData2)
-                    friendsData = mergeFriends(data1, data2)
-                }
-                
-                friendsData.sort { lhs, rhs in
-                    // 優先級 1: isTop (true 在前)
-                    if lhs.isTop != rhs.isTop {
-                        return lhs.isTop
-                    }
-                    // 優先級 2: updateDate (新到舊)
-                    if lhs.updateDate != rhs.updateDate {
-                        return lhs.updateDate > rhs.updateDate
-                    }
-                    // 優先級 3: fid (小到大)
-                    return lhs.fid < rhs.fid
-                }
-                
+                // 所有資料都載入完成後，一起更新 UI
                 await MainActor.run {
                     self.processFriendsData(friendsData)
                     self.friendsDataLoadedPublisher.send()
@@ -152,6 +128,70 @@ class FriendsViewModel {
                 }
             }
         }
+    }
+    
+    /// 同時載入使用者資料和好友資料，等兩者都完成後才一起更新 UI
+    func loadAllData(for option: ViewOption) {
+        Task {
+            do {
+                // 並行執行兩個 API 呼叫
+                async let personTask = apiService.fetchManData()
+                async let friendsTask = fetchFriendsData(for: option)
+                
+                // 等待兩個 API 都完成
+                let (person, friendsData) = try await (personTask, friendsTask)
+                
+                // 所有資料都載入完成後，一起更新 UI
+                await MainActor.run {
+                    // 更新使用者資料
+                    self.userName = person.name
+                    self.userKokoId = person.kokoid
+                    self.dataLoadedPublisher.send()
+                    
+                    // 更新好友資料
+                    self.processFriendsData(friendsData)
+                    self.friendsDataLoadedPublisher.send()
+                }
+            } catch {
+                await MainActor.run {
+                    self.errorPublisher.send(error)
+                    self.friendsDataLoadedPublisher.send()
+                }
+            }
+        }
+    }
+    
+    /// 非同步取得好友資料（內部方法）
+    private func fetchFriendsData(for option: ViewOption) async throws -> [Friend] {
+        var friendsData: [Friend]
+        
+        switch option {
+        case .noFriends:
+            friendsData = try await apiService.fetchFriendsData_noFriends()
+        case .friendsListWithInvitation:
+            friendsData = try await apiService.fetchFriendsData_hasFriends_hasInvitation()
+        case .friendsListOnly:
+            // 並行取得兩個資料來源
+            async let friendsData1 = apiService.fetchFriendsData1()
+            async let friendsData2 = apiService.fetchFriendsData2()
+            let (data1, data2) = try await (friendsData1, friendsData2)
+            friendsData = mergeFriends(data1, data2)
+        }
+        
+        friendsData.sort { lhs, rhs in
+            // 優先級 1: isTop (true 在前)
+            if lhs.isTop != rhs.isTop {
+                return lhs.isTop
+            }
+            // 優先級 2: updateDate (新到舊)
+            if lhs.updateDate != rhs.updateDate {
+                return lhs.updateDate > rhs.updateDate
+            }
+            // 優先級 3: fid (小到大)
+            return lhs.fid < rhs.fid
+        }
+        
+        return friendsData
     }
     
     func selectOption(_ option: ViewOption) {
