@@ -62,7 +62,7 @@ class FriendsViewModel {
     }
     
     var hasFilteredFriends: Bool {
-        return !(friendRequests.isEmpty && confirmedFriends.isEmpty)
+        return hasFriendRequests || hasConfirmedFriends
     }
 
     // MARK: - Private Properties
@@ -81,11 +81,11 @@ class FriendsViewModel {
     private(set) var friendRequests: [Friend] = []
     private(set) var confirmedFriends: [Friend] = []
     
-    private var hasFriendRequests: Bool {
+    var hasFriendRequests: Bool {
         return !friendRequests.isEmpty
     }
     
-    private var hasConfirmedFriends: Bool {
+    var hasConfirmedFriends: Bool {
         return !confirmedFriends.isEmpty
     }
     

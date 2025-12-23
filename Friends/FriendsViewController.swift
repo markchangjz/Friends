@@ -22,7 +22,7 @@ class FriendsViewController: UIViewController {
     private var menuButton: UIBarButtonItem?
     
     // 搜尋控制器（用於實際搜尋）
-    private let searchController = UISearchController(searchResultsController: nil)
+    private let searchController = UISearchController()
     
     // 假的搜尋列（顯示在 cell 中）
     private let placeholderSearchBar = UISearchBar()
@@ -35,7 +35,7 @@ class FriendsViewController: UIViewController {
     
     // 計算好友 section 的索引
     private var friendsSection: Int {
-        return viewModel.friendRequests.isEmpty ? 0 : 1
+        return viewModel.hasFriendRequests ? 1 : 0
     }
     
     // UI 元件
