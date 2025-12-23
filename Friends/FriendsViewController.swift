@@ -193,30 +193,27 @@ extension FriendsViewController: UITableViewDelegate {
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return viewModel.titleForHeader(in: section)
-    }
-    
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        // 只為 Requests section 創建自定義 header
-        guard viewModel.isRequestSection(section),
-              let title = viewModel.titleForHeader(in: section) else {
+        guard let title = viewModel.titleForHeader(in: section) else {
             return nil
         }
         
-        let headerView = RequestsSectionHeaderView()
+        let headerView = SectionHeaderView()
         headerView.delegate = self
-        headerView.configure(title: title, isExpanded: isRequestsSectionExpanded)
+        
+        // Requests section 可折疊，Friends section 不可折疊
+        if viewModel.isRequestSection(section) {
+            headerView.configure(title: title, isExpanded: isRequestsSectionExpanded)
+        } else {
+            headerView.configure(title: title, isExpanded: nil)
+        }
         
         return headerView
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        // 為 Requests section 設置固定高度
-        if viewModel.isRequestSection(section) {
-            return 44
-        }
-        return UITableView.automaticDimension
+        // 所有自定義 header 使用固定高度
+        return 44
     }
 }
 
@@ -463,10 +460,10 @@ extension FriendsViewController: UISearchResultsUpdating {
     }
 }
 
-// MARK: - RequestsSectionHeaderViewDelegate
+// MARK: - SectionHeaderViewDelegate
 
-extension FriendsViewController: RequestsSectionHeaderViewDelegate {
-    func requestsSectionHeaderViewDidTap(_ headerView: RequestsSectionHeaderView) {
+extension FriendsViewController: SectionHeaderViewDelegate {
+    func sectionHeaderViewDidTap(_ headerView: SectionHeaderView) {
         // 切換展開狀態
         isRequestsSectionExpanded.toggle()
         

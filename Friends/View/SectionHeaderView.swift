@@ -1,5 +1,5 @@
 //
-//  RequestsSectionHeaderView.swift
+//  SectionHeaderView.swift
 //  Friends
 //
 //  Created by Mark Chang on 2025/12/23.
@@ -7,15 +7,15 @@
 
 import UIKit
 
-protocol RequestsSectionHeaderViewDelegate: AnyObject {
-    func requestsSectionHeaderViewDidTap(_ headerView: RequestsSectionHeaderView)
+protocol SectionHeaderViewDelegate: AnyObject {
+    func sectionHeaderViewDidTap(_ headerView: SectionHeaderView)
 }
 
-class RequestsSectionHeaderView: UIView {
+class SectionHeaderView: UIView {
     
     // MARK: - Properties
     
-    weak var delegate: RequestsSectionHeaderViewDelegate?
+    weak var delegate: SectionHeaderViewDelegate?
     
     private let titleLabel: UILabel = {
         let label = UILabel()
@@ -62,10 +62,6 @@ class RequestsSectionHeaderView: UIView {
             arrowImageView.widthAnchor.constraint(equalToConstant: 16),
             arrowImageView.heightAnchor.constraint(equalToConstant: 16)
         ])
-        
-        // 添加點擊手勢
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
-        addGestureRecognizer(tapGesture)
     }
     
     // MARK: - Public Methods
@@ -73,10 +69,27 @@ class RequestsSectionHeaderView: UIView {
     /// 配置 header view
     /// - Parameters:
     ///   - title: 標題文字
-    ///   - isExpanded: 是否展開狀態
-    func configure(title: String, isExpanded: Bool) {
+    ///   - isExpanded: 展開狀態，nil 表示不可折疊，true/false 表示可折疊且當前的展開狀態（預設為 true）
+    func configure(title: String, isExpanded: Bool? = true) {
         titleLabel.text = title
-        updateArrowImage(isExpanded: isExpanded)
+        
+        if let isExpanded = isExpanded {
+            // 可折疊：顯示箭頭並添加點擊手勢
+            arrowImageView.isHidden = false
+            updateArrowImage(isExpanded: isExpanded)
+            
+            // 確保有點擊手勢（如果還沒添加）
+            if gestureRecognizers?.isEmpty ?? true {
+                let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+                addGestureRecognizer(tapGesture)
+            }
+            isUserInteractionEnabled = true
+        } else {
+            // 不可折疊：隱藏箭頭，移除點擊手勢
+            arrowImageView.isHidden = true
+            gestureRecognizers?.forEach { removeGestureRecognizer($0) }
+            isUserInteractionEnabled = false
+        }
     }
     
     /// 更新箭頭圖示
@@ -89,7 +102,7 @@ class RequestsSectionHeaderView: UIView {
     // MARK: - Actions
     
     @objc private func handleTap() {
-        delegate?.requestsSectionHeaderViewDidTap(self)
+        delegate?.sectionHeaderViewDidTap(self)
     }
 }
 
