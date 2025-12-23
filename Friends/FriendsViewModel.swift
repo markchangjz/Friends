@@ -61,6 +61,10 @@ class FriendsViewModel {
         return !friends.isEmpty
     }
     
+    var hasFilteredFriends: Bool {
+        return !(friendRequests.isEmpty && confirmedFriends.isEmpty)
+    }
+
     // MARK: - Private Properties
     
     // API Service

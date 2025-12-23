@@ -121,7 +121,7 @@ class FriendsViewController: UIViewController {
         // 根據實際載入的好友資料數量決定 UI 顯示狀態
         tableView.isHidden = false
         
-        if viewModel.hasFriends {
+        if viewModel.hasFilteredFriends {
             // 有好友資料，隱藏空狀態
             emptyStateView.isHidden = true
         } else {
