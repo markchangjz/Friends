@@ -103,8 +103,9 @@ class FriendsViewController: UIViewController {
         // 使用 Combine 訂閱錯誤
         viewModel.errorPublisher
             .receive(on: DispatchQueue.main)
-            .sink { error in
+            .sink { [weak self] error in
                 print("載入資料失敗：\(error.localizedDescription)")
+                self?.showErrorAlert(message: error.localizedDescription)
             }
             .store(in: &cancellables)
     }
@@ -134,6 +135,18 @@ class FriendsViewController: UIViewController {
         emptyStateView.isHidden = true
         tableView.isHidden = false
         loadingIndicator.startAnimating()
+    }
+    
+    private func showErrorAlert(message: String) {
+        let alert = UIAlertController(
+            title: "錯誤",
+            message: message,
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "確定", style: .default))
+        
+        present(alert, animated: true)
     }
     
     @objc private func handleRefresh() {
