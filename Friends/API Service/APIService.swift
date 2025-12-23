@@ -19,91 +19,76 @@ protocol APIServiceProtocol {
 // MARK: - APIService Implementation
 class APIService: APIServiceProtocol {
     
+    // MARK: - Public Methods
+    
     func fetchManData() async throws -> Person {
-        // 模擬網路延遲 0.3 秒
-        try await Task.sleep(nanoseconds: 3_000_000_000)
-        
-        let url = Bundle.main.url(forResource: "man", withExtension: "json")
-        
-        guard let fileURL = url else {
-            throw APIError.fileNotFound
-        }
-              
-        let data = try Data(contentsOf: fileURL)
-        let decoder = JSONDecoder()
-        let person = try decoder.decode(Person.self, from: data)
-        return person
+        return try await fetchData(
+            fileName: "man",
+            delaySeconds: 0.3
+        )
     }
     
     func fetchFriendsData_noFriends() async throws -> [Friend] {
-        // 模擬網路延遲 0.5 秒
-        try await Task.sleep(nanoseconds: 500_000_000)
-        
-        let url = Bundle.main.url(forResource: "friend4", withExtension: "json")
-        
-        guard let fileURL = url else {
-            throw APIError.fileNotFound
-        }
-        
-        let data = try Data(contentsOf: fileURL)
-        
-        // 提取 response 陣列後再解碼
-        let decoder = JSONDecoder()
-        let result = try decoder.decode(Friend.Response.self, from: data)
-        return result.response
+        return try await fetchFriendsData(
+            fileName: "friend4",
+            delaySeconds: 0.5
+        )
     }
     
     func fetchFriendsData_hasFriends_hasInvitation() async throws -> [Friend] {
-        // 模擬網路延遲 0.5 秒
-        try await Task.sleep(nanoseconds: 500_000_000)
-        
-        let url = Bundle.main.url(forResource: "friend3", withExtension: "json")
-        
-        guard let fileURL = url else {
-            throw APIError.fileNotFound
-        }
-        
-        let data = try Data(contentsOf: fileURL)
-        
-        // 提取 response 陣列後再解碼
-        let decoder = JSONDecoder()
-        let result = try decoder.decode(Friend.Response.self, from: data)
-        return result.response
+        return try await fetchFriendsData(
+            fileName: "friend3",
+            delaySeconds: 0.5
+        )
     }
     
     func fetchFriendsData1() async throws -> [Friend] {
-        // 模擬網路延遲 0.5 秒
-        try await Task.sleep(nanoseconds: 500_000_000)
-        
-        let url = Bundle.main.url(forResource: "friend1", withExtension: "json")
-        
-        guard let fileURL = url else {
-            throw APIError.fileNotFound
-        }
-        
-        let data = try Data(contentsOf: fileURL)
-        
-        // 提取 response 陣列後再解碼
-        let decoder = JSONDecoder()
-        let result = try decoder.decode(Friend.Response.self, from: data)
-        return result.response
+        return try await fetchFriendsData(
+            fileName: "friend1",
+            delaySeconds: 0.5
+        )
     }
     
     func fetchFriendsData2() async throws -> [Friend] {
-        // 模擬網路延遲 0.5 秒
-        try await Task.sleep(nanoseconds: 500_000_000)
+        return try await fetchFriendsData(
+            fileName: "friend2",
+            delaySeconds: 0.5
+        )
+    }
+    
+    // MARK: - Private Helper Methods
+    
+    /// 通用的資料獲取方法
+    /// - Parameters:
+    ///   - fileName: JSON 檔案名稱（不含副檔名）
+    ///   - delaySeconds: 模擬網路延遲的秒數
+    /// - Returns: 解碼後的資料
+    private func fetchData<T: Decodable>(fileName: String, delaySeconds: TimeInterval) async throws -> T {
+        // 模擬網路延遲（將秒轉換為奈秒）
+        let nanoseconds = UInt64(delaySeconds * 1_000_000_000)
+        try await Task.sleep(nanoseconds: nanoseconds)
         
-        let url = Bundle.main.url(forResource: "friend2", withExtension: "json")
-        
-        guard let fileURL = url else {
+        // 取得檔案 URL
+        guard let fileURL = Bundle.main.url(forResource: fileName, withExtension: "json") else {
             throw APIError.fileNotFound
         }
         
+        // 讀取並解碼資料
         let data = try Data(contentsOf: fileURL)
-        
-        // 提取 response 陣列後再解碼
         let decoder = JSONDecoder()
-        let result = try decoder.decode(Friend.Response.self, from: data)
+        return try decoder.decode(T.self, from: data)
+    }
+    
+    /// 專門用於獲取好友資料的方法
+    /// - Parameters:
+    ///   - fileName: JSON 檔案名稱（不含副檔名）
+    ///   - delaySeconds: 模擬網路延遲的秒數
+    /// - Returns: 好友陣列
+    private func fetchFriendsData(fileName: String, delaySeconds: TimeInterval) async throws -> [Friend] {
+        let result: Friend.Response = try await fetchData(
+            fileName: fileName,
+            delaySeconds: delaySeconds
+        )
         return result.response
     }
 }
