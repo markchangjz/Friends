@@ -36,10 +36,7 @@ class FriendsViewController: UIViewController {
     }
     
     // UI 元件
-    private let userProfileHeaderView = UIView()
-    private let avatarImageView = UIImageView()
-    private let nameLabel = UILabel()
-    private let kokoIdLabel = UILabel()
+    private lazy var userProfileHeaderView = UserProfileHeaderView(width: view.bounds.width)
     private let tableView = UITableView()
     private let emptyStateView = UIView()
     private let refreshControl = UIRefreshControl()
@@ -283,63 +280,6 @@ extension FriendsViewController {
     }
     
     private func setupHeaderView() {
-        // Header View 設定
-        userProfileHeaderView.backgroundColor = .systemBackground
-        
-        // Avatar ImageView 設定
-        avatarImageView.image = UIImage(systemName: "person.crop.circle.fill")
-        avatarImageView.tintColor = .systemGray3
-        avatarImageView.contentMode = .scaleAspectFill
-        avatarImageView.clipsToBounds = true
-        avatarImageView.layer.cornerRadius = 30
-        avatarImageView.backgroundColor = .systemGray5
-        userProfileHeaderView.addSubview(avatarImageView)
-        
-        // Name Label 設定
-        nameLabel.font = .systemFont(ofSize: 24, weight: .medium)
-        nameLabel.textColor = .label
-        userProfileHeaderView.addSubview(nameLabel)
-        
-        // KOKO ID Label 設定
-        kokoIdLabel.font = .systemFont(ofSize: 16, weight: .regular)
-        kokoIdLabel.textColor = .secondaryLabel
-        userProfileHeaderView.addSubview(kokoIdLabel)
-        
-        // 先設定 headerView 的 frame（tableHeaderView 需要明確的尺寸）
-        let headerHeight: CGFloat = 100
-        let headerWidth = view.bounds.width
-        userProfileHeaderView.frame = CGRect(x: 0, y: 0, width: headerWidth, height: headerHeight)
-        
-        // 使用 frame-based layout 設定子視圖位置
-        let avatarSize: CGFloat = 60
-        let horizontalPadding: CGFloat = 30
-        let topPadding: CGFloat = 25
-        
-        // Avatar 位置（右側）
-        avatarImageView.frame = CGRect(
-            x: headerWidth - horizontalPadding - avatarSize,
-            y: (headerHeight - avatarSize) / 2,
-            width: avatarSize,
-            height: avatarSize
-        )
-        
-        // Name Label 位置（左側）
-        let labelMaxWidth = headerWidth - horizontalPadding * 2 - avatarSize - 15
-        nameLabel.frame = CGRect(
-            x: horizontalPadding,
-            y: topPadding,
-            width: labelMaxWidth,
-            height: 30
-        )
-        
-        // KOKO ID Label 位置（左側）
-        kokoIdLabel.frame = CGRect(
-            x: horizontalPadding,
-            y: nameLabel.frame.maxY + 5,
-            width: labelMaxWidth,
-            height: 20
-        )
-        
         // 設定為 TableView 的 Header
         tableView.tableHeaderView = userProfileHeaderView
     }
@@ -374,36 +314,19 @@ extension FriendsViewController {
     }
     
     private func updateUserProfileHeaderView() {
-        nameLabel.text = viewModel.userName
-        kokoIdLabel.text = "KOKO ID：\(viewModel.userKokoId)"
+        userProfileHeaderView.configure(name: viewModel.userName, kokoId: viewModel.userKokoId)
     }
     
     private func updateUserProfileHeaderLayout() {
-        guard let headerView = tableView.tableHeaderView else { return }
+        guard let headerView = tableView.tableHeaderView as? UserProfileHeaderView else { return }
         
-        let headerHeight: CGFloat = 100
         let headerWidth = view.bounds.width
         
         // 只有當寬度改變時才更新
         guard headerView.frame.width != headerWidth else { return }
         
-        headerView.frame.size.width = headerWidth
-        
-        let avatarSize: CGFloat = 60
-        let horizontalPadding: CGFloat = 30
-        
-        // 更新 Avatar 位置（右側）
-        avatarImageView.frame = CGRect(
-            x: headerWidth - horizontalPadding - avatarSize,
-            y: (headerHeight - avatarSize) / 2,
-            width: avatarSize,
-            height: avatarSize
-        )
-        
-        // 更新 Label 位置（左側）
-        let labelMaxWidth = headerWidth - horizontalPadding * 2 - avatarSize - 15
-        nameLabel.frame.size.width = labelMaxWidth
-        kokoIdLabel.frame.size.width = labelMaxWidth
+        // 更新佈局
+        headerView.updateLayout(for: headerWidth)
         
         // 重新設定 tableHeaderView 以觸發更新
         tableView.tableHeaderView = headerView
