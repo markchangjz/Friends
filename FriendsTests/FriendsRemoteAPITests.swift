@@ -1,6 +1,6 @@
 //
-//  FriendsTests.swift
-//  FriendsTests
+//  FriendsRemoteAPITests.swift
+//  FriendsRemoteAPITests
 //
 //  Created by Mark Chang on 2025/12/22.
 //
@@ -10,7 +10,7 @@
 import XCTest
 @testable import Friends
 
-final class FriendsTests: XCTestCase {
+final class FriendsRemoteAPITests: XCTestCase {
 
     // MARK: - 測試 Friend Status Enum
     
