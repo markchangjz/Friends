@@ -39,7 +39,7 @@ class FriendsViewController: UIViewController {
     }
     
     // UI 元件
-    private let headerView = UIView()
+    private let userProfileHeaderView = UIView()
     private let avatarImageView = UIImageView()
     private let nameLabel = UILabel()
     private let kokoIdLabel = UILabel()
@@ -61,7 +61,7 @@ class FriendsViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         // 當螢幕尺寸改變時，重新調整 header 佈局
-        updateHeaderLayout()
+        updateUserProfileHeaderLayout()
     }
     
     // MARK: - Setup
@@ -85,7 +85,7 @@ class FriendsViewController: UIViewController {
         viewModel.userProfileDataLoadedPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
-                self?.updateHeaderView()
+                self?.updateUserProfileHeaderView()
             }
             .store(in: &cancellables)
         
@@ -290,7 +290,7 @@ extension FriendsViewController {
     
     private func setupHeaderView() {
         // Header View 設定
-        headerView.backgroundColor = .systemBackground
+        userProfileHeaderView.backgroundColor = .systemBackground
         
         // Avatar ImageView 設定
         avatarImageView.image = UIImage(systemName: "person.crop.circle.fill")
@@ -299,22 +299,22 @@ extension FriendsViewController {
         avatarImageView.clipsToBounds = true
         avatarImageView.layer.cornerRadius = 30
         avatarImageView.backgroundColor = .systemGray5
-        headerView.addSubview(avatarImageView)
+        userProfileHeaderView.addSubview(avatarImageView)
         
         // Name Label 設定
         nameLabel.font = .systemFont(ofSize: 24, weight: .medium)
         nameLabel.textColor = .label
-        headerView.addSubview(nameLabel)
+        userProfileHeaderView.addSubview(nameLabel)
         
         // KOKO ID Label 設定
         kokoIdLabel.font = .systemFont(ofSize: 16, weight: .regular)
         kokoIdLabel.textColor = .secondaryLabel
-        headerView.addSubview(kokoIdLabel)
+        userProfileHeaderView.addSubview(kokoIdLabel)
         
         // 先設定 headerView 的 frame（tableHeaderView 需要明確的尺寸）
         let headerHeight: CGFloat = 100
         let headerWidth = view.bounds.width
-        headerView.frame = CGRect(x: 0, y: 0, width: headerWidth, height: headerHeight)
+        userProfileHeaderView.frame = CGRect(x: 0, y: 0, width: headerWidth, height: headerHeight)
         
         // 使用 frame-based layout 設定子視圖位置
         let avatarSize: CGFloat = 60
@@ -347,7 +347,7 @@ extension FriendsViewController {
         )
         
         // 設定為 TableView 的 Header
-        tableView.tableHeaderView = headerView
+        tableView.tableHeaderView = userProfileHeaderView
     }
     
     private func setupTableView() {
@@ -379,12 +379,12 @@ extension FriendsViewController {
         ])
     }
     
-    private func updateHeaderView() {
+    private func updateUserProfileHeaderView() {
         nameLabel.text = viewModel.userName
         kokoIdLabel.text = "KOKO ID：\(viewModel.userKokoId)"
     }
     
-    private func updateHeaderLayout() {
+    private func updateUserProfileHeaderLayout() {
         guard let headerView = tableView.tableHeaderView else { return }
         
         let headerHeight: CGFloat = 100
