@@ -54,11 +54,10 @@ class FriendsViewController: UIViewController {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        // 當螢幕尺寸改變時，重新調整 header 佈局
         updateUserProfileHeaderLayout()
     }
     
-    // MARK: - Setup
+    // MARK: - Private Methods
     
     private func setupViewModel() {
         // 使用 Combine 訂閱選項變更
@@ -108,9 +107,7 @@ class FriendsViewController: UIViewController {
     }
     
     private func loadData() {
-        // 顯示 loading 狀態
         showLoading()
-        // 同時載入使用者資料和好友資料，等兩者都完成後才一起顯示
         viewModel.loadAllData(for: viewModel.selectedOption)
     }
     
@@ -122,7 +119,6 @@ class FriendsViewController: UIViewController {
     }
     
     private func showLoading() {
-        // 統一使用 loadingIndicator 顯示載入狀態
         emptyStateView.isHidden = true
         tableView.isHidden = false
         loadingIndicator.startAnimating()
@@ -135,7 +131,6 @@ class FriendsViewController: UIViewController {
     }
     
     @objc private func handleRefresh() {
-        // 下拉刷新：不調用 showLoading，refreshControl 會自動顯示
         viewModel.loadFriendsData(for: viewModel.selectedOption)
     }
 }
@@ -214,17 +209,214 @@ extension FriendsViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        // 所有自定義 header 使用固定高度
         return 44
     }
 }
 
-// MARK: - UI Layout
+// MARK: - UISearchResultsUpdating
+
+extension FriendsViewController: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        let searchText = searchController.searchBar.text ?? ""
+        viewModel.searchText = searchText
+        viewModel.filterFriends()
+        updateEmptyState()
+        tableView.reloadData()
+    }
+}
+
+// MARK: - SectionHeaderViewDelegate
+
+extension FriendsViewController: SectionHeaderViewDelegate {
+    func sectionHeaderViewDidTap(_ headerView: SectionHeaderView) {
+        isRequestsSectionExpanded.toggle()
+        headerView.updateArrowImage(isExpanded: isRequestsSectionExpanded)
+        
+        tableView.performBatchUpdates({
+            tableView.reloadSections(IndexSet(integer: FriendsViewModel.Section.requests), with: .automatic)
+        }, completion: nil)
+    }
+}
+
+// MARK: - UISearchBarDelegate
+
+extension FriendsViewController: UISearchBarDelegate {
+    func searchBarShouldBeginEditing(_ searchBar: UISearchBar) -> Bool {
+        if searchBar === placeholderSearchBar {
+            activateRealSearchController()
+            return false
+        }
+        return true
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        viewModel.searchText = ""
+        viewModel.filterFriends()
+        updateEmptyState()
+        deactivateRealSearchController()
+    }
+    
+    private func activateRealSearchController() {
+        guard let snapshotView = placeholderSearchBar.snapshotView(afterScreenUpdates: false) else {
+            activateRealSearchControllerWithoutAnimation()
+            return
+        }
+        
+        let searchBarFrame = placeholderSearchBar.convert(placeholderSearchBar.bounds, to: view)
+        snapshotView.frame = searchBarFrame
+        snapshotView.contentMode = .scaleAspectFit
+        snapshotView.clipsToBounds = true
+        view.addSubview(snapshotView)
+        
+        isUsingRealSearchController = true
+        
+        UIView.performWithoutAnimation {
+            tableView.reloadData()
+        }
+        
+        scrollToFriendsSection()
+        
+        let navBarMaxY = navigationController?.navigationBar.frame.maxY ?? 0
+        let targetY = navBarMaxY + view.safeAreaInsets.top
+        let targetFrame = CGRect(
+            x: searchBarFrame.origin.x,
+            y: targetY,
+            width: searchBarFrame.width,
+            height: searchBarFrame.height
+        )
+        
+        UIView.animate(
+            withDuration: 0.5,
+            delay: 0,
+            usingSpringWithDamping: 0.85,
+            initialSpringVelocity: 0.5,
+            options: [.curveEaseOut, .allowUserInteraction]
+        ) {
+            snapshotView.frame = targetFrame
+        }
+        
+        UIView.animate(withDuration: 0.25, delay: 0.1, options: .curveEaseOut) {
+            snapshotView.alpha = 0
+        } completion: { [weak self] _ in
+            guard let self = self else { return }
+            
+            snapshotView.removeFromSuperview()
+            
+            self.navigationItem.searchController = self.searchController
+            self.navigationItem.hidesSearchBarWhenScrolling = false
+            
+            self.view.layoutIfNeeded()
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                self.searchController.searchBar.becomeFirstResponder()
+                
+                if !self.searchController.searchBar.isFirstResponder {
+                    self.searchController.isActive = true
+                }
+            }
+        }
+    }
+    
+    private func activateRealSearchControllerWithoutAnimation() {
+        isUsingRealSearchController = true
+        
+        scrollToFriendsSection()
+        
+        UIView.performWithoutAnimation {
+            tableView.reloadData()
+        }
+        
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+        
+        DispatchQueue.main.async { [weak self] in
+            self?.searchController.searchBar.becomeFirstResponder()
+        }
+    }
+    
+    private func scrollToFriendsSection() {
+        guard friendsSection < viewModel.numberOfSections else { return }
+        
+        let sectionRect = tableView.rect(forSection: friendsSection)
+        let targetY = sectionRect.origin.y - tableView.adjustedContentInset.top
+        
+        UIView.animate(
+            withDuration: 0.5,
+            delay: 0,
+            usingSpringWithDamping: 0.9,
+            initialSpringVelocity: 0.3,
+            options: [.curveEaseOut, .allowUserInteraction]
+        ) { [weak self] in
+            self?.tableView.contentOffset = CGPoint(x: 0, y: targetY)
+        }
+    }
+    
+    private func deactivateRealSearchController() {
+        guard let snapshotView = searchController.searchBar.snapshotView(afterScreenUpdates: false) else {
+            deactivateRealSearchControllerWithoutAnimation()
+            return
+        }
+        
+        let searchBarFrame = searchController.searchBar.convert(searchController.searchBar.bounds, to: view)
+        snapshotView.frame = searchBarFrame
+        snapshotView.contentMode = .scaleAspectFit
+        snapshotView.clipsToBounds = true
+        view.addSubview(snapshotView)
+        
+        navigationItem.searchController = nil
+        
+        isUsingRealSearchController = false
+        
+        placeholderSearchBar.alpha = 0
+        UIView.performWithoutAnimation {
+            tableView.reloadData()
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let searchBarIndexPath = IndexPath(row: 0, section: self.friendsSection)
+            
+            if let cell = self.tableView.cellForRow(at: searchBarIndexPath) {
+                let targetFrame = cell.convert(cell.bounds, to: self.view)
+                
+                UIView.animate(
+                    withDuration: 0.5,
+                    delay: 0,
+                    usingSpringWithDamping: 0.85,
+                    initialSpringVelocity: 0.5,
+                    options: [.curveEaseOut, .allowUserInteraction]
+                ) {
+                    snapshotView.frame = targetFrame
+                } completion: { _ in
+                    snapshotView.removeFromSuperview()
+                    
+                    UIView.animate(withDuration: 0.2) {
+                        self.placeholderSearchBar.alpha = 1
+                    }
+                }
+            } else {
+                snapshotView.removeFromSuperview()
+                self.placeholderSearchBar.alpha = 1
+            }
+        }
+    }
+    
+    private func deactivateRealSearchControllerWithoutAnimation() {
+        navigationItem.searchController = nil
+        isUsingRealSearchController = false
+        
+        UIView.performWithoutAnimation {
+            tableView.reloadData()
+        }
+    }
+}
+
+// MARK: - UI Setup
 
 extension FriendsViewController {
     
     private func setupNavigationBar() {
-        // 創建選單按鈕
         let menuButton = UIBarButtonItem(
             image: UIImage(systemName: "line.3.horizontal.decrease.circle"),
             style: .plain,
@@ -232,26 +424,19 @@ extension FriendsViewController {
             action: nil
         )
         
-        // 設置選單
         menuButton.menu = viewModel.createMenu()
-        
-        // 設置為左側導航欄按鈕
         navigationItem.leftBarButtonItem = menuButton
     }
     
     private func setupSearchBarContainer() {
         let placeholder = "想轉一筆給誰呢？"
         
-        // 設置真實的搜尋控制器（UISearchController）
         searchController.searchResultsUpdater = self
         searchController.obscuresBackgroundDuringPresentation = false
         searchController.searchBar.placeholder = placeholder
         searchController.hidesNavigationBarDuringPresentation = false
         searchController.searchBar.delegate = self
         
-        // 不要一開始就加入導航欄，等點擊假 searchBar 時再加入
-        
-        // 設置假的搜尋列（顯示在 cell 中）
         placeholderSearchBar.searchBarStyle = .minimal
         placeholderSearchBar.placeholder = placeholder
         placeholderSearchBar.isUserInteractionEnabled = true
@@ -269,7 +454,6 @@ extension FriendsViewController {
     }
     
     private func setupHeaderView() {
-        // 設定為 TableView 的 Header
         tableView.tableHeaderView = userProfileHeaderView
     }
     
@@ -278,22 +462,17 @@ extension FriendsViewController {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.delegate = self
         tableView.dataSource = self
-        
-        // 設定 Cell 高度
         tableView.estimatedRowHeight = 80
         
-        // 設定下拉更新
         refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
         tableView.refreshControl = refreshControl
         
-        // 註冊自訂 Cells
         tableView.register(PlaceholderSearchBarTableViewCell.self, forCellReuseIdentifier: PlaceholderSearchBarTableViewCell.identifier)
         tableView.register(FriendTableViewCell.self, forCellReuseIdentifier: FriendTableViewCell.identifier)
         tableView.register(FriendRequestTableViewCell.self, forCellReuseIdentifier: FriendRequestTableViewCell.identifier)
         
         view.addSubview(tableView)
         
-        // TableView Constraints
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -311,20 +490,15 @@ extension FriendsViewController {
         
         let headerWidth = view.bounds.width
         
-        // 只有當寬度改變時才更新
         guard headerView.frame.width != headerWidth else { return }
         
-        // 更新佈局
         headerView.updateLayout(for: headerWidth)
-        
-        // 重新設定 tableHeaderView 以觸發更新
         tableView.tableHeaderView = headerView
     }
     
     private func setupEmptyStateView() {
         emptyStateView.backgroundColor = .systemBackground
         
-        // 圖示
         let iconImageView = UIImageView()
         iconImageView.image = UIImage(systemName: "person.2.slash")
         iconImageView.tintColor = .systemGray3
@@ -332,7 +506,6 @@ extension FriendsViewController {
         iconImageView.translatesAutoresizingMaskIntoConstraints = false
         emptyStateView.addSubview(iconImageView)
         
-        // 文字標籤
         let messageLabel = UILabel()
         messageLabel.text = "尚無好友"
         messageLabel.font = .systemFont(ofSize: 20, weight: .medium)
@@ -341,18 +514,15 @@ extension FriendsViewController {
         messageLabel.translatesAutoresizingMaskIntoConstraints = false
         emptyStateView.addSubview(messageLabel)
         
-        // 設置為 tableView 的 backgroundView
         tableView.backgroundView = emptyStateView
         emptyStateView.isHidden = true
         
         NSLayoutConstraint.activate([
-            // Icon
             iconImageView.centerXAnchor.constraint(equalTo: emptyStateView.centerXAnchor),
             iconImageView.centerYAnchor.constraint(equalTo: emptyStateView.centerYAnchor, constant: -30),
             iconImageView.widthAnchor.constraint(equalToConstant: 80),
             iconImageView.heightAnchor.constraint(equalToConstant: 80),
             
-            // Message
             messageLabel.topAnchor.constraint(equalTo: iconImageView.bottomAnchor, constant: 20),
             messageLabel.leadingAnchor.constraint(equalTo: emptyStateView.leadingAnchor, constant: 20),
             messageLabel.trailingAnchor.constraint(equalTo: emptyStateView.trailingAnchor, constant: -20)
@@ -371,252 +541,3 @@ extension FriendsViewController {
         ])
     }
 }
-
-// MARK: - UISearchResultsUpdating
-
-extension FriendsViewController: UISearchResultsUpdating {
-    func updateSearchResults(for searchController: UISearchController) {
-        // 更新 ViewModel 的搜尋文字並立即過濾
-        let searchText = searchController.searchBar.text ?? ""
-        viewModel.searchText = searchText
-        viewModel.filterFriends()
-        updateEmptyState()
-        tableView.reloadData()
-    }
-}
-
-// MARK: - SectionHeaderViewDelegate
-
-extension FriendsViewController: SectionHeaderViewDelegate {
-    func sectionHeaderViewDidTap(_ headerView: SectionHeaderView) {
-        // 切換展開狀態
-        isRequestsSectionExpanded.toggle()
-        
-        // 更新 header view 的箭頭圖示
-        headerView.updateArrowImage(isExpanded: isRequestsSectionExpanded)
-        
-        // 使用動畫更新 section
-        tableView.performBatchUpdates({
-            tableView.reloadSections(IndexSet(integer: FriendsViewModel.Section.requests), with: .automatic)
-        }, completion: nil)
-    }
-}
-
-// MARK: - UISearchBarDelegate
-
-extension FriendsViewController: UISearchBarDelegate {
-    func searchBarShouldBeginEditing(_ searchBar: UISearchBar) -> Bool {
-        // 如果是假的 searchBar（placeholder），切換到真實的 UISearchController
-        if searchBar === placeholderSearchBar {
-            activateRealSearchController()
-            return false // 不讓假 searchBar 進入編輯狀態
-        }
-        return true
-    }
-    
-    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
-        // 當取消搜尋時，清空搜尋文字並回到假 searchBar
-        viewModel.searchText = ""
-        viewModel.filterFriends()
-        updateEmptyState()
-        deactivateRealSearchController()
-    }
-    
-    private func activateRealSearchController() {
-        // 創建假 searchBar 的快照用於動畫
-        guard let snapshotView = placeholderSearchBar.snapshotView(afterScreenUpdates: false) else {
-            // 如果無法創建快照，直接切換
-            activateRealSearchControllerWithoutAnimation()
-            return
-        }
-        
-        // 獲取假 searchBar 在螢幕上的位置
-        let searchBarFrame = placeholderSearchBar.convert(placeholderSearchBar.bounds, to: view)
-        snapshotView.frame = searchBarFrame
-        snapshotView.contentMode = .scaleAspectFit  // 防止內容被拉伸
-        snapshotView.clipsToBounds = true
-        view.addSubview(snapshotView)
-        
-        // 標記正在使用真實的 searchController
-        isUsingRealSearchController = true
-        
-        // 立即隱藏假 searchBar cell（無動畫）
-        UIView.performWithoutAnimation {
-            tableView.reloadData()
-        }
-        
-        // 先滾動到好友 section 頂部
-        scrollToFriendsSection()
-        
-        // 計算目標位置（導航欄下方）
-        // 保持原始高度，只改變 Y 位置
-        let navBarMaxY = navigationController?.navigationBar.frame.maxY ?? 0
-        let targetY = navBarMaxY + view.safeAreaInsets.top
-        let targetFrame = CGRect(
-            x: searchBarFrame.origin.x,
-            y: targetY,
-            width: searchBarFrame.width,
-            height: searchBarFrame.height
-        )
-        
-        // 執行位移動畫（使用彈簧動畫）
-        UIView.animate(
-            withDuration: 0.5,
-            delay: 0,
-            usingSpringWithDamping: 0.85,
-            initialSpringVelocity: 0.5,
-            options: [.curveEaseOut, .allowUserInteraction]
-        ) {
-            snapshotView.frame = targetFrame
-        }
-        
-        // 同時執行淡出動畫
-        UIView.animate(withDuration: 0.25, delay: 0.1, options: .curveEaseOut) {
-            snapshotView.alpha = 0
-        } completion: { [weak self] _ in
-            guard let self = self else { return }
-            
-            // 移除快照
-            snapshotView.removeFromSuperview()
-            
-            // 動畫完成後才設定 UISearchController
-            self.navigationItem.searchController = self.searchController
-            self.navigationItem.hidesSearchBarWhenScrolling = false
-            
-            // 強制佈局更新
-            self.view.layoutIfNeeded()
-            
-            // 激活搜尋控制器並開啟鍵盤
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                // 方法 1：直接激活 searchBar
-                self.searchController.searchBar.becomeFirstResponder()
-                
-                // 方法 2：如果方法 1 不行，使用 isActive
-                if !self.searchController.searchBar.isFirstResponder {
-                    self.searchController.isActive = true
-                }
-            }
-        }
-    }
-    
-    private func activateRealSearchControllerWithoutAnimation() {
-        // 標記正在使用真實的 searchController
-        isUsingRealSearchController = true
-        
-        // 先滾動到好友 section 頂部
-        scrollToFriendsSection()
-        
-        // Reload tableView 以隱藏假 searchBar cell
-        UIView.performWithoutAnimation {
-            tableView.reloadData()
-        }
-        
-        // 將 UISearchController 加入導航欄
-        navigationItem.searchController = searchController
-        navigationItem.hidesSearchBarWhenScrolling = false
-        
-        // 立即激活搜尋列
-        DispatchQueue.main.async { [weak self] in
-            self?.searchController.searchBar.becomeFirstResponder()
-        }
-    }
-    
-    private func scrollToFriendsSection() {
-        guard friendsSection < viewModel.numberOfSections else { return }
-        
-        // 滾動到好友 section 的頂部（包含 header）
-        let sectionRect = tableView.rect(forSection: friendsSection)
-        let targetY = sectionRect.origin.y - tableView.adjustedContentInset.top
-        
-        // 使用彈簧動畫滾動
-        UIView.animate(
-            withDuration: 0.5,
-            delay: 0,
-            usingSpringWithDamping: 0.9,
-            initialSpringVelocity: 0.3,
-            options: [.curveEaseOut, .allowUserInteraction]
-        ) { [weak self] in
-            self?.tableView.contentOffset = CGPoint(x: 0, y: targetY)
-        }
-    }
-    
-    private func deactivateRealSearchController() {
-        // 創建真實 searchBar 的快照用於動畫
-        guard let snapshotView = searchController.searchBar.snapshotView(afterScreenUpdates: false) else {
-            // 如果無法創建快照，直接切換
-            deactivateRealSearchControllerWithoutAnimation()
-            return
-        }
-        
-        // 獲取真實 searchBar 在螢幕上的位置
-        let searchBarFrame = searchController.searchBar.convert(searchController.searchBar.bounds, to: view)
-        snapshotView.frame = searchBarFrame
-        snapshotView.contentMode = .scaleAspectFit  // 防止內容被拉伸
-        snapshotView.clipsToBounds = true
-        view.addSubview(snapshotView)
-        
-        // 立即移除 UISearchController（無動畫）
-        navigationItem.searchController = nil
-        
-        // 標記不再使用真實的 searchController
-        isUsingRealSearchController = false
-        
-        // Reload tableView 以顯示假 searchBar cell（先隱藏）
-        placeholderSearchBar.alpha = 0
-        UIView.performWithoutAnimation {
-            tableView.reloadData()
-        }
-        
-        // 計算目標位置（假 searchBar cell 的位置）
-        // 需要等 tableView reload 完成後才能獲取正確位置
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            // 找到假 searchBar cell 的位置
-            let searchBarIndexPath = IndexPath(row: 0, section: self.friendsSection)
-            
-            // 確保 cell 存在
-            if let cell = self.tableView.cellForRow(at: searchBarIndexPath) {
-                let targetFrame = cell.convert(cell.bounds, to: self.view)
-                
-                // 執行位移動畫（使用彈簧動畫）
-                UIView.animate(
-                    withDuration: 0.5,
-                    delay: 0,
-                    usingSpringWithDamping: 0.85,
-                    initialSpringVelocity: 0.5,
-                    options: [.curveEaseOut, .allowUserInteraction]
-                ) {
-                    snapshotView.frame = targetFrame
-                } completion: { _ in
-                    // 移除快照
-                    snapshotView.removeFromSuperview()
-                    
-                    // 淡入顯示假 searchBar
-                    UIView.animate(withDuration: 0.2) {
-                        self.placeholderSearchBar.alpha = 1
-                    }
-                }
-            } else {
-                // 如果找不到 cell，直接移除快照並顯示假 searchBar
-                snapshotView.removeFromSuperview()
-                self.placeholderSearchBar.alpha = 1
-            }
-        }
-    }
-    
-    private func deactivateRealSearchControllerWithoutAnimation() {
-        // 從導航欄移除 UISearchController
-        navigationItem.searchController = nil
-        
-        // 標記不再使用真實的 searchController
-        isUsingRealSearchController = false
-        
-        // Reload tableView 以顯示假 searchBar cell
-        UIView.performWithoutAnimation {
-            tableView.reloadData()
-        }
-    }
-}
-
-

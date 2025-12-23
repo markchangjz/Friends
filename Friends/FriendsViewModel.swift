@@ -70,6 +70,14 @@ class FriendsViewModel {
     var hasFilteredFriends: Bool {
         return hasFriendRequests || hasConfirmedFriends
     }
+    
+    var hasFriendRequests: Bool {
+        return !displayRequestFriends.isEmpty
+    }
+    
+    var hasConfirmedFriends: Bool {
+        return !displayConfirmedFriends.isEmpty
+    }
 
     // MARK: - Private Properties
     
@@ -98,14 +106,6 @@ class FriendsViewModel {
     // 要顯示的資料（根據搜尋過濾後）
     private(set) var displayRequestFriends: [Friend] = []
     private(set) var displayConfirmedFriends: [Friend] = []
-    
-    var hasFriendRequests: Bool {
-        return !displayRequestFriends.isEmpty
-    }
-    
-    var hasConfirmedFriends: Bool {
-        return !displayConfirmedFriends.isEmpty
-    }
     
     // MARK: - Initialization
     
@@ -181,39 +181,6 @@ class FriendsViewModel {
                 }
             }
         }
-    }
-    
-    /// 非同步取得好友資料（內部方法）
-    private func fetchFriendsData(for option: ViewOption) async throws -> [Friend] {
-        var friendsData: [Friend]
-        
-        switch option {
-        case .noFriends:
-            friendsData = try await apiService.fetchFriends_noFriends()
-        case .friendsListWithInvitation:
-            friendsData = try await apiService.fetchFriends_hasFriends_hasInvitation()
-        case .friendsListOnly:
-            // 並行取得兩個資料來源
-            async let friends1 = apiService.fetchFriends1()
-            async let friends2 = apiService.fetchFriends2()
-            let (list1, list2) = try await (friends1, friends2)
-            friendsData = mergeFriends(list1, list2)
-        }
-        
-        friendsData.sort { lhs, rhs in
-            // 優先級 1: isTop (true 在前)
-            if lhs.isTop != rhs.isTop {
-                return lhs.isTop
-            }
-            // 優先級 2: updateDate (新到舊)
-            if lhs.updateDate != rhs.updateDate {
-                return lhs.updateDate > rhs.updateDate
-            }
-            // 優先級 3: fid (小到大)
-            return lhs.fid < rhs.fid
-        }
-        
-        return friendsData
     }
     
     func selectOption(_ option: ViewOption) {
@@ -293,19 +260,6 @@ class FriendsViewModel {
         }
     }
     
-    // MARK: - Private Methods
-    
-    private func processFriendsData(_ friendsData: [Friend]) {
-        self.allFriends = friendsData
-        
-        // 分類：status = .requestSent 為邀請，status = .accepted 或 .pending 為已確認好友
-        self.allRequestFriends = friendsData.filter { $0.status == .requestSent }
-        self.allConfirmedFriends = friendsData.filter { $0.status == .accepted || $0.status == .pending }
-        
-        // 初始化時套用當前的搜尋條件
-        filterFriends()
-    }
-    
     /// 根據搜尋文字過濾好友資料
     func filterFriends() {
         if searchText.isEmpty {
@@ -322,6 +276,52 @@ class FriendsViewModel {
                 $0.name.lowercased().contains(lowercasedSearch) 
             }
         }
+    }
+    
+    // MARK: - Private Methods
+    
+    /// 非同步取得好友資料（內部方法）
+    private func fetchFriendsData(for option: ViewOption) async throws -> [Friend] {
+        var friendsData: [Friend]
+        
+        switch option {
+        case .noFriends:
+            friendsData = try await apiService.fetchFriends_noFriends()
+        case .friendsListWithInvitation:
+            friendsData = try await apiService.fetchFriends_hasFriends_hasInvitation()
+        case .friendsListOnly:
+            // 並行取得兩個資料來源
+            async let friends1 = apiService.fetchFriends1()
+            async let friends2 = apiService.fetchFriends2()
+            let (list1, list2) = try await (friends1, friends2)
+            friendsData = mergeFriends(list1, list2)
+        }
+        
+        friendsData.sort { lhs, rhs in
+            // 優先級 1: isTop (true 在前)
+            if lhs.isTop != rhs.isTop {
+                return lhs.isTop
+            }
+            // 優先級 2: updateDate (新到舊)
+            if lhs.updateDate != rhs.updateDate {
+                return lhs.updateDate > rhs.updateDate
+            }
+            // 優先級 3: fid (小到大)
+            return lhs.fid < rhs.fid
+        }
+        
+        return friendsData
+    }
+    
+    private func processFriendsData(_ friendsData: [Friend]) {
+        self.allFriends = friendsData
+        
+        // 分類：status = .requestSent 為邀請，status = .accepted 或 .pending 為已確認好友
+        self.allRequestFriends = friendsData.filter { $0.status == .requestSent }
+        self.allConfirmedFriends = friendsData.filter { $0.status == .accepted || $0.status == .pending }
+        
+        // 初始化時套用當前的搜尋條件
+        filterFriends()
     }
     
     /// 合併多個好友資料來源，當 fid 相同時保留 updateDate 最新的
