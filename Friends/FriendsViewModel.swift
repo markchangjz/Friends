@@ -32,8 +32,8 @@ class FriendsViewModel {
     // 搜尋文字 - 使用 @Published 自動發布變更
     @Published var searchText: String = ""
     
-    // 資料載入狀態 - 使用 PassthroughSubject 發布事件
-    let dataLoadedPublisher = PassthroughSubject<Void, Never>()
+    // 使用者資料載入狀態 - 使用 PassthroughSubject 發布事件
+    let userProfileDataLoadedPublisher = PassthroughSubject<Void, Never>()
     
     // 好友資料載入完成 - 使用 PassthroughSubject 發布事件
     let friendsDataLoadedPublisher = PassthroughSubject<Void, Never>()
@@ -104,7 +104,7 @@ class FriendsViewModel {
                 await MainActor.run {
                     self.userName = person.name
                     self.userKokoId = person.kokoid
-                    self.dataLoadedPublisher.send()
+                    self.userProfileDataLoadedPublisher.send()
                 }
             } catch {
                 await MainActor.run {
@@ -150,7 +150,7 @@ class FriendsViewModel {
                     // 更新使用者資料
                     self.userName = person.name
                     self.userKokoId = person.kokoid
-                    self.dataLoadedPublisher.send()
+                    self.userProfileDataLoadedPublisher.send()
                     
                     // 更新好友資料
                     self.processFriendsData(friendsData)

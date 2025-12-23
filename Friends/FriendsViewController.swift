@@ -81,8 +81,8 @@ class FriendsViewController: UIViewController {
             }
             .store(in: &cancellables)
         
-        // 使用 Combine 訂閱資料載入完成
-        viewModel.dataLoadedPublisher
+        // 使用 Combine 訂閱使用者資料載入完成
+        viewModel.userProfileDataLoadedPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
                 self?.updateHeaderView()
