@@ -18,9 +18,6 @@ class FriendsViewController: UIViewController {
     // Combine 訂閱管理
     private var cancellables = Set<AnyCancellable>()
     
-    // 選單按鈕引用
-    private var menuButton: UIBarButtonItem?
-    
     // 搜尋控制器（用於實際搜尋）
     private let searchController = UISearchController()
     
@@ -74,7 +71,7 @@ class FriendsViewController: UIViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] option in
                 // 更新選單狀態
-                self?.menuButton?.menu = self?.viewModel.createMenu()
+                self?.navigationItem.leftBarButtonItem?.menu = self?.viewModel.createMenu()
                 // 顯示 loading 並同時載入使用者資料和好友資料
                 self?.showLoading()
                 self?.viewModel.loadAllData(for: option)
@@ -251,9 +248,6 @@ extension FriendsViewController {
         
         // 設置選單
         menuButton.menu = viewModel.createMenu()
-        
-        // 保存引用以便後續更新
-        self.menuButton = menuButton
         
         // 設置為左側導航欄按鈕
         navigationItem.leftBarButtonItem = menuButton
