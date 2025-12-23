@@ -20,6 +20,12 @@ class FriendsViewModel {
         case friendsListWithInvitation = "好友列表含邀請"
     }
     
+    // Section 索引常數
+    enum Section {
+        static let requests = 0
+        static let friends = 1
+    }
+    
     // MARK: - Public Properties
     
     // 用戶資料
@@ -243,14 +249,14 @@ class FriendsViewModel {
         guard section < numberOfSections else { return 0 }
         
         if hasFriendRequests {
-            return section == 0 ? friendRequests.count : confirmedFriends.count
+            return section == Section.requests ? friendRequests.count : confirmedFriends.count
         } else {
             return confirmedFriends.count
         }
     }
     
     func isRequestSection(_ section: Int) -> Bool {
-        return hasFriendRequests && section == 0
+        return hasFriendRequests && section == Section.requests
     }
     
     func friendRequest(at index: Int) -> Friend? {
@@ -267,7 +273,7 @@ class FriendsViewModel {
         guard section < numberOfSections else { return nil }
         
         if hasFriendRequests {
-            return section == 0 ? "Requests" : "Friends"
+            return section == Section.requests ? "Requests" : "Friends"
         } else if hasConfirmedFriends {
             return "Friends"
         } else {

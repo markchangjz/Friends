@@ -395,12 +395,9 @@ extension FriendsViewController: SectionHeaderViewDelegate {
         // 更新 header view 的箭頭圖示
         headerView.updateArrowImage(isExpanded: isRequestsSectionExpanded)
         
-        // 取得 Requests section 的索引
-        let requestsSection = 0
-        
         // 使用動畫更新 section
         tableView.performBatchUpdates({
-            tableView.reloadSections(IndexSet(integer: requestsSection), with: .automatic)
+            tableView.reloadSections(IndexSet(integer: FriendsViewModel.Section.requests), with: .automatic)
         }, completion: nil)
     }
 }
