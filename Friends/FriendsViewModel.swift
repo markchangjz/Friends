@@ -100,10 +100,10 @@ class FriendsViewModel {
     func loadUserData() {
         Task {
             do {
-                let person = try await apiService.fetchManData()
+                let userProfile = try await apiService.fetchUserProfile()
                 await MainActor.run {
-                    self.userName = person.name
-                    self.userKokoId = person.kokoid
+                    self.userName = userProfile.name
+                    self.userKokoId = userProfile.kokoid
                     self.userProfileDataLoadedPublisher.send()
                 }
             } catch {
@@ -139,17 +139,17 @@ class FriendsViewModel {
         Task {
             do {
                 // 並行執行兩個 API 呼叫
-                async let personTask = apiService.fetchManData()
+                async let userProfileTask = apiService.fetchUserProfile()
                 async let friendsTask = fetchFriendsData(for: option)
                 
                 // 等待兩個 API 都完成
-                let (person, friendsData) = try await (personTask, friendsTask)
+                let (userProfile, friendsData) = try await (userProfileTask, friendsTask)
                 
                 // 所有資料都載入完成後，一起更新 UI
                 await MainActor.run {
                     // 更新使用者資料
-                    self.userName = person.name
-                    self.userKokoId = person.kokoid
+                    self.userName = userProfile.name
+                    self.userKokoId = userProfile.kokoid
                     self.userProfileDataLoadedPublisher.send()
                     
                     // 更新好友資料
@@ -171,15 +171,15 @@ class FriendsViewModel {
         
         switch option {
         case .noFriends:
-            friendsData = try await apiService.fetchFriendsData_noFriends()
+            friendsData = try await apiService.fetchFriends_noFriends()
         case .friendsListWithInvitation:
-            friendsData = try await apiService.fetchFriendsData_hasFriends_hasInvitation()
+            friendsData = try await apiService.fetchFriends_hasFriends_hasInvitation()
         case .friendsListOnly:
             // 並行取得兩個資料來源
-            async let friendsData1 = apiService.fetchFriendsData1()
-            async let friendsData2 = apiService.fetchFriendsData2()
-            let (data1, data2) = try await (friendsData1, friendsData2)
-            friendsData = mergeFriends(data1, data2)
+            async let friends1 = apiService.fetchFriends1()
+            async let friends2 = apiService.fetchFriends2()
+            let (list1, list2) = try await (friends1, friends2)
+            friendsData = mergeFriends(list1, list2)
         }
         
         friendsData.sort { lhs, rhs in

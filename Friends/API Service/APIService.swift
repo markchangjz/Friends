@@ -9,11 +9,11 @@ import Foundation
 
 // MARK: - Protocol
 protocol APIServiceProtocol {
-    func fetchManData() async throws -> Person
-    func fetchFriendsData_noFriends() async throws -> [Friend]
-    func fetchFriendsData_hasFriends_hasInvitation() async throws -> [Friend]
-    func fetchFriendsData1() async throws -> [Friend]
-    func fetchFriendsData2() async throws -> [Friend]
+    func fetchUserProfile() async throws -> Person
+    func fetchFriends_noFriends() async throws -> [Friend]
+    func fetchFriends_hasFriends_hasInvitation() async throws -> [Friend]
+    func fetchFriends1() async throws -> [Friend]
+    func fetchFriends2() async throws -> [Friend]
 }
 
 // MARK: - APIService Implementation
@@ -21,35 +21,35 @@ class APIService: APIServiceProtocol {
     
     // MARK: - Public Methods
     
-    func fetchManData() async throws -> Person {
+    func fetchUserProfile() async throws -> Person {
         return try await fetchData(
             fileName: "man",
             delaySeconds: 0.3
         )
     }
     
-    func fetchFriendsData_noFriends() async throws -> [Friend] {
+    func fetchFriends_noFriends() async throws -> [Friend] {
         return try await fetchFriendsData(
             fileName: "friend4",
             delaySeconds: 0.5
         )
     }
     
-    func fetchFriendsData_hasFriends_hasInvitation() async throws -> [Friend] {
+    func fetchFriends_hasFriends_hasInvitation() async throws -> [Friend] {
         return try await fetchFriendsData(
             fileName: "friend3",
             delaySeconds: 0.5
         )
     }
     
-    func fetchFriendsData1() async throws -> [Friend] {
+    func fetchFriends1() async throws -> [Friend] {
         return try await fetchFriendsData(
             fileName: "friend1",
             delaySeconds: 0.5
         )
     }
     
-    func fetchFriendsData2() async throws -> [Friend] {
+    func fetchFriends2() async throws -> [Friend] {
         return try await fetchFriendsData(
             fileName: "friend2",
             delaySeconds: 0.5
