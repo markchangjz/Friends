@@ -50,7 +50,7 @@ class FriendsViewModel {
     // Section 計算
     var numberOfSections: Int {
         // 如果原始資料就是空的（沒有載入過資料），返回 0
-        if allFriendRequests.isEmpty && allConfirmedFriends.isEmpty {
+        if allRequestFriends.isEmpty && allConfirmedFriends.isEmpty {
             return 0
         }
         
@@ -64,7 +64,7 @@ class FriendsViewModel {
     
     // 是否有任何好友資料（包含邀請和已確認好友）
     var hasFriends: Bool {
-        return !friends.isEmpty
+        return !allFriends.isEmpty
     }
     
     var hasFilteredFriends: Bool {
@@ -76,23 +76,35 @@ class FriendsViewModel {
     // API Service
     private let apiService: APIServiceProtocol
     
-    // 好友資料
-    private(set) var friends: [Friend] = []
+    /*
+    allFriends: [Friend]              // 所有好友（未分類）- 從 API 載入
+        ↓ 分類
+    ├── allRequestFriends: [Friend]   // 所有請求狀態的好友
+    │   ↓ 過濾/搜尋
+    │   └── displayRequestFriends     // 要顯示的請求好友
+    │
+    └── allConfirmedFriends: [Friend] // 所有已確認的好友
+        ↓ 過濾/搜尋
+        └── displayConfirmedFriends   // 要顯示的已確認好友
+    */
     
-    // 原始未過濾的資料
-    private var allFriendRequests: [Friend] = []
+    // 所有好友資料（未分類）
+    private(set) var allFriends: [Friend] = []
+    
+    // 原始未過濾的資料（已分類）
+    private var allRequestFriends: [Friend] = []
     private var allConfirmedFriends: [Friend] = []
     
-    // 根據搜尋過濾後的資料
-    private(set) var friendRequests: [Friend] = []
-    private(set) var confirmedFriends: [Friend] = []
+    // 要顯示的資料（根據搜尋過濾後）
+    private(set) var displayRequestFriends: [Friend] = []
+    private(set) var displayConfirmedFriends: [Friend] = []
     
     var hasFriendRequests: Bool {
-        return !friendRequests.isEmpty
+        return !displayRequestFriends.isEmpty
     }
     
     var hasConfirmedFriends: Bool {
-        return !confirmedFriends.isEmpty
+        return !displayConfirmedFriends.isEmpty
     }
     
     // MARK: - Initialization
@@ -249,9 +261,9 @@ class FriendsViewModel {
         guard section < numberOfSections else { return 0 }
         
         if hasFriendRequests {
-            return section == Section.requests ? friendRequests.count : confirmedFriends.count
+            return section == Section.requests ? displayRequestFriends.count : displayConfirmedFriends.count
         } else {
-            return confirmedFriends.count
+            return displayConfirmedFriends.count
         }
     }
     
@@ -260,13 +272,13 @@ class FriendsViewModel {
     }
     
     func friendRequest(at index: Int) -> Friend? {
-        guard friendRequests.indices.contains(index) else { return nil }
-        return friendRequests[index]
+        guard displayRequestFriends.indices.contains(index) else { return nil }
+        return displayRequestFriends[index]
     }
     
     func confirmedFriend(at index: Int) -> Friend? {
-        guard confirmedFriends.indices.contains(index) else { return nil }
-        return confirmedFriends[index]
+        guard displayConfirmedFriends.indices.contains(index) else { return nil }
+        return displayConfirmedFriends[index]
     }
     
     func titleForHeader(in section: Int) -> String? {
@@ -284,10 +296,10 @@ class FriendsViewModel {
     // MARK: - Private Methods
     
     private func processFriendsData(_ friendsData: [Friend]) {
-        self.friends = friendsData
+        self.allFriends = friendsData
         
         // 分類：status = .requestSent 為邀請，status = .accepted 或 .pending 為已確認好友
-        self.allFriendRequests = friendsData.filter { $0.status == .requestSent }
+        self.allRequestFriends = friendsData.filter { $0.status == .requestSent }
         self.allConfirmedFriends = friendsData.filter { $0.status == .accepted || $0.status == .pending }
         
         // 初始化時套用當前的搜尋條件
@@ -298,15 +310,15 @@ class FriendsViewModel {
     func filterFriends() {
         if searchText.isEmpty {
             // 沒有搜尋文字，顯示所有資料
-            friendRequests = allFriendRequests
-            confirmedFriends = allConfirmedFriends
+            displayRequestFriends = allRequestFriends
+            displayConfirmedFriends = allConfirmedFriends
         } else {
             // 有搜尋文字，根據 name 進行過濾（不區分大小寫）
             let lowercasedSearch = searchText.lowercased()
-            friendRequests = allFriendRequests.filter { 
+            displayRequestFriends = allRequestFriends.filter { 
                 $0.name.lowercased().contains(lowercasedSearch) 
             }
-            confirmedFriends = allConfirmedFriends.filter { 
+            displayConfirmedFriends = allConfirmedFriends.filter { 
                 $0.name.lowercased().contains(lowercasedSearch) 
             }
         }
