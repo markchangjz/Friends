@@ -57,10 +57,20 @@ class EmptyStateView: UIView {
             iconImageView.widthAnchor.constraint(equalToConstant: 80),
             iconImageView.heightAnchor.constraint(equalToConstant: 80),
             
-            // Message
+            // Message - 使用 centerX 而非 leading/trailing，避免與 backgroundView 的自動 frame 管理衝突
             messageLabel.topAnchor.constraint(equalTo: iconImageView.bottomAnchor, constant: 20),
-            messageLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
-            messageLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20)
+            messageLabel.centerXAnchor.constraint(equalTo: centerXAnchor)
+        ])
+        
+        // 設置較低優先級的寬度約束，避免與 backgroundView 的自動管理衝突
+        let leadingConstraint = messageLabel.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 20)
+        let trailingConstraint = messageLabel.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -20)
+        leadingConstraint.priority = .defaultHigh
+        trailingConstraint.priority = .defaultHigh
+        
+        NSLayoutConstraint.activate([
+            leadingConstraint,
+            trailingConstraint
         ])
     }
     
