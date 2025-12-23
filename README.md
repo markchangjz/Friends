@@ -23,13 +23,6 @@
 - **Protocol-Oriented Programming**：使用 Protocol 實現依賴注入，便於測試
 - **Combine Framework**：響應式程式設計，處理資料流和狀態更新
 
-### 主要技術
-- **語言**：Swift 5.0+
-- **UI Framework**：UIKit (不使用 SwiftUI)
-- **非同步處理**：async/await
-- **響應式程式設計**：Combine
-- **測試框架**：XCTest
-
 ### 架構說明
 
 ```
