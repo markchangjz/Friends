@@ -38,7 +38,7 @@ class FriendsViewController: UIViewController {
     // UI 元件
     private lazy var userProfileHeaderView = UserProfileHeaderView(width: view.bounds.width)
     private let tableView = UITableView()
-    private let emptyStateView = UIView()
+    private let emptyStateView = EmptyStateView()
     private let refreshControl = UIRefreshControl()
     private let loadingIndicator = UIActivityIndicatorView(style: .large)
 
@@ -497,36 +497,8 @@ extension FriendsViewController {
     }
     
     private func setupEmptyStateView() {
-        emptyStateView.backgroundColor = .systemBackground
-        
-        let iconImageView = UIImageView()
-        iconImageView.image = UIImage(systemName: "person.2.slash")
-        iconImageView.tintColor = .systemGray3
-        iconImageView.contentMode = .scaleAspectFit
-        iconImageView.translatesAutoresizingMaskIntoConstraints = false
-        emptyStateView.addSubview(iconImageView)
-        
-        let messageLabel = UILabel()
-        messageLabel.text = "尚無好友"
-        messageLabel.font = .systemFont(ofSize: 20, weight: .medium)
-        messageLabel.textColor = .systemGray
-        messageLabel.textAlignment = .center
-        messageLabel.translatesAutoresizingMaskIntoConstraints = false
-        emptyStateView.addSubview(messageLabel)
-        
         tableView.backgroundView = emptyStateView
         emptyStateView.isHidden = true
-        
-        NSLayoutConstraint.activate([
-            iconImageView.centerXAnchor.constraint(equalTo: emptyStateView.centerXAnchor),
-            iconImageView.centerYAnchor.constraint(equalTo: emptyStateView.centerYAnchor, constant: -30),
-            iconImageView.widthAnchor.constraint(equalToConstant: 80),
-            iconImageView.heightAnchor.constraint(equalToConstant: 80),
-            
-            messageLabel.topAnchor.constraint(equalTo: iconImageView.bottomAnchor, constant: 20),
-            messageLabel.leadingAnchor.constraint(equalTo: emptyStateView.leadingAnchor, constant: 20),
-            messageLabel.trailingAnchor.constraint(equalTo: emptyStateView.trailingAnchor, constant: -20)
-        ])
     }
     
     private func setupLoadingIndicator() {
