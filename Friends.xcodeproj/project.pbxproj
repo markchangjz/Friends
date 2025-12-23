@@ -14,19 +14,11 @@
 			remoteGlobalIDString = 0D3408F72EF9041A0018873D;
 			remoteInfo = Friends;
 		};
-		0D3409192EF9041B0018873D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0D3408F02EF9041A0018873D /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 0D3408F72EF9041A0018873D;
-			remoteInfo = Friends;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		0D3408F82EF9041A0018873D /* Friends.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Friends.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0D34090E2EF9041B0018873D /* FriendsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FriendsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		0D3409182EF9041B0018873D /* FriendsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FriendsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -75,13 +67,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		0D3409152EF9041B0018873D /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -100,7 +85,6 @@
 			children = (
 				0D3408F82EF9041A0018873D /* Friends.app */,
 				0D34090E2EF9041B0018873D /* FriendsTests.xctest */,
-				0D3409182EF9041B0018873D /* FriendsUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -153,29 +137,6 @@
 			productReference = 0D34090E2EF9041B0018873D /* FriendsTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		0D3409172EF9041B0018873D /* FriendsUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 0D3409292EF9041B0018873D /* Build configuration list for PBXNativeTarget "FriendsUITests" */;
-			buildPhases = (
-				0D3409142EF9041B0018873D /* Sources */,
-				0D3409152EF9041B0018873D /* Frameworks */,
-				0D3409162EF9041B0018873D /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				0D34091A2EF9041B0018873D /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				0D34091B2EF9041B0018873D /* FriendsUITests */,
-			);
-			name = FriendsUITests;
-			packageProductDependencies = (
-			);
-			productName = FriendsUITests;
-			productReference = 0D3409182EF9041B0018873D /* FriendsUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -190,10 +151,6 @@
 						CreatedOnToolsVersion = 26.2;
 					};
 					0D34090D2EF9041B0018873D = {
-						CreatedOnToolsVersion = 26.2;
-						TestTargetID = 0D3408F72EF9041A0018873D;
-					};
-					0D3409172EF9041B0018873D = {
 						CreatedOnToolsVersion = 26.2;
 						TestTargetID = 0D3408F72EF9041A0018873D;
 					};
@@ -215,7 +172,6 @@
 			targets = (
 				0D3408F72EF9041A0018873D /* Friends */,
 				0D34090D2EF9041B0018873D /* FriendsTests */,
-				0D3409172EF9041B0018873D /* FriendsUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -229,13 +185,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		0D34090C2EF9041B0018873D /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		0D3409162EF9041B0018873D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -259,13 +208,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		0D3409142EF9041B0018873D /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -273,11 +215,6 @@
 			isa = PBXTargetDependency;
 			target = 0D3408F72EF9041A0018873D /* Friends */;
 			targetProxy = 0D34090F2EF9041B0018873D /* PBXContainerItemProxy */;
-		};
-		0D34091A2EF9041B0018873D /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 0D3408F72EF9041A0018873D /* Friends */;
-			targetProxy = 0D3409192EF9041B0018873D /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -309,10 +246,7 @@
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -345,10 +279,7 @@
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -415,6 +346,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -471,6 +403,7 @@
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 5.0;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -488,11 +421,13 @@
 				PRODUCT_BUNDLE_IDENTIFIER = tw.com.markchang.FriendsTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Friends.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Friends";
 			};
 			name = Debug;
@@ -510,54 +445,14 @@
 				PRODUCT_BUNDLE_IDENTIFIER = tw.com.markchang.FriendsTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Friends.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Friends";
-			};
-			name = Release;
-		};
-		0D34092A2EF9041B0018873D /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = YUGD848NC2;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = tw.com.markchang.FriendsUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = Friends;
-			};
-			name = Debug;
-		};
-		0D34092B2EF9041B0018873D /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = YUGD848NC2;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = tw.com.markchang.FriendsUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = Friends;
 			};
 			name = Release;
 		};
@@ -587,15 +482,6 @@
 			buildConfigurations = (
 				0D3409272EF9041B0018873D /* Debug */,
 				0D3409282EF9041B0018873D /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		0D3409292EF9041B0018873D /* Build configuration list for PBXNativeTarget "FriendsUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				0D34092A2EF9041B0018873D /* Debug */,
-				0D34092B2EF9041B0018873D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
