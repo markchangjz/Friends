@@ -45,11 +45,6 @@
 			path = FriendsTests;
 			sourceTree = "<group>";
 		};
-		0D34091B2EF9041B0018873D /* FriendsUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = FriendsUITests;
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,7 +70,6 @@
 			children = (
 				0D3408FA2EF9041A0018873D /* Friends */,
 				0D3409112EF9041B0018873D /* FriendsTests */,
-				0D34091B2EF9041B0018873D /* FriendsUITests */,
 				0D3408F92EF9041A0018873D /* Products */,
 			);
 			sourceTree = "<group>";
