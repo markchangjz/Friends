@@ -90,7 +90,7 @@ class FriendsViewController: UIViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
                 guard let self else { return }
-                updateUIState()
+                updateEmptyState()
                 tableView.reloadData()
                 refreshControl.endRefreshing()
                 loadingIndicator.stopAnimating()
@@ -114,19 +114,11 @@ class FriendsViewController: UIViewController {
         viewModel.loadAllData(for: viewModel.selectedOption)
     }
     
-    private func updateUIState() {
-        // 根據實際載入的好友資料數量決定 UI 顯示狀態
-        tableView.isHidden = false
-        
+    private func updateEmptyState() {
         // 只有在沒有原始資料時才顯示「尚無好友」
         // 如果有原始資料但搜尋結果為空，只顯示空白 TableView
-        if viewModel.hasFriends {
-            // 有原始資料，隱藏空狀態（即使搜尋結果為空也只顯示空白 TableView）
-            emptyStateView.isHidden = true
-        } else {
-            // 沒有原始資料，顯示空狀態畫面
-            emptyStateView.isHidden = false
-        }
+        tableView.isHidden = false
+        emptyStateView.isHidden = viewModel.hasFriends
     }
     
     private func showLoading() {
@@ -394,7 +386,7 @@ extension FriendsViewController: UISearchResultsUpdating {
         let searchText = searchController.searchBar.text ?? ""
         viewModel.searchText = searchText
         viewModel.filterFriends()
-        updateUIState()
+        updateEmptyState()
         tableView.reloadData()
     }
 }
@@ -435,7 +427,7 @@ extension FriendsViewController: UISearchBarDelegate {
         // 當取消搜尋時，清空搜尋文字並回到假 searchBar
         viewModel.searchText = ""
         viewModel.filterFriends()
-        updateUIState()
+        updateEmptyState()
         deactivateRealSearchController()
     }
     
