@@ -30,6 +30,9 @@ class FriendsViewController: UIViewController {
     // 追蹤是否正在使用真實的 searchController
     private var isUsingRealSearchController = false
     
+    // 追蹤 Requests section 是否展開
+    private var isRequestsSectionExpanded = true
+    
     // 計算好友 section 的索引
     private var friendsSection: Int {
         return viewModel.friendRequests.isEmpty ? 0 : 1
@@ -143,9 +146,9 @@ extension FriendsViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // 如果是好友 section，根據是否使用真實 searchController 決定是否顯示假 searchBar
+        // 如果是好友請求 section，根據展開狀態決定是否顯示資料
         if viewModel.isRequestSection(section) {
-            return viewModel.numberOfRows(in: section)
+            return isRequestsSectionExpanded ? viewModel.numberOfRows(in: section) : 0
         } else {
             // 如果正在使用真實的 searchController，不顯示假 searchBar cell
             let searchBarCount = isUsingRealSearchController ? 0 : 1
@@ -192,6 +195,28 @@ extension FriendsViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         return viewModel.titleForHeader(in: section)
+    }
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        // 只為 Requests section 創建自定義 header
+        guard viewModel.isRequestSection(section),
+              let title = viewModel.titleForHeader(in: section) else {
+            return nil
+        }
+        
+        let headerView = RequestsSectionHeaderView()
+        headerView.delegate = self
+        headerView.configure(title: title, isExpanded: isRequestsSectionExpanded)
+        
+        return headerView
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        // 為 Requests section 設置固定高度
+        if viewModel.isRequestSection(section) {
+            return 44
+        }
+        return UITableView.automaticDimension
     }
 }
 
@@ -435,6 +460,26 @@ extension FriendsViewController: UISearchResultsUpdating {
         viewModel.filterFriends()
         updateUIState()
         tableView.reloadData()
+    }
+}
+
+// MARK: - RequestsSectionHeaderViewDelegate
+
+extension FriendsViewController: RequestsSectionHeaderViewDelegate {
+    func requestsSectionHeaderViewDidTap(_ headerView: RequestsSectionHeaderView) {
+        // 切換展開狀態
+        isRequestsSectionExpanded.toggle()
+        
+        // 更新 header view 的箭頭圖示
+        headerView.updateArrowImage(isExpanded: isRequestsSectionExpanded)
+        
+        // 取得 Requests section 的索引
+        let requestsSection = 0
+        
+        // 使用動畫更新 section
+        tableView.performBatchUpdates({
+            tableView.reloadSections(IndexSet(integer: requestsSection), with: .automatic)
+        }, completion: nil)
     }
 }
 
