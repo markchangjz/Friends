@@ -67,11 +67,12 @@ class FriendsViewController: UIViewController {
             .dropFirst()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] option in
+                guard let self else { return }
                 // 更新選單狀態
-                self?.navigationItem.leftBarButtonItem?.menu = self?.viewModel.createMenu()
+                navigationItem.leftBarButtonItem?.menu = viewModel.createMenu()
                 // 顯示 loading 並同時載入使用者資料和好友資料
-                self?.showLoading()
-                self?.viewModel.loadAllData(for: option)
+                showLoading()
+                viewModel.loadAllData(for: option)
             }
             .store(in: &cancellables)
         
@@ -79,7 +80,8 @@ class FriendsViewController: UIViewController {
         viewModel.userProfileDataLoadedPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
-                self?.updateUserProfileHeaderView()
+                guard let self else { return }
+                updateUserProfileHeaderView()
             }
             .store(in: &cancellables)
         
@@ -87,10 +89,11 @@ class FriendsViewController: UIViewController {
         viewModel.friendsDataLoadedPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
-                self?.updateUIState()
-                self?.tableView.reloadData()
-                self?.refreshControl.endRefreshing()
-                self?.loadingIndicator.stopAnimating()
+                guard let self else { return }
+                updateUIState()
+                tableView.reloadData()
+                refreshControl.endRefreshing()
+                loadingIndicator.stopAnimating()
             }
             .store(in: &cancellables)
         
@@ -98,8 +101,8 @@ class FriendsViewController: UIViewController {
         viewModel.errorPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] error in
-                print("載入資料失敗：\(error.localizedDescription)")
-                self?.showErrorAlert(message: error.localizedDescription)
+                guard let self else { return }
+                showErrorAlert(message: error.localizedDescription)
             }
             .store(in: &cancellables)
     }
