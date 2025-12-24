@@ -39,10 +39,11 @@ struct Friend: Decodable {
         fid = try container.decode(String.self, forKey: .fid)
         
         // 解析 updateDate：支援 "yyyy/MM/dd" 或 "yyyyMMdd" 格式
-        if let updateDateString = try? container.decode(String.self, forKey: .updateDate) {
-            updateDate = Self.parseDate(from: updateDateString)
+        if let updateDateString = try? container.decode(String.self, forKey: .updateDate),
+           let date = DateParser.parse(dateString: updateDateString) {
+            updateDate = date
         } else {
-            updateDate = Date() // 如果無法解碼字串，使用今天日期
+            updateDate = Date() // 如果無法解碼字串或解析失敗，使用今天日期
         }
         
         // 將 status Int 轉換成 FriendStatus，預設 .unknown
@@ -59,37 +60,6 @@ struct Friend: Decodable {
         } else {
             isTop = false
         }
-    }
-    
-    // MARK: - Date Parsing Helper
-    
-    private static let slashDateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = TimeZone.current
-        formatter.dateFormat = "yyyy/MM/dd"
-        return formatter
-    }()
-    
-    private static let plainDateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = TimeZone.current
-        formatter.dateFormat = "yyyyMMdd"
-        return formatter
-    }()
-    
-    private static func parseDate(from dateString: String) -> Date {
-        if let date = slashDateFormatter.date(from: dateString) {
-            return date
-        }
-        
-        if let date = plainDateFormatter.date(from: dateString) {
-            return date
-        }
-        
-        // 如果都解析失敗，返回今天日期
-        return Date()
     }
     
     // MARK: - API Response Wrapper
