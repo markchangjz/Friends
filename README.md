@@ -77,7 +77,8 @@ Friends/
 │   │   ├── PlaceholderSearchBarTableViewCell.swift  # 搜尋框 Cell
 │   │   ├── SectionHeaderView.swift             # Section 標題
 │   │   ├── UserProfileHeaderView.swift         # 使用者資料 Header
-│   │   └── EmptyStateView.swift                # 空狀態畫面
+│   │   ├── EmptyStateView.swift                # 空狀態畫面
+│   │   └── FriendSearchTransitionManager.swift # 搜尋轉場動畫管理
 │   ├── FriendsViewController.swift   # 主畫面 ViewController
 │   └── FriendsViewModel.swift        # ViewModel
 └── FriendsTests/
