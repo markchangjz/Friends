@@ -1,5 +1,5 @@
 //
-//  MockAPIService.swift
+//  MockFriendsRepository.swift
 //  FriendsTests
 //
 //  Created for unit testing
@@ -8,11 +8,11 @@
 import Foundation
 @testable import Friends
 
-class MockAPIService: APIServiceProtocol {
+class MockFriendsRepository: FriendsRepositoryProtocol {
     
     // MARK: - Properties for Testing
     var shouldThrowError = false
-    var errorToThrow: Error = APIError.fileNotFound
+    var errorToThrow: Error = RepositoryError.invalidURL
     
     // Mock data to return
     var mockUserProfile: Person?
@@ -28,7 +28,7 @@ class MockAPIService: APIServiceProtocol {
     var fetchFriends1CallCount = 0
     var fetchFriends2CallCount = 0
     
-    // MARK: - APIServiceProtocol Implementation
+    // MARK: - FriendsRepositoryProtocol Implementation
     
     func fetchUserProfile() async throws -> Person {
         fetchUserProfileCallCount += 1
@@ -38,7 +38,7 @@ class MockAPIService: APIServiceProtocol {
         }
         
         guard let profile = mockUserProfile else {
-            throw APIError.fileNotFound
+            throw RepositoryError.invalidURL
         }
         
         return profile
@@ -88,7 +88,7 @@ class MockAPIService: APIServiceProtocol {
     
     func reset() {
         shouldThrowError = false
-        errorToThrow = APIError.fileNotFound
+        errorToThrow = RepositoryError.invalidURL
         mockUserProfile = nil
         mockFriends_noFriends = []
         mockFriends_hasFriends_hasInvitation = []

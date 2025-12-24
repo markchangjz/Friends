@@ -20,6 +20,7 @@
 
 ### 架構模式
 - **MVVM (Model-View-ViewModel)**：清晰的職責分離
+- **Repository Pattern**：資料存取層抽象化，便於測試與維護
 - **Protocol-Oriented Programming**：使用 Protocol 實現依賴注入，便於測試
 - **Combine Framework**：響應式程式設計，處理資料流和狀態更新
 
@@ -43,9 +44,9 @@
          │
 ┌────────▼────────┐
 │  Model Layer    │  Friend, Person
-│  (Data Models)  │  APIService
+│  (Data Models)  │  FriendsRemoteRepository
 └─────────────────┘  - 資料模型定義
-                      - API 服務實作
+                      - Repository Pattern 實作
 ```
 
 ## 📁 專案結構
@@ -54,7 +55,7 @@
 Friends/
 ├── Friends/
 │   ├── API Service/
-│   │   ├── APIService.swift          # API 服務實作
+│   │   ├── FriendsRemoteRepository.swift  # Repository Pattern 實作
 │   │   └── Model/
 │   │       ├── Friend.swift          # 好友資料模型
 │   │       └── Person.swift          # 使用者資料模型
@@ -66,18 +67,13 @@ Friends/
 │   │   ├── UserProfileHeaderView.swift         # 使用者資料 Header
 │   │   └── EmptyStateView.swift                # 空狀態畫面
 │   ├── FriendsViewController.swift   # 主畫面 ViewController
-│   ├── FriendsViewModel.swift        # ViewModel
-│   └── Mock API JSON files/          # 模擬 API 資料
-│       ├── man.json
-│       ├── friend1.json
-│       ├── friend2.json
-│       ├── friend3.json
-│       └── friend4.json
+│   └── FriendsViewModel.swift        # ViewModel
 └── FriendsTests/
     ├── FriendsViewModelTests.swift   # ViewModel 測試
     ├── FriendModelTests.swift        # Friend Model 測試
     ├── PersonModelTests.swift        # Person Model 測試
-    └── MockAPIService.swift          # Mock API Service
+    ├── FriendsRemoteAPITests.swift    # Repository 整合測試
+    └── MockFriendsRepository.swift   # Mock Repository
 ```
 
 

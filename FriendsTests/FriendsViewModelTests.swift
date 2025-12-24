@@ -12,14 +12,14 @@ import Combine
 final class FriendsViewModelTests: XCTestCase {
     
     var viewModel: FriendsViewModel!
-    var mockAPIService: MockAPIService!
+    var mockRepository: MockFriendsRepository!
     var cancellables: Set<AnyCancellable>!
     
     override func setUpWithError() throws {
         super.setUp()
         cancellables = Set<AnyCancellable>()
-        mockAPIService = MockAPIService()
-        viewModel = FriendsViewModel(apiService: mockAPIService)
+        mockRepository = MockFriendsRepository()
+        viewModel = FriendsViewModel(repository: mockRepository)
     }
     
     override func tearDownWithError() throws {
@@ -44,7 +44,7 @@ final class FriendsViewModelTests: XCTestCase {
     func testLoadUserData_Success() async throws {
         // Given
         let mockPerson = try createMockPerson(name: "測試使用者", kokoid: "test123")
-        mockAPIService.mockUserProfile = mockPerson
+        mockRepository.mockUserProfile = mockPerson
         
         let expectation = XCTestExpectation(description: "User data loaded")
         
@@ -61,12 +61,12 @@ final class FriendsViewModelTests: XCTestCase {
         await fulfillment(of: [expectation], timeout: 2.0)
         XCTAssertEqual(viewModel.userName, "測試使用者")
         XCTAssertEqual(viewModel.userKokoId, "test123")
-        XCTAssertEqual(mockAPIService.fetchUserProfileCallCount, 1)
+        XCTAssertEqual(mockRepository.fetchUserProfileCallCount, 1)
     }
     
     func testLoadUserData_Failure() async throws {
         // Given
-        mockAPIService.shouldThrowError = true
+        mockRepository.shouldThrowError = true
         
         let expectation = XCTestExpectation(description: "Error published")
         
@@ -87,7 +87,7 @@ final class FriendsViewModelTests: XCTestCase {
     
     func testLoadFriendsData_NoFriends() async throws {
         // Given
-        mockAPIService.mockFriends_noFriends = []
+        mockRepository.mockFriends_noFriends = []
         
         let expectation = XCTestExpectation(description: "Friends data loaded")
         
@@ -104,7 +104,7 @@ final class FriendsViewModelTests: XCTestCase {
         await fulfillment(of: [expectation], timeout: 2.0)
         XCTAssertEqual(viewModel.allFriends.count, 0)
         XCTAssertFalse(viewModel.hasFriends)
-        XCTAssertEqual(mockAPIService.fetchFriends_noFriendsCallCount, 1)
+        XCTAssertEqual(mockRepository.fetchFriends_noFriendsCallCount, 1)
     }
     
     func testLoadFriendsData_WithConfirmedFriends() async throws {
@@ -113,7 +113,7 @@ final class FriendsViewModelTests: XCTestCase {
             createMockFriend(name: "Alice", status: .accepted, fid: "1"),
             createMockFriend(name: "Bob", status: .accepted, fid: "2")
         ]
-        mockAPIService.mockFriends_hasFriends_hasInvitation = mockFriends
+        mockRepository.mockFriends_hasFriends_hasInvitation = mockFriends
         
         let expectation = XCTestExpectation(description: "Friends data loaded")
         
@@ -140,7 +140,7 @@ final class FriendsViewModelTests: XCTestCase {
             createMockFriend(name: "Charlie", status: .requestSent, fid: "3"),
             createMockFriend(name: "David", status: .accepted, fid: "4")
         ]
-        mockAPIService.mockFriends_hasFriends_hasInvitation = mockFriends
+        mockRepository.mockFriends_hasFriends_hasInvitation = mockFriends
         
         let expectation = XCTestExpectation(description: "Friends data loaded")
         
@@ -169,7 +169,7 @@ final class FriendsViewModelTests: XCTestCase {
             createMockFriend(name: "Alice", status: .accepted, fid: "1"),
             createMockFriend(name: "Bob", status: .accepted, fid: "2")
         ]
-        mockAPIService.mockFriends_hasFriends_hasInvitation = mockFriends
+        mockRepository.mockFriends_hasFriends_hasInvitation = mockFriends
         
         let expectation = XCTestExpectation(description: "Friends data loaded")
         viewModel.friendsDataLoadedPublisher
@@ -194,7 +194,7 @@ final class FriendsViewModelTests: XCTestCase {
             createMockFriend(name: "Bob", status: .accepted, fid: "2"),
             createMockFriend(name: "Charlie", status: .accepted, fid: "3")
         ]
-        mockAPIService.mockFriends_hasFriends_hasInvitation = mockFriends
+        mockRepository.mockFriends_hasFriends_hasInvitation = mockFriends
         
         let expectation = XCTestExpectation(description: "Friends data loaded")
         viewModel.friendsDataLoadedPublisher
@@ -232,7 +232,7 @@ final class FriendsViewModelTests: XCTestCase {
             createMockFriend(name: "Alice", status: .accepted, fid: "1", isTop: false),
             createMockFriend(name: "Bob", status: .accepted, fid: "2", isTop: true)
         ]
-        mockAPIService.mockFriends_hasFriends_hasInvitation = mockFriends
+        mockRepository.mockFriends_hasFriends_hasInvitation = mockFriends
         
         let expectation = XCTestExpectation(description: "Friends data loaded")
         viewModel.friendsDataLoadedPublisher
@@ -259,7 +259,7 @@ final class FriendsViewModelTests: XCTestCase {
             createMockFriend(name: "Alice", status: .accepted, fid: "1", isTop: false, updateDate: oldDate),
             createMockFriend(name: "Bob", status: .accepted, fid: "2", isTop: false, updateDate: newDate)
         ]
-        mockAPIService.mockFriends_hasFriends_hasInvitation = mockFriends
+        mockRepository.mockFriends_hasFriends_hasInvitation = mockFriends
         
         let expectation = XCTestExpectation(description: "Friends data loaded")
         viewModel.friendsDataLoadedPublisher
@@ -293,7 +293,7 @@ final class FriendsViewModelTests: XCTestCase {
             // 置頂，新日期，fid="2"
             createMockFriend(name: "Bob", status: .accepted, fid: "2", isTop: true, updateDate: date2)
         ]
-        mockAPIService.mockFriends_hasFriends_hasInvitation = mockFriends
+        mockRepository.mockFriends_hasFriends_hasInvitation = mockFriends
         
         let expectation = XCTestExpectation(description: "Friends data loaded")
         viewModel.friendsDataLoadedPublisher
@@ -328,7 +328,7 @@ final class FriendsViewModelTests: XCTestCase {
             createMockFriend(name: "Bob", status: .accepted, fid: "2"),
             createMockFriend(name: "Charlie", status: .accepted, fid: "3")
         ]
-        mockAPIService.mockFriends_hasFriends_hasInvitation = mockFriends
+        mockRepository.mockFriends_hasFriends_hasInvitation = mockFriends
         
         let expectation = XCTestExpectation(description: "Friends data loaded")
         viewModel.friendsDataLoadedPublisher
@@ -349,7 +349,7 @@ final class FriendsViewModelTests: XCTestCase {
             createMockFriend(name: "Alice", status: .requestSent, fid: "1"),
             createMockFriend(name: "Bob", status: .accepted, fid: "2")
         ]
-        mockAPIService.mockFriends_hasFriends_hasInvitation = mockFriends
+        mockRepository.mockFriends_hasFriends_hasInvitation = mockFriends
         
         let expectation = XCTestExpectation(description: "Friends data loaded")
         viewModel.friendsDataLoadedPublisher
@@ -370,7 +370,7 @@ final class FriendsViewModelTests: XCTestCase {
             createMockFriend(name: "Alice", status: .requestSent, fid: "1"),
             createMockFriend(name: "Bob", status: .accepted, fid: "2")
         ]
-        mockAPIService.mockFriends_hasFriends_hasInvitation = mockFriends
+        mockRepository.mockFriends_hasFriends_hasInvitation = mockFriends
         
         let expectation = XCTestExpectation(description: "Friends data loaded")
         viewModel.friendsDataLoadedPublisher
@@ -422,8 +422,8 @@ final class FriendsViewModelTests: XCTestCase {
         let mockFriends = [
             createMockFriend(name: "Alice", status: .accepted, fid: "1")
         ]
-        mockAPIService.mockUserProfile = mockPerson
-        mockAPIService.mockFriends_noFriends = mockFriends
+        mockRepository.mockUserProfile = mockPerson
+        mockRepository.mockFriends_noFriends = mockFriends
         
         let profileExpectation = XCTestExpectation(description: "User profile loaded")
         let friendsExpectation = XCTestExpectation(description: "Friends data loaded")
