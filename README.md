@@ -70,10 +70,18 @@ Friends/
 │   └── FriendsViewModel.swift        # ViewModel
 └── FriendsTests/
     ├── FriendsViewModelTests.swift   # ViewModel 測試
-    ├── FriendModelTests.swift        # Friend Model 測試
-    ├── PersonModelTests.swift        # Person Model 測試
-    ├── FriendsRemoteAPITests.swift    # Repository 整合測試
-    └── MockFriendsRepository.swift   # Mock Repository
+    ├── Model/
+    │   ├── FriendModelTests.swift        # Friend Model 測試
+    │   └── PersonModelTests.swift        # Person Model 測試
+    └── Repository/
+        ├── FriendsRemoteRepositoryTests.swift    # Repository 整合測試
+        ├── MockFriendsRemoteRepository.swift   # Mock Repository（從本地 JSON 讀取）
+        └── Mock API JSON files/          # 測試用 JSON 資料
+            ├── man.json
+            ├── friend1.json
+            ├── friend2.json
+            ├── friend3.json
+            └── friend4.json
 ```
 
 
