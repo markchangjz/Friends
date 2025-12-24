@@ -24,8 +24,8 @@ class FriendsViewController: UIViewController {
     // 假的搜尋列（顯示在 cell 中）
     private let placeholderSearchBar = UISearchBar()
     
-    // 追蹤是否正在使用真實的 searchController
-    private var isUsingRealSearchController = false
+    // Transition Manager
+    private let transitionManager = FriendSearchTransitionManager()
     
     // UI 元件
     private lazy var userProfileHeaderView = UserProfileHeaderView(width: view.bounds.width)
@@ -140,7 +140,7 @@ extension FriendsViewController: UITableViewDataSource {
             return viewModel.isRequestsSectionExpanded ? viewModel.numberOfRows(in: section) : 0
         } else {
             // 如果正在使用真實的 searchController，不顯示假 searchBar cell
-            let searchBarCount = isUsingRealSearchController ? 0 : 1
+            let searchBarCount = transitionManager.isUsingRealSearchController ? 0 : 1
             return viewModel.numberOfRows(in: section) + searchBarCount
         }
     }
@@ -157,7 +157,7 @@ extension FriendsViewController: UITableViewDataSource {
             return cell
         } else {
             // Friends section
-            if !isUsingRealSearchController && indexPath.row == 0 {
+            if !transitionManager.isUsingRealSearchController && indexPath.row == 0 {
                 // 第一個 row 顯示假的搜尋列（只在未使用真實 searchController 時）
                 guard let cell = tableView.dequeueReusableCell(withIdentifier: PlaceholderSearchBarTableViewCell.identifier, for: indexPath) as? PlaceholderSearchBarTableViewCell else {
                     return UITableViewCell()
@@ -167,7 +167,7 @@ extension FriendsViewController: UITableViewDataSource {
             } else {
                 // 顯示好友資料
                 // 如果沒有使用真實 searchController，索引需要 -1（因為 row 0 是假 searchBar）
-                let friendIndex = isUsingRealSearchController ? indexPath.row : indexPath.row - 1
+                let friendIndex = transitionManager.isUsingRealSearchController ? indexPath.row : indexPath.row - 1
                 
                 guard let cell = tableView.dequeueReusableCell(withIdentifier: FriendTableViewCell.identifier, for: indexPath) as? FriendTableViewCell else {
                     return UITableViewCell()
@@ -250,162 +250,24 @@ extension FriendsViewController: UISearchBarDelegate {
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         viewModel.clearSearch()
         updateEmptyState()
-        deactivateRealSearchController()
+        
+        transitionManager.deactivateSearch(
+            placeholderSearchBar: placeholderSearchBar,
+            realSearchController: searchController,
+            tableView: tableView,
+            in: self,
+            friendsSectionIndex: viewModel.friendsSection
+        )
     }
     
     private func activateRealSearchController() {
-        guard let snapshotView = placeholderSearchBar.snapshotView(afterScreenUpdates: false) else {
-            activateRealSearchControllerWithoutAnimation()
-            return
-        }
-        
-        let searchBarFrame = placeholderSearchBar.convert(placeholderSearchBar.bounds, to: view)
-        snapshotView.frame = searchBarFrame
-        snapshotView.contentMode = .scaleAspectFit
-        snapshotView.clipsToBounds = true
-        view.addSubview(snapshotView)
-        
-        isUsingRealSearchController = true
-        
-        UIView.performWithoutAnimation {
-            tableView.reloadData()
-        }
-        
-        scrollToFriendsSection()
-        
-        let navBarMaxY = navigationController?.navigationBar.frame.maxY ?? 0
-        let targetY = navBarMaxY + view.safeAreaInsets.top
-        let targetFrame = CGRect(
-            x: searchBarFrame.origin.x,
-            y: targetY,
-            width: searchBarFrame.width,
-            height: searchBarFrame.height
+        transitionManager.activateSearch(
+            placeholderSearchBar: placeholderSearchBar,
+            realSearchController: searchController,
+            tableView: tableView,
+            in: self,
+            friendsSectionIndex: viewModel.friendsSection
         )
-        
-        UIView.animate(
-            withDuration: 0.5,
-            delay: 0,
-            usingSpringWithDamping: 0.85,
-            initialSpringVelocity: 0.5,
-            options: [.curveEaseOut, .allowUserInteraction]
-        ) {
-            snapshotView.frame = targetFrame
-        }
-        
-        UIView.animate(withDuration: 0.25, delay: 0.1, options: .curveEaseOut) {
-            snapshotView.alpha = 0
-        } completion: { [weak self] _ in
-            guard let self = self else { return }
-            
-            snapshotView.removeFromSuperview()
-            
-            self.navigationItem.searchController = self.searchController
-            self.navigationItem.hidesSearchBarWhenScrolling = false
-            
-            self.view.layoutIfNeeded()
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                self.searchController.searchBar.becomeFirstResponder()
-                
-                if !self.searchController.searchBar.isFirstResponder {
-                    self.searchController.isActive = true
-                }
-            }
-        }
-    }
-    
-    private func activateRealSearchControllerWithoutAnimation() {
-        isUsingRealSearchController = true
-        
-        scrollToFriendsSection()
-        
-        UIView.performWithoutAnimation {
-            tableView.reloadData()
-        }
-        
-        navigationItem.searchController = searchController
-        navigationItem.hidesSearchBarWhenScrolling = false
-        
-        DispatchQueue.main.async { [weak self] in
-            self?.searchController.searchBar.becomeFirstResponder()
-        }
-    }
-    
-    private func scrollToFriendsSection() {
-        guard viewModel.friendsSection < viewModel.numberOfSections else { return }
-        
-        let sectionRect = tableView.rect(forSection: viewModel.friendsSection)
-        let targetY = sectionRect.origin.y - tableView.adjustedContentInset.top
-        
-        UIView.animate(
-            withDuration: 0.5,
-            delay: 0,
-            usingSpringWithDamping: 0.9,
-            initialSpringVelocity: 0.3,
-            options: [.curveEaseOut, .allowUserInteraction]
-        ) { [weak self] in
-            self?.tableView.contentOffset = CGPoint(x: 0, y: targetY)
-        }
-    }
-    
-    private func deactivateRealSearchController() {
-        guard let snapshotView = searchController.searchBar.snapshotView(afterScreenUpdates: false) else {
-            deactivateRealSearchControllerWithoutAnimation()
-            return
-        }
-        
-        let searchBarFrame = searchController.searchBar.convert(searchController.searchBar.bounds, to: view)
-        snapshotView.frame = searchBarFrame
-        snapshotView.contentMode = .scaleAspectFit
-        snapshotView.clipsToBounds = true
-        view.addSubview(snapshotView)
-        
-        navigationItem.searchController = nil
-        
-        isUsingRealSearchController = false
-        
-        placeholderSearchBar.alpha = 0
-        UIView.performWithoutAnimation {
-            tableView.reloadData()
-        }
-        
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            let searchBarIndexPath = IndexPath(row: 0, section: self.viewModel.friendsSection)
-            
-            if let cell = self.tableView.cellForRow(at: searchBarIndexPath) {
-                let targetFrame = cell.convert(cell.bounds, to: self.view)
-                
-                UIView.animate(
-                    withDuration: 0.5,
-                    delay: 0,
-                    usingSpringWithDamping: 0.85,
-                    initialSpringVelocity: 0.5,
-                    options: [.curveEaseOut, .allowUserInteraction]
-                ) {
-                    snapshotView.frame = targetFrame
-                } completion: { _ in
-                    snapshotView.removeFromSuperview()
-                    
-                    UIView.animate(withDuration: 0.2) {
-                        self.placeholderSearchBar.alpha = 1
-                    }
-                }
-            } else {
-                snapshotView.removeFromSuperview()
-                self.placeholderSearchBar.alpha = 1
-            }
-        }
-    }
-    
-    private func deactivateRealSearchControllerWithoutAnimation() {
-        navigationItem.searchController = nil
-        isUsingRealSearchController = false
-        
-        UIView.performWithoutAnimation {
-            tableView.reloadData()
-        }
     }
 }
 
