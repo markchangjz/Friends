@@ -6,7 +6,7 @@
 - 使用 proxy 工具，驗證 API 資料流正確性
 <img src="https://github.com/user-attachments/assets/77acaa00-7b0d-4622-8152-30b85ab53a6e" width=85%>
 
-- 使用 Cursur AI chatbot 自動化 Code Review https://github.com/markchangjz/Friends/pull/2
+- 使用 Cursur AI chatbot 自動化 Code Review, 參考 PR https://github.com/markchangjz/Friends/pull/2
 
 
 ## ✨ 功能特色
