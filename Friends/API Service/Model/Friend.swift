@@ -62,20 +62,29 @@ struct Friend: Decodable {
     }
     
     // MARK: - Date Parsing Helper
-    private static func parseDate(from dateString: String) -> Date {
+    
+    private static let slashDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.timeZone = TimeZone.current
-        
-        // 嘗試格式 1: yyyy/MM/dd
         formatter.dateFormat = "yyyy/MM/dd"
-        if let date = formatter.date(from: dateString) {
+        return formatter
+    }()
+    
+    private static let plainDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone.current
+        formatter.dateFormat = "yyyyMMdd"
+        return formatter
+    }()
+    
+    private static func parseDate(from dateString: String) -> Date {
+        if let date = slashDateFormatter.date(from: dateString) {
             return date
         }
         
-        // 嘗試格式 2: yyyyMMdd
-        formatter.dateFormat = "yyyyMMdd"
-        if let date = formatter.date(from: dateString) {
+        if let date = plainDateFormatter.date(from: dateString) {
             return date
         }
         
