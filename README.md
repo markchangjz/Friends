@@ -1,10 +1,10 @@
 # Friends - 好友列表頁面
 
 - 切換不同測試狀態
-<img src="https://github.com/user-attachments/assets/05f66753-6dbb-47bc-9c67-1ff6b3b4b447" width=50%>
+<img src="https://github.com/user-attachments/assets/05f66753-6dbb-47bc-9c67-1ff6b3b4b447" width=60%>
 
 - 使用 proxy 工具，驗證 API 資料流正確性
-<img src="https://github.com/user-attachments/assets/77acaa00-7b0d-4622-8152-30b85ab53a6e" width=60%>
+<img src="https://github.com/user-attachments/assets/77acaa00-7b0d-4622-8152-30b85ab53a6e" width=85%>
 
 - 使用 Cursur AI chatbot 自動化 Code Review https://github.com/markchangjz/Friends/pull/2
 
