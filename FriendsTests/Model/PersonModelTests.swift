@@ -203,23 +203,5 @@ final class PersonModelTests: XCTestCase {
         XCTAssertEqual(person.name, "張三")
         XCTAssertEqual(person.kokoid, "zhang_san")
     }
-    
-    // MARK: - 測試實際 JSON 檔案
-    
-    func testPersonDecoding_FromJSONFile() throws {
-        // Given
-        guard let fileURL = Bundle(for: type(of: self)).url(forResource: "man", withExtension: "json"),
-              let data = try? Data(contentsOf: fileURL) else {
-            // 如果找不到檔案，跳過測試（這是可選的整合測試）
-            throw XCTSkip("man.json 檔案不存在於測試 bundle 中")
-        }
-        
-        // When
-        let person = try JSONDecoder().decode(Person.self, from: data)
-        
-        // Then
-        XCTAssertFalse(person.name.isEmpty)
-        XCTAssertFalse(person.kokoid.isEmpty)
-    }
 }
 

@@ -512,51 +512,5 @@ final class FriendsViewModelTests: XCTestCase {
         // friend4.json 是空陣列
         XCTAssertEqual(viewModel.allFriends.count, 0)
     }
-    
-    // MARK: - Helper Methods
-    
-    private func createMockFriend(
-        name: String,
-        status: Friend.FriendStatus,
-        fid: String,
-        isTop: Bool = false,
-        updateDate: Date = Date()
-    ) -> Friend {
-        // 將 Date 轉換為 yyyyMMdd 格式的字串
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyyMMdd"
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = TimeZone.current
-        let updateDateString = formatter.string(from: updateDate)
-        
-        let jsonString = """
-        {
-            "name": "\(name)",
-            "status": \(status.rawValue),
-            "isTop": "\(isTop ? "1" : "0")",
-            "fid": "\(fid)",
-            "updateDate": "\(updateDateString)"
-        }
-        """
-        
-        let data = jsonString.data(using: .utf8)!
-        return try! JSONDecoder().decode(Friend.self, from: data)
-    }
-    
-    private func createMockPerson(name: String, kokoid: String) throws -> Person {
-        let jsonString = """
-        {
-            "response": [
-                {
-                    "name": "\(name)",
-                    "kokoid": "\(kokoid)"
-                }
-            ]
-        }
-        """
-        
-        let data = jsonString.data(using: .utf8)!
-        return try JSONDecoder().decode(Person.self, from: data)
-    }
 }
 
