@@ -89,8 +89,8 @@ class FriendsViewModel {
 
     // MARK: - Private Properties
     
-    // API Service
-    private let apiService: APIServiceProtocol
+    // Repository
+    private let repository: FriendsRepositoryProtocol
     
     /*
     allFriends: [Friend]              // 所有好友（未分類）- 從 API 載入
@@ -117,8 +117,8 @@ class FriendsViewModel {
     
     // MARK: - Initialization
     
-    init(apiService: APIServiceProtocol = APIService()) {
-        self.apiService = apiService
+    init(repository: FriendsRepositoryProtocol = FriendsRemoteRepository()) {
+        self.repository = repository
     }
     
     // MARK: - Public Methods
@@ -126,7 +126,7 @@ class FriendsViewModel {
     func loadUserData() {
         Task {
             do {
-                let userProfile = try await apiService.fetchUserProfile()
+                let userProfile = try await repository.fetchUserProfile()
                 await MainActor.run {
                     self.userName = userProfile.name
                     self.userKokoId = userProfile.kokoid
@@ -165,7 +165,7 @@ class FriendsViewModel {
         Task {
             do {
                 // 並行執行兩個 API 呼叫
-                async let userProfileTask = apiService.fetchUserProfile()
+                async let userProfileTask = repository.fetchUserProfile()
                 async let friendsTask = fetchFriendsData(for: option)
                 
                 // 等待兩個 API 都完成
@@ -300,13 +300,13 @@ class FriendsViewModel {
         
         switch option {
         case .noFriends:
-            friendsData = try await apiService.fetchFriends_noFriends()
+            friendsData = try await repository.fetchFriends_noFriends()
         case .friendsListWithInvitation:
-            friendsData = try await apiService.fetchFriends_hasFriends_hasInvitation()
+            friendsData = try await repository.fetchFriends_hasFriends_hasInvitation()
         case .friendsListOnly:
             // 並行取得兩個資料來源
-            async let friends1 = apiService.fetchFriends1()
-            async let friends2 = apiService.fetchFriends2()
+            async let friends1 = repository.fetchFriends1()
+            async let friends2 = repository.fetchFriends2()
             let (list1, list2) = try await (friends1, friends2)
             friendsData = mergeFriends(list1, list2)
         }
