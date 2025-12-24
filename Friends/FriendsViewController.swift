@@ -148,7 +148,9 @@ extension FriendsViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if viewModel.isRequestSection(indexPath.section) {
             // Requests section
-            let cell = tableView.dequeueReusableCell(withIdentifier: FriendRequestTableViewCell.identifier, for: indexPath) as! FriendRequestTableViewCell
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: FriendRequestTableViewCell.identifier, for: indexPath) as? FriendRequestTableViewCell else {
+                return UITableViewCell()
+            }
             if let friend = viewModel.friendRequest(at: indexPath.row) {
                 cell.configure(with: friend)
             }
@@ -157,7 +159,9 @@ extension FriendsViewController: UITableViewDataSource {
             // Friends section
             if !isUsingRealSearchController && indexPath.row == 0 {
                 // 第一個 row 顯示假的搜尋列（只在未使用真實 searchController 時）
-                let cell = tableView.dequeueReusableCell(withIdentifier: PlaceholderSearchBarTableViewCell.identifier, for: indexPath) as! PlaceholderSearchBarTableViewCell
+                guard let cell = tableView.dequeueReusableCell(withIdentifier: PlaceholderSearchBarTableViewCell.identifier, for: indexPath) as? PlaceholderSearchBarTableViewCell else {
+                    return UITableViewCell()
+                }
                 cell.configure(with: placeholderSearchBar)
                 return cell
             } else {
@@ -165,7 +169,9 @@ extension FriendsViewController: UITableViewDataSource {
                 // 如果沒有使用真實 searchController，索引需要 -1（因為 row 0 是假 searchBar）
                 let friendIndex = isUsingRealSearchController ? indexPath.row : indexPath.row - 1
                 
-                let cell = tableView.dequeueReusableCell(withIdentifier: FriendTableViewCell.identifier, for: indexPath) as! FriendTableViewCell
+                guard let cell = tableView.dequeueReusableCell(withIdentifier: FriendTableViewCell.identifier, for: indexPath) as? FriendTableViewCell else {
+                    return UITableViewCell()
+                }
                 if let friend = viewModel.confirmedFriend(at: friendIndex) {
                     cell.configure(with: friend)
                 }
