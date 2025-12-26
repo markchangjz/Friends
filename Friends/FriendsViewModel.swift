@@ -235,8 +235,8 @@ class FriendsViewModel {
     func numberOfRows(in section: Int) -> Int {
         guard section < numberOfSections else { return 0 }
         
-        if hasFriendRequests {
-            return section == Section.requests ? displayRequestFriends.count : displayConfirmedFriends.count
+        if isRequestSection(section) {
+            return displayRequestFriends.count
         } else {
             return displayConfirmedFriends.count
         }
