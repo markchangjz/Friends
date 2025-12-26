@@ -138,11 +138,11 @@ extension FriendsViewController: UITableViewDataSource {
         // 如果是好友請求 section，根據展開狀態決定是否顯示資料
         if viewModel.isRequestSection(section) {
             return viewModel.isRequestsSectionExpanded ? viewModel.numberOfRows(in: section) : 0
-        } else {
-            // 如果正在使用真實的 searchController，不顯示假 searchBar cell
-            let searchBarCount = transitionManager.isUsingRealSearchController ? 0 : 1
-            return viewModel.numberOfRows(in: section) + searchBarCount
         }
+        
+        // 好友列表區塊：加上搜尋列 (如果沒有使用真實 SearchController)
+        let searchBarCount = transitionManager.isUsingRealSearchController ? 0 : 1
+        return viewModel.numberOfRows(in: section) + searchBarCount
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
