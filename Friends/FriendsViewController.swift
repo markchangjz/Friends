@@ -147,35 +147,43 @@ extension FriendsViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if viewModel.isRequestSection(indexPath.section) {
-            // Requests section
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: FriendRequestTableViewCell.identifier, for: indexPath) as? FriendRequestTableViewCell else {
-                return UITableViewCell()
-            }
-            let friend = viewModel.friendRequest(at: indexPath.row)
-            cell.configure(with: friend)
-            return cell
-        } else {
-            // Friends section
-            if !transitionManager.isUsingRealSearchController && indexPath.row == 0 {
-                // 第一個 row 顯示假的搜尋列（只在未使用真實 searchController 時）
-                guard let cell = tableView.dequeueReusableCell(withIdentifier: PlaceholderSearchBarTableViewCell.identifier, for: indexPath) as? PlaceholderSearchBarTableViewCell else {
-                    return UITableViewCell()
-                }
-                cell.configure(with: placeholderSearchBar)
-                return cell
-            } else {
-                // 顯示好友資料
-                // 如果沒有使用真實 searchController，索引需要 -1（因為 row 0 是假 searchBar）
-                let friendIndex = transitionManager.isUsingRealSearchController ? indexPath.row : indexPath.row - 1
-                
-                guard let cell = tableView.dequeueReusableCell(withIdentifier: FriendTableViewCell.identifier, for: indexPath) as? FriendTableViewCell else {
-                    return UITableViewCell()
-                }
-                let friend = viewModel.confirmedFriend(at: friendIndex)
-                cell.configure(with: friend)
-                return cell
-            }
+            return configureRequestCell(for: indexPath)
         }
+        
+        if !transitionManager.isUsingRealSearchController && indexPath.row == 0 {
+            return configureSearchBarCell(for: indexPath)
+        }
+        
+        return configureFriendCell(for: indexPath)
+    }
+    
+    private func configureRequestCell(for indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: FriendRequestTableViewCell.identifier, for: indexPath) as? FriendRequestTableViewCell else {
+            return UITableViewCell()
+        }
+        let friend = viewModel.friendRequest(at: indexPath.row)
+        cell.configure(with: friend)
+        return cell
+    }
+    
+    private func configureSearchBarCell(for indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: PlaceholderSearchBarTableViewCell.identifier, for: indexPath) as? PlaceholderSearchBarTableViewCell else {
+            return UITableViewCell()
+        }
+        cell.configure(with: placeholderSearchBar)
+        return cell
+    }
+    
+    private func configureFriendCell(for indexPath: IndexPath) -> UITableViewCell {
+        let friendIndex = transitionManager.isUsingRealSearchController ? indexPath.row : indexPath.row - 1
+        
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: FriendTableViewCell.identifier, for: indexPath) as? FriendTableViewCell else {
+            return UITableViewCell()
+        }
+        
+        let friend = viewModel.confirmedFriend(at: friendIndex)
+        cell.configure(with: friend)
+        return cell
     }
 }
 
@@ -226,9 +234,7 @@ extension FriendsViewController: SectionHeaderViewDelegate {
         viewModel.isRequestsSectionExpanded.toggle()
         headerView.updateArrowImage(isExpanded: viewModel.isRequestsSectionExpanded)
         
-        tableView.performBatchUpdates({
-            tableView.reloadSections(IndexSet(integer: FriendsViewModel.Section.requests), with: .automatic)
-        }, completion: nil)
+        tableView.reloadSections(IndexSet(integer: FriendsViewModel.Section.requests), with: .automatic)
     }
 }
 
