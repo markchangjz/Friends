@@ -308,17 +308,14 @@ extension FriendsViewController {
         view.backgroundColor = .systemBackground
         
         setupTableView()
-        setupHeaderView()
         setupSearchBarContainer()
         setupEmptyStateView()
         setupLoadingIndicator()
     }
     
-    private func setupHeaderView() {
-        tableView.tableHeaderView = userProfileHeaderView
-    }
-    
     private func setupTableView() {
+        tableView.tableHeaderView = userProfileHeaderView
+        
         tableView.backgroundColor = .systemBackground
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.delegate = self
