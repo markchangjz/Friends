@@ -49,16 +49,10 @@ class FriendsViewModel {
     
     // Section 計算
     var numberOfSections: Int {
-        // 如果原始資料就是空的（沒有載入過資料），返回 0
-        if allRequestFriends.isEmpty && allConfirmedFriends.isEmpty {
+        if allFriends.isEmpty {
             return 0
-        }
-        
-        // 如果有原始資料，至少顯示一個 section（用於顯示搜尋列）
-        if hasFriendRequests && hasConfirmedFriends {
-            return 2
         } else {
-            return 1
+            return hasFriendRequests && hasConfirmedFriends ? 2 : 1
         }
     }
     
