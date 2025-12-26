@@ -56,12 +56,5 @@ class PlaceholderSearchBarTableViewCell: UITableViewCell {
             searchBar.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
         ])
     }
-    
-    // MARK: - Reuse
-    
-    override func prepareForReuse() {
-        super.prepareForReuse()
-        // 不要移除 searchBar，保持其狀態
-    }
 }
 
