@@ -187,9 +187,7 @@ extension FriendsViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        guard let title = viewModel.titleForHeader(in: section) else {
-            return nil
-        }
+        let title = viewModel.titleForHeader(in: section)
         
         let headerView = SectionHeaderView()
         headerView.delegate = self

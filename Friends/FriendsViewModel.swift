@@ -254,15 +254,11 @@ class FriendsViewModel {
         return displayConfirmedFriends[index]
     }
     
-    func titleForHeader(in section: Int) -> String? {
-        guard section < numberOfSections else { return nil }
-        
-        if hasFriendRequests {
-            return section == Section.requests ? "Requests" : "Friends"
-        } else if hasConfirmedFriends {
-            return "Friends"
+    func titleForHeader(in section: Int) -> String {
+        if isRequestSection(section) {
+            return "Requests"
         } else {
-            return nil
+            return "Friends"
         }
     }
     
