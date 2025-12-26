@@ -512,5 +512,65 @@ final class FriendsViewModelTests: XCTestCase {
         // friend4.json 是空陣列
         XCTAssertEqual(viewModel.allFriends.count, 0)
     }
+
+
+    // MARK: - 測試資料存取
+    
+    func testFriendRequest() async throws {
+        // Given - 載入含有邀請的資料
+        let expectation = XCTestExpectation(description: "Friends data loaded")
+        
+        viewModel.friendsDataLoadedPublisher
+            .sink { _ in
+                expectation.fulfill()
+            }
+            .store(in: &cancellables)
+        
+        viewModel.loadFriendsData(for: .friendsListWithInvitation)
+        await fulfillment(of: [expectation], timeout: 2.0)
+        
+        // Pre-check
+        guard viewModel.hasFriendRequests else {
+            XCTFail("Should have friend requests for this test")
+            return
+        }
+        
+        // When
+        let requestFriend = viewModel.friendRequest(at: 0)
+        
+        // Then
+        XCTAssertEqual(requestFriend.status, .requestSent)
+    }
+    
+    func testConfirmedFriend() async throws {
+        // Given - 載入含有已確認好友的資料
+        let expectation = XCTestExpectation(description: "Friends data loaded")
+        
+        viewModel.friendsDataLoadedPublisher
+            .sink { _ in
+                expectation.fulfill()
+            }
+            .store(in: &cancellables)
+        
+        viewModel.loadFriendsData(for: .friendsListWithInvitation)
+        await fulfillment(of: [expectation], timeout: 2.0)
+        
+        // Pre-check
+        guard viewModel.hasConfirmedFriends else {
+            XCTFail("Should have confirmed friends for this test")
+            return
+        }
+        
+        // When
+        let confirmedFriend = viewModel.confirmedFriend(at: 0)
+        
+        // Then
+        XCTAssertTrue(confirmedFriend.status == .accepted || confirmedFriend.status == .pending)
+        
+        // 驗證排序：第一個應該是置頂的好友 (如果資料中有置頂好友)
+        if let topFriend = viewModel.displayConfirmedFriends.first(where: { $0.isTop }) {
+            XCTAssertEqual(confirmedFriend.fid, topFriend.fid)
+        }
+    }
 }
 

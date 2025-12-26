@@ -151,9 +151,8 @@ extension FriendsViewController: UITableViewDataSource {
             guard let cell = tableView.dequeueReusableCell(withIdentifier: FriendRequestTableViewCell.identifier, for: indexPath) as? FriendRequestTableViewCell else {
                 return UITableViewCell()
             }
-            if let friend = viewModel.friendRequest(at: indexPath.row) {
-                cell.configure(with: friend)
-            }
+            let friend = viewModel.friendRequest(at: indexPath.row)
+            cell.configure(with: friend)
             return cell
         } else {
             // Friends section
@@ -172,9 +171,8 @@ extension FriendsViewController: UITableViewDataSource {
                 guard let cell = tableView.dequeueReusableCell(withIdentifier: FriendTableViewCell.identifier, for: indexPath) as? FriendTableViewCell else {
                     return UITableViewCell()
                 }
-                if let friend = viewModel.confirmedFriend(at: friendIndex) {
-                    cell.configure(with: friend)
-                }
+                let friend = viewModel.confirmedFriend(at: friendIndex)
+                cell.configure(with: friend)
                 return cell
             }
         }

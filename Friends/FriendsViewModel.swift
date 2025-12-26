@@ -246,13 +246,11 @@ class FriendsViewModel {
         return hasFriendRequests && section == Section.requests
     }
     
-    func friendRequest(at index: Int) -> Friend? {
-        guard displayRequestFriends.indices.contains(index) else { return nil }
+    func friendRequest(at index: Int) -> Friend {
         return displayRequestFriends[index]
     }
     
-    func confirmedFriend(at index: Int) -> Friend? {
-        guard displayConfirmedFriends.indices.contains(index) else { return nil }
+    func confirmedFriend(at index: Int) -> Friend {
         return displayConfirmedFriends[index]
     }
     
