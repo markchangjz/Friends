@@ -135,14 +135,7 @@ extension FriendsViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // 如果是好友請求 section，根據展開狀態決定是否顯示資料
-        if viewModel.isRequestSection(section) {
-            return viewModel.isRequestsSectionExpanded ? viewModel.numberOfRows(in: section) : 0
-        }
-        
-        // 好友列表區塊：加上搜尋列 (如果沒有使用真實 SearchController)
-        let searchBarCount = transitionManager.isUsingRealSearchController ? 0 : 1
-        return viewModel.numberOfRows(in: section) + searchBarCount
+        return viewModel.numberOfRows(in: section)
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -150,7 +143,7 @@ extension FriendsViewController: UITableViewDataSource {
             return configureRequestCell(for: indexPath)
         }
         
-        if !transitionManager.isUsingRealSearchController && indexPath.row == 0 {
+        if viewModel.isSearchBarRow(at: indexPath) {
             return configureSearchBarCell(for: indexPath)
         }
         
@@ -175,13 +168,12 @@ extension FriendsViewController: UITableViewDataSource {
     }
     
     private func configureFriendCell(for indexPath: IndexPath) -> UITableViewCell {
-        let friendIndex = transitionManager.isUsingRealSearchController ? indexPath.row : indexPath.row - 1
         
         guard let cell = tableView.dequeueReusableCell(withIdentifier: FriendTableViewCell.identifier, for: indexPath) as? FriendTableViewCell else {
             return UITableViewCell()
         }
         
-        let friend = viewModel.confirmedFriend(at: friendIndex)
+        let friend = viewModel.confirmedFriend(at: indexPath.row)
         cell.configure(with: friend)
         return cell
     }
@@ -251,6 +243,7 @@ extension FriendsViewController: UISearchBarDelegate {
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         viewModel.clearSearch()
+        viewModel.isUsingRealSearchController = false
         updateEmptyState()
         
         transitionManager.deactivateSearch(
@@ -263,6 +256,7 @@ extension FriendsViewController: UISearchBarDelegate {
     }
     
     private func activateRealSearchController() {
+        viewModel.isUsingRealSearchController = true
         transitionManager.activateSearch(
             placeholderSearchBar: placeholderSearchBar,
             realSearchController: searchController,

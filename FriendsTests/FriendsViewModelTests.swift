@@ -399,10 +399,17 @@ final class FriendsViewModelTests: XCTestCase {
         
         // friend3.json 包含 status=0 (requestSent) 和 status=1/2 (accepted/pending) 的好友
         if viewModel.hasFriendRequests && viewModel.hasConfirmedFriends {
-            XCTAssertEqual(viewModel.numberOfRows(in: 0), viewModel.displayRequestFriends.count) // Requests section
-            XCTAssertEqual(viewModel.numberOfRows(in: 1), viewModel.displayConfirmedFriends.count) // Friends section
+            // Requests section
+            XCTAssertEqual(viewModel.numberOfRows(in: 0), viewModel.displayRequestFriends.count)
+            // Friends section (包含 placeholder search bar)
+            XCTAssertEqual(viewModel.numberOfRows(in: 1), viewModel.displayConfirmedFriends.count + 1)
+            
+            // 測試摺疊
+            viewModel.isRequestsSectionExpanded = false
+            XCTAssertEqual(viewModel.numberOfRows(in: 0), 0)
         } else if viewModel.hasConfirmedFriends {
-            XCTAssertEqual(viewModel.numberOfRows(in: 0), viewModel.displayConfirmedFriends.count)
+            // Friends section (包含 placeholder search bar)
+            XCTAssertEqual(viewModel.numberOfRows(in: 0), viewModel.displayConfirmedFriends.count + 1)
         }
     }
     
@@ -562,7 +569,8 @@ final class FriendsViewModelTests: XCTestCase {
         }
         
         // When
-        let confirmedFriend = viewModel.confirmedFriend(at: 0)
+        // 如果 isUsingRealSearchController 為 false (預設)，Row 0 是搜尋列，Row 1 才是第一個好友
+        let confirmedFriend = viewModel.confirmedFriend(at: 1)
         
         // Then
         XCTAssertTrue(confirmedFriend.status == .accepted || confirmedFriend.status == .pending)

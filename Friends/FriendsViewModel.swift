@@ -76,6 +76,9 @@ class FriendsViewModel {
     // Requests section 展開狀態
     var isRequestsSectionExpanded: Bool = true
     
+    // 是否正在使用真實的 searchController (決定是否顯示 placeholder search bar)
+    var isUsingRealSearchController: Bool = false
+    
     // 好友 section 的索引
     var friendsSection: Int {
         return hasFriendRequests ? Section.friends : Section.requests
@@ -230,10 +233,17 @@ class FriendsViewModel {
         guard section < numberOfSections else { return 0 }
         
         if isRequestSection(section) {
-            return displayRequestFriends.count
+            return isRequestsSectionExpanded ? displayRequestFriends.count : 0
         } else {
-            return displayConfirmedFriends.count
+            // 好友列表區塊：加上搜尋列 (如果沒有使用真實 SearchController)
+            let searchBarCount = isUsingRealSearchController ? 0 : 1
+            return displayConfirmedFriends.count + searchBarCount
         }
+    }
+    
+    /// 檢查特定 IndexPath 是否為搜尋列 Row
+    func isSearchBarRow(at indexPath: IndexPath) -> Bool {
+        return !isRequestSection(indexPath.section) && !isUsingRealSearchController && indexPath.row == 0
     }
     
     func isRequestSection(_ section: Int) -> Bool {
@@ -244,8 +254,10 @@ class FriendsViewModel {
         return displayRequestFriends[index]
     }
     
-    func confirmedFriend(at index: Int) -> Friend {
-        return displayConfirmedFriends[index]
+    func confirmedFriend(at row: Int) -> Friend {
+        // 如果有 placeholder search bar，索引需要減 1
+        let friendIndex = isUsingRealSearchController ? row : row - 1
+        return displayConfirmedFriends[friendIndex]
     }
     
     func titleForHeader(in section: Int) -> String {
