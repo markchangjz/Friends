@@ -12,11 +12,26 @@ import XCTest
 
 final class FriendsRemoteRepositoryTests: XCTestCase {
     
+    // MARK: - Properties
+    
+    var repository: FriendsRemoteRepository!
+    
+    // MARK: - Setup & Teardown
+    
+    override func setUp() {
+        super.setUp()
+        repository = FriendsRemoteRepository()
+    }
+    
+    override func tearDown() {
+        repository = nil
+        super.tearDown()
+    }
+    
     // MARK: - 整合測試：載入實際 JSON 檔案
     
     func testFriendsRemoteRepository_FetchUserProfile_Integration() async throws {
         // Given
-        let repository = FriendsRemoteRepository()
         
         // When
         let person = try await repository.fetchUserProfile()
@@ -28,7 +43,6 @@ final class FriendsRemoteRepositoryTests: XCTestCase {
     
     func testFriendsRemoteRepository_FetchFriends_noFriends_Integration() async throws {
         // Given
-        let repository = FriendsRemoteRepository()
         
         // When
         let friends = try await repository.fetchFriends_noFriends()
@@ -39,7 +53,6 @@ final class FriendsRemoteRepositoryTests: XCTestCase {
     
     func testFriendsRemoteRepository_FetchFriends_WithInvitation_Integration() async throws {
         // Given
-        let repository = FriendsRemoteRepository()
         
         // When
         let friends = try await repository.fetchFriends_hasFriends_hasInvitation()
@@ -50,7 +63,6 @@ final class FriendsRemoteRepositoryTests: XCTestCase {
     
     func testFriendsRemoteRepository_FetchFriends1_Integration() async throws {
         // Given
-        let repository = FriendsRemoteRepository()
         
         // When
         let friends = try await repository.fetchFriends1()
@@ -61,7 +73,6 @@ final class FriendsRemoteRepositoryTests: XCTestCase {
     
     func testFriendsRemoteRepository_FetchFriends2_Integration() async throws {
         // Given
-        let repository = FriendsRemoteRepository()
         
         // When
         let friends = try await repository.fetchFriends2()
