@@ -196,7 +196,7 @@ extension FriendsViewController: UITableViewDelegate {
         if viewModel.isRequestSection(section) {
             headerView.configure(title: title, isExpanded: viewModel.isRequestsSectionExpanded)
         } else {
-            headerView.configure(title: title, isExpanded: nil)
+            headerView.configure(title: title)
         }
         
         return headerView
