@@ -579,6 +579,200 @@ final class FriendsViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.hasFriends)
         XCTAssertFalse(viewModel.hasFriendRequests)
         XCTAssertFalse(viewModel.hasConfirmedFriends)
+        XCTAssertFalse(viewModel.hasFilteredFriends)
+    }
+    
+    // MARK: - 測試 hasFilteredFriends
+    
+    func testHasFilteredFriends_WithFriendRequests() async throws {
+        // Given - 載入含有邀請的資料
+        let expectation = XCTestExpectation(description: "Friends data loaded")
+        
+        viewModel.friendsDataLoadedPublisher
+            .sink { _ in expectation.fulfill() }
+            .store(in: &cancellables)
+        
+        viewModel.loadFriendsData(for: .friendsListWithInvitation)
+        await fulfillment(of: [expectation], timeout: 2.0)
+        
+        // When & Then - 如果有邀請好友，hasFilteredFriends 應該為 true
+        if viewModel.hasFriendRequests {
+            XCTAssertTrue(viewModel.hasFilteredFriends)
+        }
+    }
+    
+    func testHasFilteredFriends_WithConfirmedFriends() async throws {
+        // Given - 載入只有已確認好友的資料
+        let expectation = XCTestExpectation(description: "Friends data loaded")
+        
+        viewModel.friendsDataLoadedPublisher
+            .sink { _ in expectation.fulfill() }
+            .store(in: &cancellables)
+        
+        viewModel.loadFriendsData(for: .friendsListOnly)
+        await fulfillment(of: [expectation], timeout: 2.0)
+        
+        // When & Then - 如果有已確認好友，hasFilteredFriends 應該為 true
+        if viewModel.hasConfirmedFriends {
+            XCTAssertTrue(viewModel.hasFilteredFriends)
+        }
+    }
+    
+    func testHasFilteredFriends_NoFriends() async throws {
+        // Given - 載入無好友的資料
+        let expectation = XCTestExpectation(description: "Friends data loaded")
+        
+        viewModel.friendsDataLoadedPublisher
+            .sink { _ in expectation.fulfill() }
+            .store(in: &cancellables)
+        
+        viewModel.loadFriendsData(for: .noFriends)
+        await fulfillment(of: [expectation], timeout: 2.0)
+        
+        // When & Then - 如果沒有好友，hasFilteredFriends 應該為 false
+        XCTAssertFalse(viewModel.hasFilteredFriends)
+    }
+    
+    // MARK: - 測試 friendsSection
+    
+    func testFriendsSection_WithFriendRequests() async throws {
+        // Given - 載入含有邀請的資料
+        let expectation = XCTestExpectation(description: "Friends data loaded")
+        
+        viewModel.friendsDataLoadedPublisher
+            .sink { _ in expectation.fulfill() }
+            .store(in: &cancellables)
+        
+        viewModel.loadFriendsData(for: .friendsListWithInvitation)
+        await fulfillment(of: [expectation], timeout: 2.0)
+        
+        // When & Then - 如果有邀請，friendsSection 應該是 Section.friends (1)
+        if viewModel.hasFriendRequests {
+            XCTAssertEqual(viewModel.friendsSection, FriendsViewModel.Section.friends)
+        }
+    }
+    
+    func testFriendsSection_WithoutFriendRequests() async throws {
+        // Given - 載入只有已確認好友的資料（沒有邀請）
+        let expectation = XCTestExpectation(description: "Friends data loaded")
+        
+        viewModel.friendsDataLoadedPublisher
+            .sink { _ in expectation.fulfill() }
+            .store(in: &cancellables)
+        
+        viewModel.loadFriendsData(for: .friendsListOnly)
+        await fulfillment(of: [expectation], timeout: 2.0)
+        
+        // When & Then - 如果沒有邀請，friendsSection 應該是 Section.requests (0)
+        if !viewModel.hasFriendRequests && viewModel.hasConfirmedFriends {
+            XCTAssertEqual(viewModel.friendsSection, FriendsViewModel.Section.requests)
+        }
+    }
+    
+    // MARK: - 測試 isSearchBarRow
+    
+    func testIsSearchBarRow_True() async throws {
+        // Given - 載入含有已確認好友的資料
+        let expectation = XCTestExpectation(description: "Friends data loaded")
+        
+        viewModel.friendsDataLoadedPublisher
+            .sink { _ in expectation.fulfill() }
+            .store(in: &cancellables)
+        
+        viewModel.loadFriendsData(for: .friendsListWithInvitation)
+        await fulfillment(of: [expectation], timeout: 2.0)
+        
+        // When - 設定不使用真實 SearchController，並檢查好友 section 的第一個 row
+        viewModel.isUsingRealSearchController = false
+        
+        guard viewModel.hasConfirmedFriends else {
+            XCTFail("Should have confirmed friends for this test")
+            return
+        }
+        
+        let friendsSection = viewModel.friendsSection
+        let indexPath = IndexPath(row: 0, section: friendsSection)
+        
+        // Then - 第一個 row 應該是搜尋列
+        XCTAssertTrue(viewModel.isSearchBarRow(at: indexPath))
+    }
+    
+    func testIsSearchBarRow_False_UsingRealSearchController() async throws {
+        // Given - 載入含有已確認好友的資料
+        let expectation = XCTestExpectation(description: "Friends data loaded")
+        
+        viewModel.friendsDataLoadedPublisher
+            .sink { _ in expectation.fulfill() }
+            .store(in: &cancellables)
+        
+        viewModel.loadFriendsData(for: .friendsListWithInvitation)
+        await fulfillment(of: [expectation], timeout: 2.0)
+        
+        // When - 設定使用真實 SearchController
+        viewModel.isUsingRealSearchController = true
+        
+        guard viewModel.hasConfirmedFriends else {
+            XCTFail("Should have confirmed friends for this test")
+            return
+        }
+        
+        let friendsSection = viewModel.friendsSection
+        let indexPath = IndexPath(row: 0, section: friendsSection)
+        
+        // Then - 使用真實 SearchController 時，不應該是搜尋列
+        XCTAssertFalse(viewModel.isSearchBarRow(at: indexPath))
+    }
+    
+    func testIsSearchBarRow_False_RequestSection() async throws {
+        // Given - 載入含有邀請的資料
+        let expectation = XCTestExpectation(description: "Friends data loaded")
+        
+        viewModel.friendsDataLoadedPublisher
+            .sink { _ in expectation.fulfill() }
+            .store(in: &cancellables)
+        
+        viewModel.loadFriendsData(for: .friendsListWithInvitation)
+        await fulfillment(of: [expectation], timeout: 2.0)
+        
+        // When - 檢查邀請 section
+        viewModel.isUsingRealSearchController = false
+        
+        guard viewModel.hasFriendRequests else {
+            XCTFail("Should have friend requests for this test")
+            return
+        }
+        
+        let requestSection = FriendsViewModel.Section.requests
+        let indexPath = IndexPath(row: 0, section: requestSection)
+        
+        // Then - 邀請 section 不應該是搜尋列
+        XCTAssertFalse(viewModel.isSearchBarRow(at: indexPath))
+    }
+    
+    func testIsSearchBarRow_False_NotFirstRow() async throws {
+        // Given - 載入含有已確認好友的資料
+        let expectation = XCTestExpectation(description: "Friends data loaded")
+        
+        viewModel.friendsDataLoadedPublisher
+            .sink { _ in expectation.fulfill() }
+            .store(in: &cancellables)
+        
+        viewModel.loadFriendsData(for: .friendsListWithInvitation)
+        await fulfillment(of: [expectation], timeout: 2.0)
+        
+        // When - 檢查好友 section 的第二個 row（不是第一個）
+        viewModel.isUsingRealSearchController = false
+        
+        guard viewModel.hasConfirmedFriends else {
+            XCTFail("Should have confirmed friends for this test")
+            return
+        }
+        
+        let friendsSection = viewModel.friendsSection
+        let indexPath = IndexPath(row: 1, section: friendsSection)
+        
+        // Then - 不是第一個 row，不應該是搜尋列
+        XCTAssertFalse(viewModel.isSearchBarRow(at: indexPath))
     }
     
     // MARK: - 測試 ViewOption Enum
