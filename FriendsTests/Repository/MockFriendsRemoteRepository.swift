@@ -12,13 +12,12 @@ class MockFriendsRemoteRepository: FriendsRepositoryProtocol {
     
     // MARK: - Properties for Testing
     var shouldThrowError = false
-    var errorToThrow: Error = RepositoryError.invalidURL
     
     // MARK: - FriendsRepositoryProtocol Implementation
     
     func fetchUserProfile() async throws -> Person {
         if shouldThrowError {
-            throw errorToThrow
+            throw RepositoryError.invalidURL
         }
         
         return try loadJSONFile(fileName: "man", type: Person.self)
@@ -26,7 +25,7 @@ class MockFriendsRemoteRepository: FriendsRepositoryProtocol {
     
     func fetchFriends_noFriends() async throws -> [Friend] {
         if shouldThrowError {
-            throw errorToThrow
+            throw RepositoryError.invalidURL
         }
         
         return try loadJSONFile(fileName: "friend4", type: Friend.Response.self).response
@@ -34,7 +33,7 @@ class MockFriendsRemoteRepository: FriendsRepositoryProtocol {
     
     func fetchFriends_hasFriends_hasInvitation() async throws -> [Friend] {
         if shouldThrowError {
-            throw errorToThrow
+            throw RepositoryError.invalidURL
         }
         
         return try loadJSONFile(fileName: "friend3", type: Friend.Response.self).response
@@ -42,7 +41,7 @@ class MockFriendsRemoteRepository: FriendsRepositoryProtocol {
     
     func fetchFriends1() async throws -> [Friend] {
         if shouldThrowError {
-            throw errorToThrow
+            throw RepositoryError.invalidURL
         }
         
         return try loadJSONFile(fileName: "friend1", type: Friend.Response.self).response
@@ -50,7 +49,7 @@ class MockFriendsRemoteRepository: FriendsRepositoryProtocol {
     
     func fetchFriends2() async throws -> [Friend] {
         if shouldThrowError {
-            throw errorToThrow
+            throw RepositoryError.invalidURL
         }
         
         return try loadJSONFile(fileName: "friend2", type: Friend.Response.self).response
