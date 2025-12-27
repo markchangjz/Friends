@@ -308,5 +308,22 @@ final class FriendModelTests: XCTestCase {
             XCTAssertTrue(error is DecodingError)
         }
     }
+    
+    // MARK: - 測試 Friend Status Enum
+    
+    func testFriendStatus_RawValues() {
+        XCTAssertEqual(Friend.FriendStatus.unknown.rawValue, -1)
+        XCTAssertEqual(Friend.FriendStatus.requestSent.rawValue, 0)
+        XCTAssertEqual(Friend.FriendStatus.accepted.rawValue, 1)
+        XCTAssertEqual(Friend.FriendStatus.pending.rawValue, 2)
+    }
+    
+    func testFriendStatus_InitFromRawValue() {
+        XCTAssertEqual(Friend.FriendStatus(rawValue: -1), .unknown)
+        XCTAssertEqual(Friend.FriendStatus(rawValue: 0), .requestSent)
+        XCTAssertEqual(Friend.FriendStatus(rawValue: 1), .accepted)
+        XCTAssertEqual(Friend.FriendStatus(rawValue: 2), .pending)
+        XCTAssertNil(Friend.FriendStatus(rawValue: 999))
+    }
 }
 

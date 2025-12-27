@@ -26,19 +26,6 @@ final class FriendsViewModelTests: XCTestCase {
         super.tearDown()
     }
     
-    // MARK: - 測試初始化狀態
-    
-    func testInitialState() {
-        XCTAssertEqual(viewModel.userName, "")
-        XCTAssertEqual(viewModel.userKokoId, "")
-        XCTAssertEqual(viewModel.selectedOption, .noFriends)
-        XCTAssertEqual(viewModel.searchText, "")
-        XCTAssertEqual(viewModel.numberOfSections, 0)
-        XCTAssertFalse(viewModel.hasFriends)
-        XCTAssertFalse(viewModel.hasFriendRequests)
-        XCTAssertFalse(viewModel.hasConfirmedFriends)
-    }
-    
     // MARK: - 測試載入使用者資料
     
     func testLoadUserData_Success() async throws {
@@ -579,6 +566,27 @@ final class FriendsViewModelTests: XCTestCase {
         if let topFriend = viewModel.displayConfirmedFriends.first(where: { $0.isTop }) {
             XCTAssertEqual(confirmedFriend.fid, topFriend.fid)
         }
+    }
+    
+    // MARK: - 測試初始化狀態
+    
+    func testInitialState() {
+        XCTAssertEqual(viewModel.userName, "")
+        XCTAssertEqual(viewModel.userKokoId, "")
+        XCTAssertEqual(viewModel.selectedOption, .noFriends)
+        XCTAssertEqual(viewModel.searchText, "")
+        XCTAssertEqual(viewModel.numberOfSections, 0)
+        XCTAssertFalse(viewModel.hasFriends)
+        XCTAssertFalse(viewModel.hasFriendRequests)
+        XCTAssertFalse(viewModel.hasConfirmedFriends)
+    }
+    
+    // MARK: - 測試 ViewOption Enum
+    
+    func testViewOption_RawValues() {
+        XCTAssertEqual(FriendsViewModel.ViewOption.noFriends.rawValue, "無好友畫面")
+        XCTAssertEqual(FriendsViewModel.ViewOption.friendsListOnly.rawValue, "只有好友列表")
+        XCTAssertEqual(FriendsViewModel.ViewOption.friendsListWithInvitation.rawValue, "好友列表含邀請")
     }
 }
 
