@@ -29,7 +29,7 @@ class MockFriendsRemoteRepository: FriendsRepositoryProtocol {
             throw errorToThrow
         }
         
-        return try loadFriendsJSONFile(fileName: "friend4")
+        return try loadJSONFile(fileName: "friend4", type: Friend.Response.self).response
     }
     
     func fetchFriends_hasFriends_hasInvitation() async throws -> [Friend] {
@@ -37,7 +37,7 @@ class MockFriendsRemoteRepository: FriendsRepositoryProtocol {
             throw errorToThrow
         }
         
-        return try loadFriendsJSONFile(fileName: "friend3")
+        return try loadJSONFile(fileName: "friend3", type: Friend.Response.self).response
     }
     
     func fetchFriends1() async throws -> [Friend] {
@@ -45,7 +45,7 @@ class MockFriendsRemoteRepository: FriendsRepositoryProtocol {
             throw errorToThrow
         }
         
-        return try loadFriendsJSONFile(fileName: "friend1")
+        return try loadJSONFile(fileName: "friend1", type: Friend.Response.self).response
     }
     
     func fetchFriends2() async throws -> [Friend] {
@@ -53,7 +53,7 @@ class MockFriendsRemoteRepository: FriendsRepositoryProtocol {
             throw errorToThrow
         }
         
-        return try loadFriendsJSONFile(fileName: "friend2")
+        return try loadJSONFile(fileName: "friend2", type: Friend.Response.self).response
     }
     
     // MARK: - Private Helper Methods
@@ -74,14 +74,6 @@ class MockFriendsRemoteRepository: FriendsRepositoryProtocol {
         let data = try Data(contentsOf: fileURL)
         let decoder = JSONDecoder()
         return try decoder.decode(T.self, from: data)
-    }
-    
-    /// 從 Bundle 讀取好友資料 JSON 檔案
-    /// - Parameter fileName: JSON 檔名（不含副檔名）
-    /// - Returns: 好友陣列
-    private func loadFriendsJSONFile(fileName: String) throws -> [Friend] {
-        let result: Friend.Response = try loadJSONFile(fileName: fileName, type: Friend.Response.self)
-        return result.response
     }
 }
 
