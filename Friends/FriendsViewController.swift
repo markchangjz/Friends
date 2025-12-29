@@ -337,6 +337,8 @@ extension FriendsViewController: UISearchResultsUpdating {
         let searchText = searchController.searchBar.text ?? ""
         viewModel.searchText = searchText
         viewModel.filterFriends()
+        // 搜尋關鍵字更新時，同步更新 cardViews 過濾結果
+        updateRequestsSection()
         updateEmptyState()
         tableView.reloadData()
     }
@@ -346,6 +348,9 @@ extension FriendsViewController: UISearchResultsUpdating {
 
 extension FriendsViewController: UserProfileHeaderViewDelegate {
     func userProfileHeaderViewDidTapRequests(_ headerView: UserProfileHeaderView) {
+        // 如果正在搜尋，不允許折疊
+        guard !viewModel.isSearching else { return }
+        
         // 記錄切換前的狀態
         let wasExpanded = viewModel.isRequestsSectionExpanded
         
@@ -410,6 +415,11 @@ extension FriendsViewController: UISearchBarDelegate {
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         viewModel.clearSearch()
         viewModel.isUsingRealSearchController = false
+        // 結束搜尋時，恢復原本折疊狀態
+        viewModel.stopSearching()
+        userProfileHeaderView.cancelForceExpand()
+        // 更新 Requests Section 以反映恢復的狀態
+        updateRequestsSection()
         updateEmptyState()
         
         transitionManager.deactivateSearch(
@@ -426,6 +436,13 @@ extension FriendsViewController: UISearchBarDelegate {
     
     private func activateRealSearchController() {
         viewModel.isUsingRealSearchController = true
+        // 開始搜尋時，強制展開 cardViews
+        viewModel.startSearching()
+        if viewModel.hasFriendRequests {
+            userProfileHeaderView.forceExpand()
+            // 更新 header layout 以反映展開狀態
+            updateHeaderLayout(animated: true)
+        }
         transitionManager.activateSearch(
             placeholderSearchBar: placeholderSearchBar,
             realSearchController: searchController,

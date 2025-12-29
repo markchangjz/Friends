@@ -38,6 +38,9 @@ class UserProfileHeaderView: UIView {
     /// 是否展開 Requests Section（預設為折疊）
     private(set) var isRequestsExpanded: Bool = false
     
+    /// 是否強制展開（搜尋時無法折疊）
+    private var isForcedExpanded: Bool = false
+    
     /// 好友邀請資料
     private var requests: [Friend] = []
     
@@ -384,6 +387,8 @@ class UserProfileHeaderView: UIView {
     // MARK: - Actions
     
     @objc private func handleRequestsTap() {
+        // 如果強制展開（搜尋中），不允許折疊
+        guard !isForcedExpanded else { return }
         // 只有當邀請數量大於 1 時才允許展開/收合
         guard requests.count > 1 else { return }
         delegate?.userProfileHeaderViewDidTapRequests(self)
@@ -404,6 +409,22 @@ class UserProfileHeaderView: UIView {
     func setExpandedState(_ expanded: Bool) {
         guard requests.count > 1 else { return }
         isRequestsExpanded = expanded
+    }
+    
+    /// 強制展開 cardViews（搜尋時使用，此時無法折疊）
+    func forceExpand() {
+        isForcedExpanded = true
+        if requests.count > 1 {
+            isRequestsExpanded = true
+        }
+        if bounds.width > 0 {
+            layoutRequestsSection(width: bounds.width, animated: true)
+        }
+    }
+    
+    /// 取消強制展開（搜尋結束時使用）
+    func cancelForceExpand() {
+        isForcedExpanded = false
     }
 }
 

@@ -63,6 +63,12 @@ class FriendsViewModel {
     
     // 是否正在使用真實的 searchController (決定是否顯示 placeholder search bar)
     var isUsingRealSearchController: Bool = false
+    
+    // 是否正在搜尋（用於追蹤搜尋狀態，搜尋時強制展開 cardViews）
+    private(set) var isSearching: Bool = false
+    
+    // 搜尋前的展開狀態（用於搜尋結束時恢復）
+    private var previousExpandedState: Bool = false
 
     // MARK: - Private Properties
     
@@ -231,6 +237,23 @@ class FriendsViewModel {
     func clearSearch() {
         searchText = ""
         filterFriends()
+    }
+    
+    /// 開始搜尋（強制展開 cardViews）
+    func startSearching() {
+        previousExpandedState = isRequestsSectionExpanded
+        isSearching = true
+        // 如果有邀請，強制展開
+        if hasFriendRequests {
+            isRequestsSectionExpanded = true
+        }
+    }
+    
+    /// 結束搜尋（恢復原本折疊狀態）
+    func stopSearching() {
+        isSearching = false
+        // 恢復搜尋前的狀態
+        isRequestsSectionExpanded = previousExpandedState
     }
     
     // MARK: - Private Methods
