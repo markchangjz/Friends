@@ -418,20 +418,36 @@ extension FriendsViewController: UISearchBarDelegate {
         // 結束搜尋時，恢復原本折疊狀態
         viewModel.stopSearching()
         userProfileHeaderView.cancelForceExpand()
-        // 更新 Requests Section 以反映恢復的狀態
-        updateRequestsSection()
-        updateEmptyState()
         
-        transitionManager.deactivateSearch(
+        // 立即同步 UserProfileHeaderView 的狀態（但不立即更新佈局）
+        userProfileHeaderView.setExpandedState(viewModel.isRequestsSectionExpanded)
+        
+        // 計算目標 header 高度
+        let hasRequests = viewModel.hasFriendRequests
+        let requestCount = viewModel.displayRequestFriends.count
+        let targetHeaderHeight = userProfileHeaderView.calculateHeight(
+            hasRequests: hasRequests,
+            isExpanded: viewModel.isRequestsSectionExpanded,
+            requestCount: requestCount
+        )
+        let tabSwitchHeight: CGFloat = 28
+        let targetContainerHeight = targetHeaderHeight + tabSwitchHeight
+        
+        transitionManager.deactivateSearchWithHeaderAnimation(
             placeholderSearchBar: placeholderSearchBar,
             realSearchController: searchController,
             tableView: tableView,
+            headerView: userProfileHeaderView,
+            headerContainer: tableHeaderContainerView,
+            headerHeightConstraint: userProfileHeaderViewHeightConstraint,
+            targetHeaderHeight: targetHeaderHeight,
+            targetContainerHeight: targetContainerHeight,
             in: self,
-            friendsSectionIndex: 0  // 現在只有一個 section
+            completion: { [weak self] in
+                // 動畫完成後更新空白狀態
+                self?.updateEmptyState()
+            }
         )
-        
-        // 重新載入 TableView 以顯示 Search Bar
-        tableView.reloadData()
     }
     
     private func activateRealSearchController() {

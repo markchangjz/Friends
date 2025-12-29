@@ -425,6 +425,8 @@ class UserProfileHeaderView: UIView {
     /// 取消強制展開（搜尋結束時使用）
     func cancelForceExpand() {
         isForcedExpanded = false
+        // 注意：不在這裡修改 isRequestsExpanded，因為它應該由 ViewModel 管理
+        // 這個方法只是取消強制展開的限制
     }
 }
 

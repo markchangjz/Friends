@@ -58,7 +58,7 @@ class FriendSearchTransitionManager {
         
         // 計算目標位置 (NavigationBar 下方)
         let navBarMaxY = viewController.navigationController?.navigationBar.frame.maxY ?? 0
-        let targetY = navBarMaxY + view.safeAreaInsets.top
+        let targetY = navBarMaxY  // navBarMaxY 已經包含了 safe area，不需要再加
         let targetFrame = CGRect(
             x: searchBarFrame.origin.x,
             y: targetY,
@@ -99,67 +99,176 @@ class FriendSearchTransitionManager {
         }
     }
     
-    func deactivateSearch(
+    func deactivateSearchWithHeaderAnimation(
         placeholderSearchBar: UISearchBar,
         realSearchController: UISearchController,
         tableView: UITableView,
+        headerView: UIView,
+        headerContainer: UIView,
+        headerHeightConstraint: NSLayoutConstraint,
+        targetHeaderHeight: CGFloat,
+        targetContainerHeight: CGFloat,
         in viewController: UIViewController,
-        friendsSectionIndex: Int
+        completion: (() -> Void)? = nil
     ) {
-        guard isUsingRealSearchController else { return }
-        
+        guard isUsingRealSearchController else { 
+            completion?()
+            return 
+        }
+
         // 建立快照
         guard let snapshotView = realSearchController.searchBar.snapshotView(afterScreenUpdates: false) else {
             deactivateRealSearchControllerWithoutAnimation(
                 viewController: viewController,
                 tableView: tableView
             )
+            completion?()
             return
         }
-        
+
         let view = viewController.view!
-        
+
         let searchBarFrame = realSearchController.searchBar.convert(realSearchController.searchBar.bounds, to: view)
         snapshotView.frame = searchBarFrame
         snapshotView.contentMode = .scaleAspectFit
         snapshotView.clipsToBounds = true
         view.addSubview(snapshotView)
-        
+
         // 移除 SearchController
         viewController.navigationItem.searchController = nil
         isUsingRealSearchController = false
-        
+
         // 準備讓 Placeholder 顯示
         placeholderSearchBar.alpha = 0
         UIView.performWithoutAnimation {
             tableView.reloadData()
         }
-        
+
         DispatchQueue.main.async {
-            // 尋找目標 Placeholder Cell 位置
-            let searchBarIndexPath = IndexPath(row: 0, section: friendsSectionIndex)
+            // 確保初始佈局正確
+            headerView.layoutIfNeeded()
             
-            if let cell = tableView.cellForRow(at: searchBarIndexPath) {
-                let targetFrame = cell.convert(cell.bounds, to: view)
+            // 計算動畫的起始和結束位置
+            let safeAreaTop = view.safeAreaInsets.top
+            let currentHeaderHeight = headerContainer.frame.height
+            let startY = safeAreaTop + currentHeaderHeight
+            let endY = safeAreaTop + targetContainerHeight
+            
+            let startFrame = CGRect(
+                x: searchBarFrame.origin.x,
+                y: startY,
+                width: searchBarFrame.width,
+                height: searchBarFrame.height
+            )
+            
+            let endFrame = CGRect(
+                x: searchBarFrame.origin.x,
+                y: endY,
+                width: searchBarFrame.width,
+                height: searchBarFrame.height
+            )
+            
+            // 設定快照的起始位置
+            snapshotView.frame = startFrame
+            
+            // 更新約束
+            headerHeightConstraint.constant = targetHeaderHeight
+            
+            // 同步執行 header 縮小動畫和搜尋列位移動畫
+            UIView.animate(
+                withDuration: 0.5,
+                delay: 0,
+                usingSpringWithDamping: 0.85,
+                initialSpringVelocity: 0.5,
+                options: [.curveEaseOut, .allowUserInteraction]
+            ) {
+                // Header 縮小動畫
+                headerContainer.frame.size.height = targetContainerHeight
+                headerContainer.layoutIfNeeded()
+                headerView.layoutIfNeeded()
                 
-                UIView.animate(
-                    withDuration: 0.5,
-                    delay: 0,
-                    usingSpringWithDamping: 0.85,
-                    initialSpringVelocity: 0.5,
-                    options: [.curveEaseOut, .allowUserInteraction]
-                ) {
-                    snapshotView.frame = targetFrame
-                } completion: { _ in
-                    snapshotView.removeFromSuperview()
-                    
-                    UIView.animate(withDuration: 0.2) {
-                        placeholderSearchBar.alpha = 1
-                    }
-                }
-            } else {
+                // 搜尋列跟隨動畫
+                snapshotView.frame = endFrame
+                
+                // 更新 TableView header
+                tableView.tableHeaderView = headerContainer
+            } completion: { _ in
                 snapshotView.removeFromSuperview()
-                placeholderSearchBar.alpha = 1
+
+                UIView.animate(withDuration: 0.2) {
+                    placeholderSearchBar.alpha = 1
+                } completion: { _ in
+                    completion?()
+                }
+            }
+        }
+    }
+    
+    func deactivateSearch(
+        placeholderSearchBar: UISearchBar,
+        realSearchController: UISearchController,
+        tableView: UITableView,
+        in viewController: UIViewController,
+        friendsSectionIndex: Int,
+        completion: (() -> Void)? = nil
+    ) {
+        guard isUsingRealSearchController else { 
+            completion?()
+            return 
+        }
+
+        // 建立快照
+        guard let snapshotView = realSearchController.searchBar.snapshotView(afterScreenUpdates: false) else {
+            deactivateRealSearchControllerWithoutAnimation(
+                viewController: viewController,
+                tableView: tableView
+            )
+            completion?()
+            return
+        }
+
+        let view = viewController.view!
+
+        let searchBarFrame = realSearchController.searchBar.convert(realSearchController.searchBar.bounds, to: view)
+        snapshotView.frame = searchBarFrame
+        snapshotView.contentMode = .scaleAspectFit
+        snapshotView.clipsToBounds = true
+        view.addSubview(snapshotView)
+
+        // 移除 SearchController
+        viewController.navigationItem.searchController = nil
+        isUsingRealSearchController = false
+
+        // 準備讓 Placeholder 顯示，但先讓它可見以便計算位置
+        placeholderSearchBar.alpha = 1
+        UIView.performWithoutAnimation {
+            tableView.reloadData()
+            tableView.layoutIfNeeded()
+        }
+
+        DispatchQueue.main.async {
+            // 使用 placeholder search bar 的實際位置作為目標
+            let targetFrame = placeholderSearchBar.convert(placeholderSearchBar.bounds, to: view)
+            
+            // 先隱藏 placeholder，讓動畫看起來是快照在移動
+            placeholderSearchBar.alpha = 0
+
+            UIView.animate(
+                withDuration: 0.5,
+                delay: 0,
+                usingSpringWithDamping: 0.85,
+                initialSpringVelocity: 0.5,
+                options: [.curveEaseOut, .allowUserInteraction]
+            ) {
+                snapshotView.frame = targetFrame
+            } completion: { _ in
+                snapshotView.removeFromSuperview()
+
+                UIView.animate(withDuration: 0.2) {
+                    placeholderSearchBar.alpha = 1
+                } completion: { _ in
+                    completion?()
+                }
             }
         }
     }
