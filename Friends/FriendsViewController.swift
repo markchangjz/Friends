@@ -227,6 +227,10 @@ class FriendsViewController: UIViewController {
             isExpanded: viewModel.isRequestsSectionExpanded
         )
         
+        // 更新 badge 數量（計算 displayConfirmedFriends 中 status == .pending 的數量）
+        let pendingCount = viewModel.displayConfirmedFriends.filter { $0.status == .pending }.count
+        tabSwitchView.updateBadgeCount(pendingCount)
+        
         // 首次載入時不使用動畫，避免出現由左往右的動畫
         if isFirstRequestsLoad {
             isFirstRequestsLoad = false

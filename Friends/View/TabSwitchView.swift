@@ -15,8 +15,11 @@ class TabSwitchView: UIView {
     private let chatButton = UIButton(type: .system)
     private let indicatorView = UIView()
     private let dividerView = UIView()
+    private let badgeView = UIView()
+    private let badgeLabel = UILabel()
     
     private var indicatorLeadingConstraint: NSLayoutConstraint?
+    private var badgeWidthConstraint: NSLayoutConstraint?
     
     // MARK: - Initialization
     
@@ -62,6 +65,20 @@ class TabSwitchView: UIView {
         indicatorView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(indicatorView)
         
+        // Badge（顯示待處理邀請數量）
+        badgeView.backgroundColor = UIColor(red: 249/255, green: 178/255, blue: 220/255, alpha: 1.0)
+        badgeView.layer.cornerRadius = 9
+        badgeView.translatesAutoresizingMaskIntoConstraints = false
+        badgeView.isHidden = true
+        addSubview(badgeView)
+        
+        badgeLabel.text = "0"
+        badgeLabel.font = UIFont(name: "PingFangTC-Medium", size: 12) ?? .systemFont(ofSize: 12, weight: .medium)
+        badgeLabel.textColor = .white
+        badgeLabel.textAlignment = .center
+        badgeLabel.translatesAutoresizingMaskIntoConstraints = false
+        badgeView.addSubview(badgeLabel)
+        
         NSLayoutConstraint.activate([
             // 分隔線（根據設計稿在底部）
             dividerView.leadingAnchor.constraint(equalTo: leadingAnchor),
@@ -82,8 +99,25 @@ class TabSwitchView: UIView {
             // 選中指示器（bottom, height, width 固定，leading 由 indicatorLeadingConstraint 動態控制）
             indicatorView.bottomAnchor.constraint(equalTo: dividerView.topAnchor),
             indicatorView.heightAnchor.constraint(equalToConstant: DesignConstants.Spacing.tabIndicatorHeight),
-            indicatorView.widthAnchor.constraint(equalToConstant: 20)
+            indicatorView.widthAnchor.constraint(equalToConstant: 20),
+            
+            // Badge（在 friendsButton 左上角，根據設計稿 x: 59, y: 262）
+            // friendsButton leading 是 32，badge x 是 59，所以 offset = 59 - 32 = 27
+            badgeView.leadingAnchor.constraint(equalTo: friendsButton.leadingAnchor, constant: 27),
+            badgeView.topAnchor.constraint(equalTo: friendsButton.topAnchor, constant: -9), // -9 讓 badge 在按鈕上方
+            badgeView.heightAnchor.constraint(equalToConstant: 18),
+            badgeView.widthAnchor.constraint(greaterThanOrEqualToConstant: 18),
+            
+            // Badge Label
+            badgeLabel.centerXAnchor.constraint(equalTo: badgeView.centerXAnchor),
+            badgeLabel.centerYAnchor.constraint(equalTo: badgeView.centerYAnchor),
+            badgeLabel.leadingAnchor.constraint(greaterThanOrEqualTo: badgeView.leadingAnchor, constant: 4),
+            badgeLabel.trailingAnchor.constraint(lessThanOrEqualTo: badgeView.trailingAnchor, constant: -4)
         ])
+        
+        // Badge 寬度約束（動態調整）
+        badgeWidthConstraint = badgeView.widthAnchor.constraint(equalToConstant: 18)
+        badgeWidthConstraint?.isActive = true
         
         // 設定指示器初始位置（動態約束，用於切換 Tab 時移動）
         indicatorLeadingConstraint = indicatorView.leadingAnchor.constraint(equalTo: friendsButton.leadingAnchor, constant: 3)
@@ -108,6 +142,43 @@ class TabSwitchView: UIView {
     enum Tab {
         case friends
         case chat
+    }
+    
+    /// 更新好友按鈕的 badge 數量
+    /// - Parameter count: 待處理邀請數量，0 時隱藏 badge
+    func updateBadgeCount(_ count: Int) {
+        guard count > 0 else {
+            badgeView.isHidden = true
+            return
+        }
+        
+        badgeView.isHidden = false
+        
+        // 根據數字決定顯示文字
+        let text: String
+        if count > 99 {
+            text = "99+"
+        } else {
+            text = "\(count)"
+        }
+        
+        badgeLabel.text = text
+        
+        // 動態計算寬度：文字寬度 + 左右 padding（各 4pt）
+        let font = badgeLabel.font ?? UIFont.systemFont(ofSize: 12, weight: .medium)
+        let textSize = (text as NSString).size(withAttributes: [.font: font])
+        let horizontalPadding: CGFloat = 8  // 左右各 4pt
+        let minWidth: CGFloat = 18  // 最小寬度（圓形 badge）
+        let calculatedWidth = max(textSize.width + horizontalPadding, minWidth)
+        
+        // 更新寬度約束
+        badgeWidthConstraint?.isActive = false
+        badgeWidthConstraint = badgeView.widthAnchor.constraint(equalToConstant: calculatedWidth)
+        badgeWidthConstraint?.isActive = true
+        
+        UIView.animate(withDuration: 0.2) {
+            self.layoutIfNeeded()
+        }
     }
     
     private func selectTab(_ tab: Tab, animated: Bool = true) {
