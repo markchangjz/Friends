@@ -20,12 +20,6 @@ class FriendsViewModel {
         case friendsListWithInvitation = "好友列表含邀請"
     }
     
-    // Section 索引常數
-    enum Section {
-        static let requests = 0
-        static let friends = 1
-    }
-    
     // MARK: - Public Properties
     
     // 用戶資料
@@ -47,15 +41,6 @@ class FriendsViewModel {
     // 錯誤處理 - 使用 PassthroughSubject 發布錯誤
     let errorPublisher = PassthroughSubject<Error, Never>()
     
-    // Section 計算
-    var numberOfSections: Int {
-        if allFriends.isEmpty {
-            return 0
-        } else {
-            return hasFriendRequests && hasConfirmedFriends ? 2 : 1
-        }
-    }
-    
     // 是否有任何好友資料（包含邀請和已確認好友）
     var hasFriends: Bool {
         return !allFriends.isEmpty
@@ -73,16 +58,11 @@ class FriendsViewModel {
         return !displayConfirmedFriends.isEmpty
     }
     
-    // Requests section 展開狀態
-    var isRequestsSectionExpanded: Bool = true
+    // Requests section 展開狀態（預設折疊）
+    var isRequestsSectionExpanded: Bool = false
     
     // 是否正在使用真實的 searchController (決定是否顯示 placeholder search bar)
     var isUsingRealSearchController: Bool = false
-    
-    // 好友 section 的索引
-    var friendsSection: Int {
-        return hasFriendRequests ? Section.friends : Section.requests
-    }
 
     // MARK: - Private Properties
     
@@ -227,46 +207,7 @@ class FriendsViewModel {
         )
     }
     
-    // MARK: - TableView Data Source Helpers
-    
-    func numberOfRows(in section: Int) -> Int {
-        guard section < numberOfSections else { return 0 }
-        
-        if isRequestSection(section) {
-            return isRequestsSectionExpanded ? displayRequestFriends.count : 0
-        } else {
-            // 好友列表區塊：加上搜尋列 (如果沒有使用真實 SearchController)
-            let searchBarCount = isUsingRealSearchController ? 0 : 1
-            return displayConfirmedFriends.count + searchBarCount
-        }
-    }
-    
-    /// 檢查特定 IndexPath 是否為搜尋列 Row
-    func isSearchBarRow(at indexPath: IndexPath) -> Bool {
-        return !isRequestSection(indexPath.section) && !isUsingRealSearchController && indexPath.row == 0
-    }
-    
-    func isRequestSection(_ section: Int) -> Bool {
-        return hasFriendRequests && section == Section.requests
-    }
-    
-    func friendRequest(at index: Int) -> Friend {
-        return displayRequestFriends[index]
-    }
-    
-    func confirmedFriend(at row: Int) -> Friend {
-        // 如果有 placeholder search bar，索引需要減 1
-        let friendIndex = isUsingRealSearchController ? row : row - 1
-        return displayConfirmedFriends[friendIndex]
-    }
-    
-    func titleForHeader(in section: Int) -> String {
-        if isRequestSection(section) {
-            return "Requests"
-        } else {
-            return "Friends"
-        }
-    }
+    // MARK: - Data Access
     
     /// 根據搜尋文字過濾好友資料
     func filterFriends() {
