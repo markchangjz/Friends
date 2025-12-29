@@ -201,7 +201,34 @@ class FriendsViewController: UIViewController {
         // 只有在沒有原始資料時才顯示「尚無好友」
         // 如果有原始資料但搜尋結果為空，只顯示空白 TableView
         tableView.isHidden = false
-        emptyStateView.isHidden = viewModel.hasFriends
+        
+        if viewModel.hasFriends {
+            // 有資料時，移除 tableFooterView 以消除空白
+            emptyStateView.isHidden = true
+            tableView.tableFooterView = nil
+        } else {
+            // 無資料時，設定 tableFooterView 顯示 EmptyStateView
+            emptyStateView.isHidden = false
+            
+            // 計算 EmptyStateView 實際需要的內容高度
+            // 根據約束計算：topOffset(30) + illustration(172) + title(40) + titleHeight + subtitle(8) + subtitleHeight + button(25) + button(40) + help(37) + helpHeight + bottom(20)
+            // 使用 systemLayoutSizeFitting 來計算實際高度
+            emptyStateView.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: 0)
+            emptyStateView.setNeedsLayout()
+            emptyStateView.layoutIfNeeded()
+            
+            // 計算實際需要的尺寸（根據約束）
+            let targetSize = CGSize(width: view.bounds.width, height: UIView.layoutFittingCompressedSize.height)
+            let fittingSize = emptyStateView.systemLayoutSizeFitting(
+                targetSize,
+                withHorizontalFittingPriority: .required,
+                verticalFittingPriority: .fittingSizeLevel
+            )
+            
+            // 設定 frame 為實際內容高度
+            emptyStateView.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: fittingSize.height)
+            tableView.tableFooterView = emptyStateView
+        }
     }
     
     private func showLoading() {

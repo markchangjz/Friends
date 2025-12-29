@@ -94,6 +94,16 @@ struct DesignConstants {
                 return UIColor(red: 142/255, green: 142/255, blue: 147/255, alpha: 0.12) // 淺色模式
             }
         }
+        
+        // Cell 背景色（支援 Dark Mode）
+        static let cellBackground = UIColor { traitCollection in
+            switch traitCollection.userInterfaceStyle {
+            case .dark:
+                return UIColor(red: 28/255, green: 28/255, blue: 30/255, alpha: 1.0) // 深色模式：與背景色相同
+            default:
+                return UIColor(red: 252/255, green: 252/255, blue: 252/255, alpha: 1.0) // 淺色模式：與背景色相同
+            }
+        }
     }
     
     // MARK: - Typography

@@ -91,6 +91,12 @@ class FriendTableViewCell: UITableViewCell {
     }
     
     private func setupUI() {
+        // 設定 Cell 背景色（支援 Dark Mode）
+        backgroundColor = DesignConstants.Colors.cellBackground
+        contentView.backgroundColor = DesignConstants.Colors.cellBackground
+        selectedBackgroundView = UIView()
+        selectedBackgroundView?.backgroundColor = DesignConstants.Colors.cellBackground
+        
         contentView.addSubview(starImageView)
         contentView.addSubview(avatarImageView)
         contentView.addSubview(nameLabel)
