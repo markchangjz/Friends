@@ -284,10 +284,16 @@ extension FriendsViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if isSearchBarRow(at: indexPath) {
-            return configureSearchBarCell(for: indexPath)
+            let cell = configureSearchBarCell(for: indexPath)
+            // 隱藏 Search Bar Cell 的分隔線
+            cell.separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: .greatestFiniteMagnitude)
+            return cell
         }
         
-        return configureFriendCell(for: indexPath)
+        let cell = configureFriendCell(for: indexPath)
+        // 設定分隔線 leading 跟 nameLabel leading 一樣 (50 + 40 + 15 = 105)
+        cell.separatorInset = UIEdgeInsets(top: 0, left: 105, bottom: 0, right: 0)
+        return cell
     }
     
     private func isSearchBarRow(at indexPath: IndexPath) -> Bool {
@@ -505,6 +511,9 @@ extension FriendsViewController {
             textField.backgroundColor = DesignConstants.Colors.searchBarBackground
             textField.layer.cornerRadius = 10
             textField.clipsToBounds = true
+            
+            // 設定搜尋圖示顏色
+            textField.leftView?.tintColor = DesignConstants.Colors.steel
         }
     }
     
