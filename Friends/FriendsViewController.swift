@@ -29,6 +29,7 @@ class FriendsViewController: UIViewController {
     
     // UI 元件
     private lazy var userProfileHeaderView = UserProfileHeaderView(width: view.bounds.width)
+    private let tabSwitchView = TabSwitchView()
     private let tableView = UITableView()
     private let emptyStateView = EmptyStateView()
     private let refreshControl = UIRefreshControl()
@@ -46,7 +47,66 @@ class FriendsViewController: UIViewController {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        updateUserProfileHeaderLayout()
+        setupTableHeaderView()
+        updateTableViewContentInset()
+    }
+    
+    private func setupTableHeaderView() {
+        // 如果已經設定過且寬度相同，就不需要重新設定
+        if let existingHeader = tableView.tableHeaderView,
+           existingHeader.frame.width == view.bounds.width {
+            return
+        }
+        
+        // 根據設計稿：總高度 192，扣除 safe area (44 navigation bar + 20 狀態列 = 64) = 128
+        let containerHeight: CGFloat = 128  // 192 - 64
+        
+        // 建立容器 View 包含 header 和 tab switch
+        let containerView = UIView()
+        containerView.backgroundColor = DesignConstants.Colors.background
+        
+        containerView.addSubview(userProfileHeaderView)
+        containerView.addSubview(tabSwitchView)
+        
+        userProfileHeaderView.translatesAutoresizingMaskIntoConstraints = false
+        tabSwitchView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // UserProfileHeaderView 高度：設計稿中 Tab 切換在 y: 164，扣除 safe area 64 = 100
+        // TabSwitchView 高度 = 28
+        let userProfileHeaderHeight: CGFloat = 100  // 164 - 64 = 100
+        
+        NSLayoutConstraint.activate([
+            userProfileHeaderView.topAnchor.constraint(equalTo: containerView.topAnchor),
+            userProfileHeaderView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            userProfileHeaderView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+            userProfileHeaderView.heightAnchor.constraint(equalToConstant: userProfileHeaderHeight),
+            
+            tabSwitchView.topAnchor.constraint(equalTo: userProfileHeaderView.bottomAnchor),
+            tabSwitchView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            tabSwitchView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+            tabSwitchView.heightAnchor.constraint(equalToConstant: 28),
+            tabSwitchView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor)
+        ])
+        
+        // 設定初始 frame
+        containerView.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: containerHeight)
+        
+        // 強制布局計算
+        containerView.setNeedsLayout()
+        containerView.layoutIfNeeded()
+        
+        // 更新 header view 的 layout，傳入 safe area 資訊以調整內容位置
+        userProfileHeaderView.updateLayout(for: view.bounds.width, safeAreaTop: 64)
+        
+        // 重新設定 frame 確保正確
+        containerView.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: containerHeight)
+        tableView.tableHeaderView = containerView
+    }
+    
+    private func updateTableViewContentInset() {
+        let safeAreaTop = view.safeAreaInsets.top
+        tableView.contentInset = UIEdgeInsets(top: safeAreaTop, left: 0, bottom: 0, right: 0)
+        tableView.scrollIndicatorInsets = tableView.contentInset
     }
     
     // MARK: - Private Methods
@@ -196,7 +256,8 @@ extension FriendsViewController: UITableViewDelegate {
         if viewModel.isRequestSection(section) {
             headerView.configure(title: title, isExpanded: viewModel.isRequestsSectionExpanded)
         } else {
-            headerView.configure(title: title)
+            // Friends section 不可折疊，傳入 nil
+            headerView.configure(title: title, isExpanded: nil)
         }
         
         return headerView
@@ -253,6 +314,9 @@ extension FriendsViewController: UISearchBarDelegate {
             in: self,
             friendsSectionIndex: viewModel.friendsSection
         )
+        
+        // 重新載入 TableView 以顯示 Search Bar
+        tableView.reloadData()
     }
     
     private func activateRealSearchController() {
@@ -281,6 +345,19 @@ extension FriendsViewController {
         
         menuButton.menu = viewModel.createMenu()
         navigationItem.leftBarButtonItem = menuButton
+        
+        // 設定 Navigation Bar 背景色與 Header View 一致（支援 Dark Mode）
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = DesignConstants.Colors.background
+        appearance.shadowColor = .clear // 移除底部陰影線
+        
+        navigationController?.navigationBar.standardAppearance = appearance
+        navigationController?.navigationBar.scrollEdgeAppearance = appearance
+        navigationController?.navigationBar.compactAppearance = appearance
+        if #available(iOS 15.0, *) {
+            navigationController?.navigationBar.compactScrollEdgeAppearance = appearance
+        }
     }
     
     private func setupSearchBarContainer() {
@@ -292,14 +369,48 @@ extension FriendsViewController {
         searchController.hidesNavigationBarDuringPresentation = false
         searchController.searchBar.delegate = self
         
+        // 設定搜尋列樣式
+        if let textField = searchController.searchBar.value(forKey: "searchField") as? UITextField {
+            textField.font = DesignConstants.Typography.searchPlaceholderFont()
+            textField.textColor = DesignConstants.Colors.lightGrey
+            textField.attributedPlaceholder = NSAttributedString(
+                string: placeholder,
+                attributes: [
+                    .foregroundColor: DesignConstants.Colors.steel,
+                    .font: DesignConstants.Typography.searchPlaceholderFont(),
+                    .kern: -0.3376471
+                ]
+            )
+            textField.backgroundColor = DesignConstants.Colors.searchBarBackground
+            textField.layer.cornerRadius = 10
+            textField.clipsToBounds = true
+        }
+        
         placeholderSearchBar.searchBarStyle = .minimal
         placeholderSearchBar.placeholder = placeholder
         placeholderSearchBar.isUserInteractionEnabled = true
         placeholderSearchBar.delegate = self
+        
+        // 設定 placeholder search bar 樣式
+        if let textField = placeholderSearchBar.value(forKey: "searchField") as? UITextField {
+            textField.font = DesignConstants.Typography.searchPlaceholderFont()
+            textField.textColor = DesignConstants.Colors.lightGrey
+            textField.attributedPlaceholder = NSAttributedString(
+                string: placeholder,
+                attributes: [
+                    .foregroundColor: DesignConstants.Colors.steel,
+                    .font: DesignConstants.Typography.searchPlaceholderFont(),
+                    .kern: -0.3376471
+                ]
+            )
+            textField.backgroundColor = DesignConstants.Colors.searchBarBackground
+            textField.layer.cornerRadius = 10
+            textField.clipsToBounds = true
+        }
     }
     
     private func setupUI() {
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = DesignConstants.Colors.background
         
         setupTableView()
         setupSearchBarContainer()
@@ -308,14 +419,17 @@ extension FriendsViewController {
     }
     
     private func setupTableView() {
-        tableView.tableHeaderView = userProfileHeaderView
-        
-        tableView.backgroundColor = .systemBackground
+        tableView.backgroundColor = DesignConstants.Colors.background
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.delegate = self
         tableView.dataSource = self
         tableView.estimatedRowHeight = 80
+        tableView.separatorColor = DesignConstants.Colors.divider
+        tableView.contentInsetAdjustmentBehavior = .never
         
+        // 設置 refreshControl 的背景色（透過 tintColor 和背景視圖）
+        refreshControl.tintColor = DesignConstants.Colors.lightGrey
+        refreshControl.backgroundColor = DesignConstants.Colors.background
         refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
         tableView.refreshControl = refreshControl
         
@@ -326,30 +440,26 @@ extension FriendsViewController {
         view.addSubview(tableView)
         
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            tableView.topAnchor.constraint(equalTo: view.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
+        
+        // 設定初始 contentInset
+        updateTableViewContentInset()
+        
+        // Header 會在 viewDidLayoutSubviews 中設定
     }
     
     private func updateUserProfileHeaderView() {
         userProfileHeaderView.configure(name: viewModel.userName, kokoId: viewModel.userKokoId)
     }
     
-    private func updateUserProfileHeaderLayout() {
-        guard let headerView = tableView.tableHeaderView as? UserProfileHeaderView else { return }
-        
-        let headerWidth = view.bounds.width
-        
-        guard headerView.frame.width != headerWidth else { return }
-        
-        headerView.updateLayout(for: headerWidth)
-        tableView.tableHeaderView = headerView
-    }
-    
     private func setupEmptyStateView() {
-        tableView.backgroundView = emptyStateView
+        // 設定為 tableFooterView 以便與 Header 同步滾動
+        emptyStateView.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: 600)
+        tableView.tableFooterView = emptyStateView
         emptyStateView.isHidden = true
     }
     

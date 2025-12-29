@@ -14,20 +14,18 @@ class FriendRequestTableViewCell: UITableViewCell {
     // UI 元件
     private let avatarImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage(systemName: "person.crop.circle")
-        imageView.tintColor = .systemGray3
+        imageView.image = UIImage(named: "imgFriendsFemaleDefault")
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         imageView.layer.cornerRadius = 20
-        imageView.backgroundColor = .systemGray5
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
     
     private let nameLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 16, weight: .medium)
-        label.textColor = .label
+        label.font = DesignConstants.Typography.friendNameFont()
+        label.textColor = DesignConstants.Colors.lightGrey
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -35,22 +33,19 @@ class FriendRequestTableViewCell: UITableViewCell {
     private let invitationLabel: UILabel = {
         let label = UILabel()
         label.text = "邀請你成為好友：）"
-        label.font = .systemFont(ofSize: 13, weight: .regular)
-        label.textColor = .systemGray
+        label.font = DesignConstants.Typography.kokoIdFont()
+        label.textColor = DesignConstants.Colors.warmGrey
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-    
-    // 定義顏色常數（支援 Dark Mode）
-    private let pinkColor = UIColor(red: 236/255, green: 0/255, blue: 140/255, alpha: 1.0)
     
     private lazy var acceptButton: UIButton = {
         let button = UIButton(type: .system)
         // 設定較小的圖示尺寸，避免被邊框切到
         let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .medium)
         button.setImage(UIImage(systemName: "checkmark", withConfiguration: config), for: .normal)
-        button.tintColor = pinkColor
-        button.backgroundColor = .systemBackground
+        button.tintColor = DesignConstants.Colors.hotPink
+        button.backgroundColor = DesignConstants.Colors.background
         button.layer.borderWidth = 2
         button.layer.cornerRadius = 15  // 寬高為 30，設為 15 形成正圓
         button.clipsToBounds = true
@@ -63,8 +58,8 @@ class FriendRequestTableViewCell: UITableViewCell {
         // 設定較小的圖示尺寸，避免被邊框切到
         let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .medium)
         button.setImage(UIImage(systemName: "xmark", withConfiguration: config), for: .normal)
-        button.tintColor = .systemGray
-        button.backgroundColor = .systemBackground
+        button.tintColor = DesignConstants.Colors.warmGrey
+        button.backgroundColor = DesignConstants.Colors.background
         button.layer.borderWidth = 2
         button.layer.cornerRadius = 15  // 寬高為 30，設為 15 形成正圓
         button.clipsToBounds = true
@@ -127,8 +122,7 @@ class FriendRequestTableViewCell: UITableViewCell {
         nameLabel.text = friend.name
         
         // 設定預設頭像
-        avatarImageView.image = UIImage(systemName: "person.crop.circle")
-        avatarImageView.tintColor = .systemGray3
+        avatarImageView.image = UIImage(named: "imgFriendsFemaleDefault")
     }
     
     override func prepareForReuse() {
@@ -149,9 +143,9 @@ class FriendRequestTableViewCell: UITableViewCell {
     /// 更新按鈕邊框顏色（支援 Dark Mode）
     private func updateButtonColors() {
         // 更新 acceptButton 邊框顏色
-        acceptButton.layer.borderColor = pinkColor.resolvedColor(with: traitCollection).cgColor
+        acceptButton.layer.borderColor = DesignConstants.Colors.hotPink.resolvedColor(with: traitCollection).cgColor
         
         // 更新 rejectButton 邊框顏色
-        rejectButton.layer.borderColor = UIColor.systemGray.resolvedColor(with: traitCollection).cgColor
+        rejectButton.layer.borderColor = DesignConstants.Colors.warmGrey.resolvedColor(with: traitCollection).cgColor
     }
 }

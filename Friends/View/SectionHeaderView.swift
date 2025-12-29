@@ -48,7 +48,7 @@ class SectionHeaderView: UIView {
     // MARK: - Setup
     
     private func setupUI() {
-        backgroundColor = .systemBackground
+        backgroundColor = DesignConstants.Colors.background
         
         addSubview(titleLabel)
         addSubview(arrowImageView)

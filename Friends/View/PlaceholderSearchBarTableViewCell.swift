@@ -30,7 +30,7 @@ class PlaceholderSearchBarTableViewCell: UITableViewCell {
     
     private func setupUI() {
         selectionStyle = .none
-        backgroundColor = .systemBackground
+        backgroundColor = DesignConstants.Colors.background
     }
     
     // MARK: - Configuration
