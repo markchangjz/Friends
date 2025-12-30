@@ -46,10 +46,6 @@ class FriendsViewModel {
         return !allFriends.isEmpty
     }
     
-    var hasFilteredFriends: Bool {
-        return hasFriendRequests || hasConfirmedFriends
-    }
-    
     var hasFriendRequests: Bool {
         return !displayRequestFriends.isEmpty
     }
@@ -110,23 +106,6 @@ class FriendsViewModel {
     }
     
     // MARK: - Public Methods
-    
-    func loadUserData() {
-        Task {
-            do {
-                let userProfile = try await repository.fetchUserProfile()
-                await MainActor.run {
-                    self.userName = userProfile.name
-                    self.userKokoId = userProfile.kokoid
-                    self.userProfileDataLoadedPublisher.send()
-                }
-            } catch {
-                await MainActor.run {
-                    self.errorPublisher.send(error)
-                }
-            }
-        }
-    }
     
     func loadFriendsData(for option: ViewOption) {
         Task {

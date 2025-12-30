@@ -26,51 +26,6 @@ final class FriendsViewModelTests: XCTestCase {
         super.tearDown()
     }
     
-    // MARK: - 測試載入使用者資料
-    
-    func testLoadUserData_Success() async throws {
-        // Given - MockRepository 會從 JSON 檔案讀取資料
-        // 先訂閱 publisher，確保不會錯過事件
-        let expectation = XCTestExpectation(description: "User profile loaded")
-        
-        viewModel.userProfileDataLoadedPublisher
-            .sink { _ in
-                expectation.fulfill()
-            }
-            .store(in: &cancellables)
-        
-        // When
-        viewModel.loadUserData()
-        
-        // Then - 等待 publisher 發送事件
-        await fulfillment(of: [expectation], timeout: 2.0)
-        
-        // 驗證從 JSON 檔案讀取的資料（man.json 包含 "蔡國泰" 和 "Mike"）
-        XCTAssertFalse(viewModel.userName.isEmpty)
-        XCTAssertFalse(viewModel.userKokoId.isEmpty)
-    }
-    
-    func testLoadUserData_Failure() async throws {
-        // Given
-        mockRepository.shouldThrowError = true
-        
-        // 先訂閱錯誤 publisher，確保不會錯過事件
-        let expectation = XCTestExpectation(description: "Error published")
-        
-        viewModel.errorPublisher
-            .sink { error in
-                XCTAssertNotNil(error)
-                expectation.fulfill()
-            }
-            .store(in: &cancellables)
-        
-        // When
-        viewModel.loadUserData()
-        
-        // Then
-        await fulfillment(of: [expectation], timeout: 2.0)
-    }
-    
     // MARK: - 測試載入好友資料
     
     func testLoadFriendsData_NoFriends() async throws {
@@ -495,58 +450,6 @@ final class FriendsViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.hasFriends)
         XCTAssertFalse(viewModel.hasFriendRequests)
         XCTAssertFalse(viewModel.hasConfirmedFriends)
-        XCTAssertFalse(viewModel.hasFilteredFriends)
-    }
-    
-    // MARK: - 測試 hasFilteredFriends
-    
-    func testHasFilteredFriends_WithFriendRequests() async throws {
-        // Given - 載入含有邀請的資料
-        let expectation = XCTestExpectation(description: "Friends data loaded")
-        
-        viewModel.friendsDataLoadedPublisher
-            .sink { _ in expectation.fulfill() }
-            .store(in: &cancellables)
-        
-        viewModel.loadFriendsData(for: .friendsListWithInvitation)
-        await fulfillment(of: [expectation], timeout: 2.0)
-        
-        // When & Then - 如果有邀請好友，hasFilteredFriends 應該為 true
-        if viewModel.hasFriendRequests {
-            XCTAssertTrue(viewModel.hasFilteredFriends)
-        }
-    }
-    
-    func testHasFilteredFriends_WithConfirmedFriends() async throws {
-        // Given - 載入只有已確認好友的資料
-        let expectation = XCTestExpectation(description: "Friends data loaded")
-        
-        viewModel.friendsDataLoadedPublisher
-            .sink { _ in expectation.fulfill() }
-            .store(in: &cancellables)
-        
-        viewModel.loadFriendsData(for: .friendsListOnly)
-        await fulfillment(of: [expectation], timeout: 2.0)
-        
-        // When & Then - 如果有已確認好友，hasFilteredFriends 應該為 true
-        if viewModel.hasConfirmedFriends {
-            XCTAssertTrue(viewModel.hasFilteredFriends)
-        }
-    }
-    
-    func testHasFilteredFriends_NoFriends() async throws {
-        // Given - 載入無好友的資料
-        let expectation = XCTestExpectation(description: "Friends data loaded")
-        
-        viewModel.friendsDataLoadedPublisher
-            .sink { _ in expectation.fulfill() }
-            .store(in: &cancellables)
-        
-        viewModel.loadFriendsData(for: .noFriends)
-        await fulfillment(of: [expectation], timeout: 2.0)
-        
-        // When & Then - 如果沒有好友，hasFilteredFriends 應該為 false
-        XCTAssertFalse(viewModel.hasFilteredFriends)
     }
     
     // MARK: - 測試 isRequestsSectionExpanded

@@ -20,7 +20,6 @@ class UserProfileHeaderView: UIView {
     private let avatarSize: CGFloat = 52
     private let horizontalPadding: CGFloat = 30
     // 設計稿中的絕對位置（相對於整個畫面，包含 safe area 64pt）
-    private let designAvatarTop: CGFloat = 82  // 根據設計稿 y: 82
     private let designNameTop: CGFloat = 90    // 根據設計稿 y: 90
     private let designKokoIdTop: CGFloat = 116 // 根據設計稿 y: 116
     
@@ -443,17 +442,6 @@ class UserProfileHeaderView: UIView {
         // 只有當邀請數量大於 1 時才允許展開/收合
         guard requests.count > 1 else { return }
         delegate?.userProfileHeaderViewDidTapRequests(self)
-    }
-    
-    /// 切換展開/折疊狀態（帶動畫）
-    /// - Parameter animated: 是否帶動畫
-    func toggleRequestsExpanded(animated: Bool = true) {
-        // 只有多於 1 個邀請才允許進入切換狀態
-        guard requests.count > 1 else { return }
-        
-        // 注意：isRequestsExpanded 應該在呼叫此方法前由外部設定
-        // 這裡只負責更新布局
-        layoutRequestsSection(width: bounds.width, animated: animated)
     }
     
     /// 設定展開狀態（不帶動畫，用於同步 ViewModel 狀態）

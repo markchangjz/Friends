@@ -100,9 +100,6 @@ class EmptyStateView: UIView {
             addFriendButton.addSubview(addFriendIconView)
         }
         
-        // 隱藏原生按鈕文字
-        addFriendButton.addTarget(self, action: #selector(addFriendButtonTapped), for: .touchUpInside)
-        
         addFriendButton.translatesAutoresizingMaskIntoConstraints = false
         addSubview(addFriendButton)
         
@@ -183,9 +180,5 @@ class EmptyStateView: UIView {
             self.addFriendButton.transform = .identity
             self.addFriendButton.alpha = 1.0
         }
-    }
-    
-    @objc private func addFriendButtonTapped() {
-        // 加好友功能實作
     }
 }
