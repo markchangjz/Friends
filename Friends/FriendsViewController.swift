@@ -619,8 +619,7 @@ extension FriendsViewController {
                 string: placeholder,
                 attributes: [
                     .foregroundColor: DesignConstants.Colors.steel,
-                    .font: DesignConstants.Typography.searchPlaceholderFont(),
-                    .kern: -0.3376471
+                    .font: DesignConstants.Typography.searchPlaceholderFont()
                 ]
             )
             textField.backgroundColor = DesignConstants.Colors.searchBarBackground
@@ -641,8 +640,7 @@ extension FriendsViewController {
                 string: placeholder,
                 attributes: [
                     .foregroundColor: DesignConstants.Colors.steel,
-                    .font: DesignConstants.Typography.searchPlaceholderFont(),
-                    .kern: -0.3376471
+                    .font: DesignConstants.Typography.searchPlaceholderFont()
                 ]
             )
             textField.backgroundColor = DesignConstants.Colors.searchBarBackground
