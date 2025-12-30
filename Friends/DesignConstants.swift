@@ -104,6 +104,26 @@ struct DesignConstants {
                 return UIColor(red: 252/255, green: 252/255, blue: 252/255, alpha: 1.0) // 淺色模式：與背景色相同
             }
         }
+        
+        // Tab Bar 背景色（支援 Dark Mode）
+        static let tabBarBackground = UIColor { traitCollection in
+            switch traitCollection.userInterfaceStyle {
+            case .dark:
+                return UIColor(red: 22/255, green: 22/255, blue: 24/255, alpha: 1.0) // 深色模式：稍微深一點
+            default:
+                return UIColor(red: 248/255, green: 248/255, blue: 248/255, alpha: 1.0) // 淺色模式：稍微深一點
+            }
+        }
+        
+        // Tab Bar 上邊框線（支援 Dark Mode）
+        static let tabBarTopBorder = UIColor { traitCollection in
+            switch traitCollection.userInterfaceStyle {
+            case .dark:
+                return UIColor(red: 99/255, green: 99/255, blue: 102/255, alpha: 1.0) // 深色模式：較淺的灰色
+            default:
+                return UIColor(red: 200/255, green: 200/255, blue: 200/255, alpha: 1.0) // 淺色模式：較深的灰色
+            }
+        }
     }
     
     // MARK: - Typography
