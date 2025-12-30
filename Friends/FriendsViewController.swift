@@ -479,9 +479,35 @@ extension FriendsViewController {
             target: nil,
             action: nil
         )
-        
+        menuButton.tintColor = .label
         menuButton.menu = viewModel.createMenu()
-        navigationItem.leftBarButtonItem = menuButton
+        
+        let fixedSpaceButton = UIBarButtonItem(systemItem: .fixedSpace)
+        
+        let withdrawButton = UIBarButtonItem(
+            image: UIImage(named: "icNavPinkWithdraw")?.withRenderingMode(.alwaysOriginal),
+            style: .plain,
+            target: nil,
+            action: nil
+        )
+        
+        let transferButton = UIBarButtonItem(
+            image: UIImage(named: "icNavPinkTransfer")?.withRenderingMode(.alwaysOriginal),
+            style: .plain,
+            target: nil,
+            action: nil
+        )
+        
+        navigationItem.leftBarButtonItems = [withdrawButton, transferButton, fixedSpaceButton, menuButton]
+        
+        let scanButton = UIBarButtonItem(
+            image: UIImage(named: "icNavPinkScan")?.withRenderingMode(.alwaysOriginal),
+            style: .plain,
+            target: nil,
+            action: nil
+        )
+        
+        navigationItem.rightBarButtonItems = [scanButton]
         
         // 設定 Navigation Bar 背景色與 Header View 一致（支援 Dark Mode）
         let appearance = UINavigationBarAppearance()
