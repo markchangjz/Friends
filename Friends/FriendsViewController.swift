@@ -248,9 +248,8 @@ class FriendsViewController: UIViewController {
             emptyStateView.isHidden = false
             
             // 計算 EmptyStateView 實際需要的內容高度
-            // 根據約束計算：topOffset(30) + illustration(172) + title(40) + titleHeight + subtitle(8) + subtitleHeight + button(25) + button(40) + help(37) + helpHeight + bottom(20)
-            // 使用 systemLayoutSizeFitting 來計算實際高度
-            emptyStateView.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: 0)
+            // 先設定一個足夠大的高度，讓系統能夠正確計算約束
+            emptyStateView.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: 1000)
             emptyStateView.setNeedsLayout()
             emptyStateView.layoutIfNeeded()
             

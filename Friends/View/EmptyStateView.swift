@@ -165,7 +165,7 @@ class EmptyStateView: UIView {
             helpButton.topAnchor.constraint(equalTo: addFriendButton.bottomAnchor, constant: 37),
             helpButton.centerXAnchor.constraint(equalTo: centerXAnchor),
             helpButton.widthAnchor.constraint(equalToConstant: 289),
-            helpButton.bottomAnchor.constraint(lessThanOrEqualTo: bottomAnchor, constant: -20)
+            helpButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -20)
         ])
     }
     
