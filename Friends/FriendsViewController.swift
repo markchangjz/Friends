@@ -519,6 +519,13 @@ extension FriendsViewController: UISearchBarDelegate {
         viewModel.stopSearching()
         userProfileHeaderView.cancelForceExpand()
         
+        // 更新 header view 的卡片以反映清除搜尋後的完整列表
+        // 這必須在計算高度之前完成，否則 header 會有不匹配的高度和卡片數量
+        userProfileHeaderView.configureRequests(
+            viewModel.displayRequestFriends,
+            isExpanded: viewModel.isRequestsSectionExpanded
+        )
+        
         // 立即同步 UserProfileHeaderView 的狀態（但不立即更新佈局）
         userProfileHeaderView.setExpandedState(viewModel.isRequestsSectionExpanded)
         
