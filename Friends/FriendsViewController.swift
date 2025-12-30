@@ -151,8 +151,13 @@ class FriendsViewController: UIViewController {
         let safeAreaTop = view.safeAreaInsets.top
         let safeAreaBottom = view.safeAreaInsets.bottom
         
-        // 內容 Inset：必須完整避開鍵盤與 Safe Area
-        let contentBottomInset = max(currentKeyboardInset, safeAreaBottom)
+        // 自訂 TabBar 高度（從 FullyCustomTabBarController 的設定）
+        let customTabBarHeight: CGFloat = 55
+        
+        // 內容 Inset：必須完整避開鍵盤、Safe Area 和自訂 TabBar
+        // 鍵盤顯示時會覆蓋 TabBar，所以用 max(鍵盤高度, TabBar高度)
+        let tabBarInset = safeAreaBottom + customTabBarHeight
+        let contentBottomInset = max(currentKeyboardInset, tabBarInset)
         tableView.contentInset = UIEdgeInsets(top: safeAreaTop, left: 0, bottom: contentBottomInset, right: 0)
         
         // 修正初始位移：如果目前的 offset 為 0 或大於 -safeAreaTop（代表內容被 safeArea 遮擋），則調整為 -safeAreaTop
@@ -163,8 +168,15 @@ class FriendsViewController: UIViewController {
         
         // Indicator Inset：
         // 將 Top Inset 設為 view.safeAreaInsets.top，這會讓 Indicator 完美的從 Navigation Bar 下緣開始。
-        // 下緣則避開鍵盤。
-        let indicatorBottomInset = currentKeyboardInset > 0 ? max(0, currentKeyboardInset - safeAreaBottom) : safeAreaBottom
+        // 下緣則避開鍵盤或 TabBar（鍵盤顯示時會覆蓋 TabBar，所以不需要同時加兩者）。
+        let indicatorBottomInset: CGFloat
+        if currentKeyboardInset > 0 {
+            // 鍵盤顯示時，使用鍵盤高度（減去 safeAreaBottom，因為原邏輯是這樣處理的）
+            indicatorBottomInset = max(0, currentKeyboardInset - safeAreaBottom)
+        } else {
+            // 鍵盤隱藏時，使用 TabBar 高度（safeAreaBottom + TabBar高度）
+            indicatorBottomInset = tabBarInset
+        }
         
         tableView.scrollIndicatorInsets = UIEdgeInsets(
             top: 0,
