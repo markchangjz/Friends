@@ -25,7 +25,9 @@
 
 ### 進階功能
 - ✅ **搜尋框動畫**：點擊搜尋框時，畫面自動上推至 NavigationBar 下方
-- ✅ **邀請列表折疊**：邀請列表支援展開/收合操作
+- ✅ **邀請列表折疊**：邀請列表支援展開/收合操作（堆疊卡片樣式）
+- ✅ **載入動畫**：使用 Shimmer 效果顯示載入狀態
+- ✅ **Tab 切換**：支援好友/聊天 Tab 切換，並顯示待處理邀請數量 Badge
 - ✅ **單元測試**：完整的 ViewModel 和 Model 測試覆蓋
 
 ## 🏗 技術架構
@@ -35,6 +37,12 @@
 - **Repository Pattern**：資料存取層抽象化，便於測試與維護
 - **Protocol-Oriented Programming**：使用 Protocol 實現依賴注入，便於測試
 - **Combine Framework**：響應式程式設計，處理資料流和狀態更新
+
+### 技術亮點
+- ✅ **使用公開 API**：避免使用 KVC 存取私有屬性，確保 App Store 審核通過
+- ✅ **非同步處理**：使用 async/await 處理 API 請求，並行載入提升效能
+- ✅ **響應式設計**：使用 Combine 實現資料流管理，自動更新 UI
+- ✅ **設計系統**：統一的設計常數管理（顏色、字體、間距），支援 Dark Mode
 
 ### 架構說明
 
@@ -68,19 +76,28 @@ Friends/
 ├── Friends/
 │   ├── API Service/
 │   │   ├── FriendsRemoteRepository.swift  # Repository Pattern 實作
-│   │   └── Model/
-│   │       ├── Friend.swift          # 好友資料模型
-│   │       └── Person.swift          # 使用者資料模型
+│   │   ├── Model/
+│   │   │   ├── Friend.swift          # 好友資料模型
+│   │   │   └── Person.swift          # 使用者資料模型
+│   │   └── Utility/
+│   │       └── DateParser.swift      # 日期解析工具
 │   ├── View/
 │   │   ├── FriendTableViewCell.swift           # 好友列表 Cell
-│   │   ├── FriendRequestTableViewCell.swift    # 邀請列表 Cell
 │   │   ├── PlaceholderSearchBarTableViewCell.swift  # 搜尋框 Cell
-│   │   ├── SectionHeaderView.swift             # Section 標題
-│   │   ├── UserProfileHeaderView.swift         # 使用者資料 Header
+│   │   ├── UserProfileHeaderView.swift         # 使用者資料 Header（含邀請列表）
 │   │   ├── EmptyStateView.swift                # 空狀態畫面
-│   │   └── FriendSearchTransitionManager.swift # 搜尋轉場動畫管理
+│   │   ├── FriendSearchTransitionManager.swift # 搜尋轉場動畫管理
+│   │   ├── ShimmerView.swift                   # 載入動畫效果
+│   │   └── TabSwitchView.swift                 # Tab 切換視圖
+│   ├── Tab Bar/
+│   │   ├── FullyCustomTabBarController.swift   # 自訂 Tab Bar Controller
+│   │   ├── FullyCustomTabBarView.swift         # 自訂 Tab Bar View
+│   │   └── TabBarItem.swift                    # Tab Bar Item
 │   ├── FriendsViewController.swift   # 主畫面 ViewController
-│   └── FriendsViewModel.swift        # ViewModel
+│   ├── FriendsViewModel.swift        # ViewModel
+│   ├── DesignConstants.swift         # 設計常數（顏色、字體、間距）
+│   ├── AppDelegate.swift            # App Delegate
+│   └── SceneDelegate.swift          # Scene Delegate
 └── FriendsTests/
     ├── FriendsViewModelTests.swift   # ViewModel 測試
     ├── Model/
