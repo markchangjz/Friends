@@ -487,12 +487,20 @@ private class FriendRequestCardView: UIView {
         super.init(frame: frame)
         setupUI()
         updateButtonColors()
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { [weak self] (_: FriendRequestCardView, _: UITraitCollection) in
+            self?.updateButtonColors()
+            self?.layer.borderColor = DesignConstants.Colors.divider.cgColor
+        }
     }
     
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         setupUI()
         updateButtonColors()
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { [weak self] (_: FriendRequestCardView, _: UITraitCollection) in
+            self?.updateButtonColors()
+            self?.layer.borderColor = DesignConstants.Colors.divider.cgColor
+        }
     }
     
     private func setupUI() {
@@ -567,13 +575,5 @@ private class FriendRequestCardView: UIView {
     private func updateButtonColors() {
         acceptButton.layer.borderColor = DesignConstants.Colors.hotPink.resolvedColor(with: traitCollection).cgColor
         rejectButton.layer.borderColor = DesignConstants.Colors.warmGrey.resolvedColor(with: traitCollection).cgColor
-    }
-    
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
-            updateButtonColors()
-            layer.borderColor = DesignConstants.Colors.divider.cgColor
-        }
     }
 }

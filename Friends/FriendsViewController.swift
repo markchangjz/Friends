@@ -363,7 +363,6 @@ extension FriendsViewController: UserProfileHeaderViewDelegate {
         userProfileHeaderView.setExpandedState(viewModel.isRequestsSectionExpanded)
         
         // 計算目標高度
-        let width = view.bounds.width
         let hasRequests = viewModel.hasFriendRequests
         let requestCount = viewModel.displayRequestFriends.count
         let userProfileHeight = userProfileHeaderView.calculateHeight(
