@@ -113,6 +113,7 @@ class EmptyStateView: UIView {
         attributedString.addAttribute(.foregroundColor, value: DesignConstants.Colors.warmGrey, range: NSRange(location: 0, length: helpText.count))
         attributedString.addAttribute(.foregroundColor, value: DesignConstants.Colors.hotPink, range: range)
         attributedString.addAttribute(.font, value: UIFont(name: "PingFangTC-Regular", size: 13) ?? .systemFont(ofSize: 13, weight: .regular), range: NSRange(location: 0, length: helpText.count))
+        attributedString.addAttribute(.underlineStyle, value: NSUnderlineStyle.single.rawValue, range: range)
         
         helpButton.setAttributedTitle(attributedString, for: .normal)
         helpButton.translatesAutoresizingMaskIntoConstraints = false
