@@ -82,7 +82,9 @@ class TabSwitchView: UIView {
         
         badgeLabel.text = "0"
         badgeLabel.font = UIFont(name: "PingFangTC-Medium", size: 12) ?? .systemFont(ofSize: 12, weight: .medium)
-        badgeLabel.textColor = .white
+        badgeLabel.textColor = UIColor { traitCollection in
+            return traitCollection.userInterfaceStyle == .dark ? .darkGray : .white
+        }
         badgeLabel.textAlignment = .center
         badgeLabel.translatesAutoresizingMaskIntoConstraints = false
         badgeView.addSubview(badgeLabel)
