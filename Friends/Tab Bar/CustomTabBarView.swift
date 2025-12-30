@@ -1,5 +1,5 @@
 //
-//  FullyCustomTabBarView.swift
+//  CustomTabBarView.swift
 //  Friends
 //
 //  Created by Mark Chang on 2025/12/30.
@@ -8,10 +8,10 @@
 import UIKit
 
 protocol FullyCustomTabBarViewDelegate: AnyObject {
-    func tabBarView(_ tabBarView: FullyCustomTabBarView, didSelectTabAt index: Int)
+    func tabBarView(_ tabBarView: CustomTabBarView, didSelectTabAt index: Int)
 }
 
-class FullyCustomTabBarView: UIView {
+class CustomTabBarView: UIView {
     
     // MARK: - Properties
     

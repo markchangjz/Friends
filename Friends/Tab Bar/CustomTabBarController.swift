@@ -1,5 +1,5 @@
 //
-//  FullyCustomTabBarController.swift
+//  CustomTabBarController.swift
 //  Friends
 //
 //  Created by Mark Chang on 2025/12/30.
@@ -7,11 +7,11 @@
 
 import UIKit
 
-class FullyCustomTabBarController: UITabBarController {
+class CustomTabBarController: UITabBarController {
     
     // MARK: - Properties
     
-    private var customTabBarView: FullyCustomTabBarView!
+    private var customTabBarView: CustomTabBarView!
     
     // MARK: - Lifecycle
     
@@ -31,7 +31,7 @@ class FullyCustomTabBarController: UITabBarController {
         tabBar.isHidden = true
         
         // Create custom tab bar
-        customTabBarView = FullyCustomTabBarView()
+        customTabBarView = CustomTabBarView()
         customTabBarView.delegate = self
         customTabBarView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(customTabBarView)
@@ -120,8 +120,8 @@ class FullyCustomTabBarController: UITabBarController {
 
 // MARK: - FullyCustomTabBarViewDelegate
 
-extension FullyCustomTabBarController: FullyCustomTabBarViewDelegate {
-    func tabBarView(_ tabBarView: FullyCustomTabBarView, didSelectTabAt index: Int) {
+extension CustomTabBarController: FullyCustomTabBarViewDelegate {
+    func tabBarView(_ tabBarView: CustomTabBarView, didSelectTabAt index: Int) {
         // Use UITabBarController's selectedIndex to switch tabs
         selectedIndex = index
     }
