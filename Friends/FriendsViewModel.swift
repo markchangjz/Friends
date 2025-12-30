@@ -58,6 +58,11 @@ class FriendsViewModel {
         return !displayConfirmedFriends.isEmpty
     }
     
+    // 未過濾的 pending 好友數量（用於 Badge）
+    var pendingFriendCount: Int {
+        return allConfirmedFriends.filter { $0.status == .pending }.count
+    }
+    
     // Requests section 展開狀態（預設折疊）
     var isRequestsSectionExpanded: Bool = false
     
