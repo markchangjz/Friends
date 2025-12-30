@@ -172,8 +172,16 @@ class FriendTableViewCell: UITableViewCell {
         transferButton.isHidden = false  // 轉帳按鈕始終顯示
         
         // 切換約束：邀請中狀態時轉帳按鈕對齊邀請中按鈕，否則對齊更多按鈕
-        transferToMoreConstraint?.isActive = !isPending
-        transferToInvitationConstraint?.isActive = isPending
+        // 切換約束：必須先解除目前的約束，避免同時啟用導致衝突
+        transferToMoreConstraint?.isActive = false
+        transferToInvitationConstraint?.isActive = false
+        
+        // 再根據狀態啟用正確的約束
+        if isPending {
+            transferToInvitationConstraint?.isActive = true
+        } else {
+            transferToMoreConstraint?.isActive = true
+        }
     }
     
     override func prepareForReuse() {

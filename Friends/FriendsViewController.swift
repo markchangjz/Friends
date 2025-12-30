@@ -77,7 +77,9 @@ class FriendsViewController: UIViewController {
     }()
     
     private lazy var userProfileHeaderViewHeightConstraint: NSLayoutConstraint = {
-        userProfileHeaderView.heightAnchor.constraint(equalToConstant: 100)
+        let constraint = userProfileHeaderView.heightAnchor.constraint(equalToConstant: 100)
+        constraint.priority = UILayoutPriority(999)
+        return constraint
     }()
 
     // MARK: - Lifecycle
@@ -309,6 +311,8 @@ class FriendsViewController: UIViewController {
             viewModel.displayRequestFriends,
             isExpanded: viewModel.isRequestsSectionExpanded
         )
+        // 強制同步狀態，避免因為數據更新導致狀態不一致
+        userProfileHeaderView.setExpandedState(viewModel.isRequestsSectionExpanded)
         
         // 更新 badge 數量（使用未過濾的 pending 數量，確保搜尋時數字不變）
         tabSwitchView.updateBadgeCount(viewModel.pendingFriendCount)
