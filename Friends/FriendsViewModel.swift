@@ -208,8 +208,10 @@ class FriendsViewModel {
             self?.selectOption(.friendsListWithInvitation)
         }
         
+        // 使用 .singleSelection 選項讓系統自動管理勾選狀態
         return UIMenu(
             title: "",
+            options: .singleSelection,
             children: [
                 noFriendsAction,
                 friendsListOnlyAction,
