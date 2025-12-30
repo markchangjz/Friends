@@ -611,45 +611,40 @@ extension FriendsViewController {
         searchController.hidesNavigationBarDuringPresentation = false
         searchController.searchBar.delegate = self
         
-        // 設定搜尋列樣式
-        if let textField = searchController.searchBar.value(forKey: "searchField") as? UITextField {
-            textField.font = DesignConstants.Typography.searchPlaceholderFont()
-            textField.textColor = DesignConstants.Colors.lightGrey
-            textField.attributedPlaceholder = NSAttributedString(
-                string: placeholder,
-                attributes: [
-                    .foregroundColor: DesignConstants.Colors.steel,
-                    .font: DesignConstants.Typography.searchPlaceholderFont()
-                ]
-            )
-            textField.backgroundColor = DesignConstants.Colors.searchBarBackground
-            textField.layer.cornerRadius = 10
-            textField.clipsToBounds = true
-        }
+        // 使用 Appearance API 設定搜尋列樣式（避免使用 KVC）
+        configureSearchBarAppearance(searchController.searchBar)
         
         placeholderSearchBar.searchBarStyle = .minimal
         placeholderSearchBar.placeholder = placeholder
         placeholderSearchBar.isUserInteractionEnabled = true
         placeholderSearchBar.delegate = self
         
-        // 設定 placeholder search bar 樣式
-        if let textField = placeholderSearchBar.value(forKey: "searchField") as? UITextField {
-            textField.font = DesignConstants.Typography.searchPlaceholderFont()
-            textField.textColor = DesignConstants.Colors.lightGrey
-            textField.attributedPlaceholder = NSAttributedString(
-                string: placeholder,
-                attributes: [
-                    .foregroundColor: DesignConstants.Colors.steel,
-                    .font: DesignConstants.Typography.searchPlaceholderFont()
-                ]
-            )
-            textField.backgroundColor = DesignConstants.Colors.searchBarBackground
-            textField.layer.cornerRadius = 10
-            textField.clipsToBounds = true
-            
-            // 設定搜尋圖示顏色
-            textField.leftView?.tintColor = DesignConstants.Colors.steel
-        }
+        // 使用 Appearance API 設定 placeholder search bar 樣式
+        configureSearchBarAppearance(placeholderSearchBar)
+    }
+    
+    /// 使用公開 API 設定搜尋列樣式（使用 searchTextField，iOS 13+ 公開 API）
+    private func configureSearchBarAppearance(_ searchBar: UISearchBar) {
+        let placeholder = searchBar.placeholder ?? "想轉一筆給誰呢？"
+        
+        // 使用 searchTextField（公開 API，iOS 13+）
+        let textField = searchBar.searchTextField
+        textField.font = DesignConstants.Typography.searchPlaceholderFont()
+        textField.textColor = DesignConstants.Colors.lightGrey
+        textField.backgroundColor = DesignConstants.Colors.searchBarBackground
+        textField.layer.cornerRadius = 10
+        textField.clipsToBounds = true
+        textField.leftView?.tintColor = DesignConstants.Colors.steel
+        
+        // 設定 placeholder 樣式
+        let placeholderAttributes: [NSAttributedString.Key: Any] = [
+            .foregroundColor: DesignConstants.Colors.steel,
+            .font: DesignConstants.Typography.searchPlaceholderFont()
+        ]
+        textField.attributedPlaceholder = NSAttributedString(
+            string: placeholder,
+            attributes: placeholderAttributes
+        )
     }
     
     private func setupUI() {
