@@ -132,8 +132,6 @@ class FullyCustomTabBarView: UIView {
         // Convert from container's coordinate system to view's coordinate system
         let buttonGlobalFrame = centerButtonContainer.convert(centerButtonFrame, to: self)
         let buttonCenterY = buttonGlobalFrame.midY
-        let buttonTopY = buttonGlobalFrame.minY
-        let buttonBottomY = buttonGlobalFrame.maxY
         
         // Calculate cutout radius and arc center based on button position
         // The arc should be on the upper edge, with its top well above the border
