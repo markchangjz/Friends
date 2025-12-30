@@ -610,19 +610,6 @@ extension FriendsViewController {
         )
         
         navigationItem.rightBarButtonItems = [scanButton]
-        
-        // 設定 Navigation Bar 背景色與 Header View 一致（支援 Dark Mode）
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = DesignConstants.Colors.background
-        appearance.shadowColor = .clear // 移除底部陰影線
-        
-        navigationController?.navigationBar.standardAppearance = appearance
-        navigationController?.navigationBar.scrollEdgeAppearance = appearance
-        navigationController?.navigationBar.compactAppearance = appearance
-        if #available(iOS 15.0, *) {
-            navigationController?.navigationBar.compactScrollEdgeAppearance = appearance
-        }
     }
     
     private func setupSearchBarContainer() {
@@ -691,6 +678,11 @@ extension FriendsViewController {
         tableView.estimatedRowHeight = 80
         tableView.separatorColor = DesignConstants.Colors.divider
         tableView.contentInsetAdjustmentBehavior = .never
+        
+        if #available(iOS 26.0, *) {
+            tableView.topEdgeEffect.style = .soft
+            tableView.bottomEdgeEffect.style = .automatic
+        }
         
         // 設置 refreshControl 的背景色（透過 tintColor 和背景視圖）
         refreshControl.tintColor = DesignConstants.Colors.lightGrey
