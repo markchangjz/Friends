@@ -210,6 +210,11 @@ class CustomTabBarView: UIView {
             clockwise: true
         )
         
+        // Determine shadow style based on interface style
+        let isDark = traitCollection.userInterfaceStyle == .dark
+        let shadowColor = isDark ? UIColor.white.cgColor : UIColor.black.cgColor
+        let shadowOpacity: Float = isDark ? 0.25 : 0.3
+        
         // Create layer for straight lines
         let straightLayer = CAShapeLayer()
         straightLayer.path = straightPath.cgPath
@@ -219,6 +224,12 @@ class CustomTabBarView: UIView {
         straightLayer.lineCap = .round
         straightLayer.lineJoin = .round
         
+        // Add shadow
+        straightLayer.shadowColor = shadowColor
+        straightLayer.shadowOffset = CGSize(width: 0, height: -2) // Upwards
+        straightLayer.shadowRadius = 2
+        straightLayer.shadowOpacity = shadowOpacity
+        
         // Create layer for arc with slightly thicker line to compensate for shadow
         let arcLayer = CAShapeLayer()
         arcLayer.path = arcPath.cgPath
@@ -227,6 +238,12 @@ class CustomTabBarView: UIView {
         arcLayer.lineWidth = borderLineWidth + 0.2 // Slightly thicker to compensate for shadow
         arcLayer.lineCap = .round
         arcLayer.lineJoin = .round
+        
+        // Add shadow
+        arcLayer.shadowColor = shadowColor
+        arcLayer.shadowOffset = CGSize(width: 0, height: -2) // Upwards
+        arcLayer.shadowRadius = 2
+        arcLayer.shadowOpacity = shadowOpacity
         
         // Add both layers
         topBorderLine.layer.addSublayer(straightLayer)
