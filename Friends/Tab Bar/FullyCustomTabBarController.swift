@@ -7,40 +7,28 @@
 
 import UIKit
 
-class FullyCustomTabBarController: UIViewController {
+class FullyCustomTabBarController: UITabBarController {
     
     // MARK: - Properties
     
-    private var viewControllers: [UIViewController] = []
-    private var selectedIndex: Int = 1 {
-        didSet {
-            updateSelectedViewController()
-            updateTabBarAppearance()
-        }
-    }
-    
-    private var containerView: UIView!
     private var customTabBarView: FullyCustomTabBarView!
-    private var currentViewController: UIViewController?
     
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupUI()
         setupViewControllers()
+        setupUI()
+        // Set default selected index after UI is set up
+        // The didSet of selectedIndex will automatically update customTabBarView
         selectedIndex = 1 // Default to Friends tab
     }
     
     // MARK: - Setup
     
     private func setupUI() {
-        view.backgroundColor = DesignConstants.Colors.background
-        
-        // Create container for view controllers
-        containerView = UIView()
-        containerView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(containerView)
+        // Hide the default tab bar
+        tabBar.isHidden = true
         
         // Create custom tab bar
         customTabBarView = FullyCustomTabBarView()
@@ -50,12 +38,6 @@ class FullyCustomTabBarController: UIViewController {
         
         // Setup constraints with proper safe area handling
         NSLayoutConstraint.activate([
-            // Container view constraints
-            containerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            containerView.bottomAnchor.constraint(equalTo: customTabBarView.topAnchor),
-            
             // Custom tab bar constraints - extend to bottom of screen
             customTabBarView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             customTabBarView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -92,6 +74,7 @@ class FullyCustomTabBarController: UIViewController {
         let settingsNavController = UINavigationController(rootViewController: settingsVC)
         controllers.append(settingsNavController)
         
+        // Set view controllers to UITabBarController
         viewControllers = controllers
     }
     
@@ -116,37 +99,22 @@ class FullyCustomTabBarController: UIViewController {
         return vc
     }
     
-    // MARK: - View Controller Management
+    // MARK: - Override UITabBarController Methods
     
-    private func updateSelectedViewController() {
-        // Remove current view controller
-        if let currentVC = currentViewController {
-            currentVC.willMove(toParent: nil)
-            currentVC.view.removeFromSuperview()
-            currentVC.removeFromParent()
+    override var selectedIndex: Int {
+        didSet {
+            // Update custom tab bar appearance when selectedIndex changes
+            customTabBarView?.updateSelectedIndex(selectedIndex)
         }
-        
-        // Add new view controller
-        guard selectedIndex < viewControllers.count else { return }
-        
-        let newViewController = viewControllers[selectedIndex]
-        addChild(newViewController)
-        containerView.addSubview(newViewController.view)
-        
-        newViewController.view.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            newViewController.view.topAnchor.constraint(equalTo: containerView.topAnchor),
-            newViewController.view.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-            newViewController.view.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
-            newViewController.view.bottomAnchor.constraint(equalTo: containerView.bottomAnchor)
-        ])
-        
-        newViewController.didMove(toParent: self)
-        currentViewController = newViewController
     }
     
-    private func updateTabBarAppearance() {
-        customTabBarView.updateSelectedIndex(selectedIndex)
+    override var selectedViewController: UIViewController? {
+        didSet {
+            // Update custom tab bar appearance when selectedViewController changes
+            if let index = viewControllers?.firstIndex(where: { $0 == selectedViewController }) {
+                customTabBarView?.updateSelectedIndex(index)
+            }
+        }
     }
 }
 
@@ -154,6 +122,7 @@ class FullyCustomTabBarController: UIViewController {
 
 extension FullyCustomTabBarController: FullyCustomTabBarViewDelegate {
     func tabBarView(_ tabBarView: FullyCustomTabBarView, didSelectTabAt index: Int) {
+        // Use UITabBarController's selectedIndex to switch tabs
         selectedIndex = index
     }
 }
