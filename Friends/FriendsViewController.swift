@@ -30,6 +30,9 @@ class FriendsViewController: UIViewController {
     // 追蹤是否為首次載入 Requests
     private var isFirstRequestsLoad = true
     
+    // 追蹤鍵盤高度造成的 inset
+    private var currentKeyboardInset: CGFloat = 0
+    
     // UI 元件
     private lazy var userProfileHeaderView = UserProfileHeaderView(width: view.bounds.width)
     private let tabSwitchView = TabSwitchView()
@@ -76,6 +79,7 @@ class FriendsViewController: UIViewController {
         setupNavigationBar()
         setupUI()
         loadData()
+        setupKeyboardHandling()
     }
     
     override func viewDidLayoutSubviews() {
@@ -136,8 +140,28 @@ class FriendsViewController: UIViewController {
     
     private func updateTableViewContentInset() {
         let safeAreaTop = view.safeAreaInsets.top
-        tableView.contentInset = UIEdgeInsets(top: safeAreaTop, left: 0, bottom: 0, right: 0)
-        tableView.scrollIndicatorInsets = tableView.contentInset
+        let safeAreaBottom = view.safeAreaInsets.bottom
+        
+        // 內容 Inset：必須完整避開鍵盤與 Safe Area
+        let contentBottomInset = max(currentKeyboardInset, safeAreaBottom)
+        tableView.contentInset = UIEdgeInsets(top: safeAreaTop, left: 0, bottom: contentBottomInset, right: 0)
+        
+        // Indicator Inset：
+        // 當鍵盤出現時，減去 safeAreaBottom 以消除懸空感（讓 Indicator 貼齊鍵盤功能區上緣）
+        // 上緣部分：為了確保 Indicator 能與 Header View 頂部切齊（視覺上從 Nav Bar 下緣開始），
+        // 將 Top Inset 設為 0 (或極小值)，利用不透明的 Nav Bar 遮擋多餘部分，解決 Indicator 起始位置過低的問題。
+        let indicatorBottomInset: CGFloat
+        let indicatorTopInset: CGFloat
+        
+        if currentKeyboardInset > 0 {
+            indicatorBottomInset = max(0, currentKeyboardInset - safeAreaBottom)
+            indicatorTopInset = 0
+        } else {
+            indicatorBottomInset = safeAreaBottom
+            indicatorTopInset = safeAreaTop
+        }
+        
+        tableView.scrollIndicatorInsets = UIEdgeInsets(top: indicatorTopInset, left: 0, bottom: indicatorBottomInset, right: 0)
     }
     
     // MARK: - Private Methods
@@ -640,5 +664,41 @@ extension FriendsViewController {
             loadingIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             loadingIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
+    }
+    
+    // MARK: - Keyboard Handling
+    
+    private func setupKeyboardHandling() {
+        NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)
+            .sink { [weak self] notification in
+                self?.handleKeyboard(notification: notification)
+            }
+            .store(in: &cancellables)
+        
+        NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)
+            .sink { [weak self] notification in
+                self?.handleKeyboard(notification: notification)
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func handleKeyboard(notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
+              let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double,
+              let curveValue = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt else { return }
+        
+        let convertedKeyboardFrame = view.convert(keyboardFrame, from: nil)
+        let intersection = convertedKeyboardFrame.intersection(view.bounds)
+        let bottomInset = intersection.isNull ? 0 : intersection.height
+        
+        currentKeyboardInset = bottomInset
+        
+        let options = UIView.AnimationOptions(rawValue: curveValue << 16)
+        
+        UIView.animate(withDuration: duration, delay: 0, options: options) {
+            self.updateTableViewContentInset()
+            self.view.layoutIfNeeded()
+        }
     }
 }
