@@ -282,7 +282,7 @@ class FullyCustomTabBarView: UIView {
         
         // Configure image
         if let image = UIImage(systemName: item.imageName) {
-            let config = UIImage.SymbolConfiguration(pointSize: 28, weight: .medium) // Increased icon size
+            let config = UIImage.SymbolConfiguration(pointSize: 32, weight: .medium) // Increased icon size
             let resizedImage = image.withConfiguration(config)
             button.setImage(resizedImage, for: .normal)
         }
@@ -293,7 +293,7 @@ class FullyCustomTabBarView: UIView {
         // Create label for the text
         let label = UILabel()
         label.text = item.title
-        label.font = UIFont.systemFont(ofSize: 14, weight: .regular) // Reduced font size to 14pt
+        label.font = UIFont.systemFont(ofSize: 12, weight: .regular) // Reduced font size to 12pt
         label.textColor = DesignConstants.Colors.warmGrey
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -308,8 +308,8 @@ class FullyCustomTabBarView: UIView {
         // Setup constraints
         NSLayoutConstraint.activate([
             // Button size
-            button.widthAnchor.constraint(equalToConstant: 28),
-            button.heightAnchor.constraint(equalToConstant: 28),
+            button.widthAnchor.constraint(equalToConstant: 32),
+            button.heightAnchor.constraint(equalToConstant: 32),
             
             // Vertical stack constraints
             verticalStack.centerXAnchor.constraint(equalTo: container.centerXAnchor),
@@ -351,7 +351,7 @@ class FullyCustomTabBarView: UIView {
         
         // Set home icon
         if let homeImage = UIImage(systemName: TabBarItem.home.imageName) {
-            let config = UIImage.SymbolConfiguration(pointSize: 46, weight: .medium)
+            let config = UIImage.SymbolConfiguration(pointSize: 50, weight: .medium)
             let resizedImage = homeImage.withConfiguration(config)
             centerButton.setImage(resizedImage, for: .normal)
         }
@@ -434,7 +434,7 @@ class FullyCustomTabBarView: UIView {
             } else if let label = subview as? UILabel, label.accessibilityIdentifier == "label_\(index)" {
                 label.textColor = color
                 // Use system font with appropriate weight
-                label.font = UIFont.systemFont(ofSize: 14, weight: isSelected ? .medium : .regular)
+                label.font = UIFont.systemFont(ofSize: 12, weight: isSelected ? .medium : .regular)
             } else if let stackView = subview as? UIStackView {
                 // Handle UIStackView case
                 for arrangedSubview in stackView.arrangedSubviews {
@@ -443,7 +443,7 @@ class FullyCustomTabBarView: UIView {
                     } else if let label = arrangedSubview as? UILabel, label.accessibilityIdentifier == "label_\(index)" {
                         label.textColor = color
                         // Use system font with appropriate weight
-                        label.font = UIFont.systemFont(ofSize: 14, weight: isSelected ? .medium : .regular)
+                        label.font = UIFont.systemFont(ofSize: 12, weight: isSelected ? .medium : .regular)
                     }
                 }
             }
