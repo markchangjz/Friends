@@ -552,8 +552,8 @@ final class FriendsViewModelTests: XCTestCase {
     // MARK: - 測試 isRequestsSectionExpanded
     
     func testIsRequestsSectionExpanded_Default() {
-        // Then - 預設應該是展開的
-        XCTAssertTrue(viewModel.isRequestsSectionExpanded)
+        // Then - 預設應該是折疊的
+        XCTAssertFalse(viewModel.isRequestsSectionExpanded)
     }
     
     func testIsRequestsSectionExpanded_Toggle() {
