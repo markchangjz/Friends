@@ -146,22 +146,23 @@ class FriendsViewController: UIViewController {
         let contentBottomInset = max(currentKeyboardInset, safeAreaBottom)
         tableView.contentInset = UIEdgeInsets(top: safeAreaTop, left: 0, bottom: contentBottomInset, right: 0)
         
-        // Indicator Inset：
-        // 當鍵盤出現時，減去 safeAreaBottom 以消除懸空感（讓 Indicator 貼齊鍵盤功能區上緣）
-        // 上緣部分：為了確保 Indicator 能與 Header View 頂部切齊（視覺上從 Nav Bar 下緣開始），
-        // 將 Top Inset 設為 0 (或極小值)，利用不透明的 Nav Bar 遮擋多餘部分，解決 Indicator 起始位置過低的問題。
-        let indicatorBottomInset: CGFloat
-        let indicatorTopInset: CGFloat
-        
-        if currentKeyboardInset > 0 {
-            indicatorBottomInset = max(0, currentKeyboardInset - safeAreaBottom)
-            indicatorTopInset = 0
-        } else {
-            indicatorBottomInset = safeAreaBottom
-            indicatorTopInset = safeAreaTop
+        // 修正初始位移：如果目前的 offset 為 0 或大於 -safeAreaTop（代表內容被 safeArea 遮擋），則調整為 -safeAreaTop
+        // 這通常發生在視圖剛載入或 safeArea 變更時，確保 Header 不會被 Navigation Bar 遮住
+        if safeAreaTop > 0 && tableView.contentOffset.y > -safeAreaTop {
+            tableView.contentOffset = CGPoint(x: 0, y: -safeAreaTop)
         }
         
-        tableView.scrollIndicatorInsets = UIEdgeInsets(top: indicatorTopInset, left: 0, bottom: indicatorBottomInset, right: 0)
+        // Indicator Inset：
+        // 將 Top Inset 設為 view.safeAreaInsets.top，這會讓 Indicator 完美的從 Navigation Bar 下緣開始。
+        // 下緣則避開鍵盤。
+        let indicatorBottomInset = currentKeyboardInset > 0 ? max(0, currentKeyboardInset - safeAreaBottom) : safeAreaBottom
+        
+        tableView.scrollIndicatorInsets = UIEdgeInsets(
+            top: 0,
+            left: 0,
+            bottom: indicatorBottomInset,
+            right: 0
+        )
     }
     
     // MARK: - Private Methods
@@ -260,6 +261,8 @@ class FriendsViewController: UIViewController {
     
     private func showLoading() {
         emptyStateView.isHidden = true
+        // 清除 Footer 以避免佔用高度導致與 Header 相加超過螢幕高度而出現 Scroll Bar
+        tableView.tableFooterView = nil
         tableView.isHidden = false
         loadingIndicator.startAnimating()
     }
@@ -651,9 +654,8 @@ extension FriendsViewController {
     }
     
     private func setupEmptyStateView() {
-        // 設定為 tableFooterView 以便與 Header 同步滾動
+        // 設定 frame 但不立即設為 footer，避免初始高度造成 ScrollIndicator 出現
         emptyStateView.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: 600)
-        tableView.tableFooterView = emptyStateView
         emptyStateView.isHidden = true
     }
     

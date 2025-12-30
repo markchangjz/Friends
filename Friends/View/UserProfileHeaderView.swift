@@ -51,6 +51,11 @@ class UserProfileHeaderView: UIView {
     private let kokoIdLabel = UILabel()
     private let chevronImageView = UIImageView()  // ">" 符號
     
+    // Shimmer views
+    private let avatarShimmerView = ShimmerView()
+    private let nameShimmerView = ShimmerView()
+    private let kokoIdShimmerView = ShimmerView()
+    
     // MARK: - UI Components (Requests Section - 堆疊卡片樣式)
     
     /// 好友邀請區塊容器
@@ -99,11 +104,17 @@ class UserProfileHeaderView: UIView {
         // Name Label 設定
         nameLabel.font = DesignConstants.Typography.nameFont()
         nameLabel.textColor = DesignConstants.Colors.lightGrey
+        // 設置固定高度，確保即使沒有文字也會佔據空間
+        nameLabel.numberOfLines = 1
+        nameLabel.lineBreakMode = .byTruncatingTail
         addSubview(nameLabel)
         
         // KOKO ID Label 設定
         kokoIdLabel.font = DesignConstants.Typography.kokoIdFont()
         kokoIdLabel.textColor = DesignConstants.Colors.lightGrey
+        // 設置固定高度，確保即使沒有文字也會佔據空間
+        kokoIdLabel.numberOfLines = 1
+        kokoIdLabel.lineBreakMode = .byTruncatingTail
         addSubview(kokoIdLabel)
         
         // Chevron ">" 圖標設定
@@ -112,6 +123,22 @@ class UserProfileHeaderView: UIView {
         chevronImageView.contentMode = .scaleAspectFit
         chevronImageView.isHidden = true  // 初始隱藏，載入完成後顯示
         addSubview(chevronImageView)
+        
+        // Shimmer views 設定
+        avatarShimmerView.layer.cornerRadius = 26
+        avatarShimmerView.clipsToBounds = true
+        addSubview(avatarShimmerView)
+        
+        nameShimmerView.layer.cornerRadius = 4
+        nameShimmerView.clipsToBounds = true
+        addSubview(nameShimmerView)
+        
+        kokoIdShimmerView.layer.cornerRadius = 4
+        kokoIdShimmerView.clipsToBounds = true
+        addSubview(kokoIdShimmerView)
+        
+        // 初始顯示 Shimmer
+        startShimmer()
     }
     
     private func setupRequestsSection() {
@@ -142,6 +169,9 @@ class UserProfileHeaderView: UIView {
     }
     
     private func layoutUserProfileSection(width: CGFloat) {
+        // 如果寬度為 0，跳過布局（會在 layoutSubviews 中再次調用）
+        guard width > 0 else { return }
+        
         // 計算相對位置：設計稿中的絕對位置扣除 safe area (64pt)
         let nameRelativeY = designNameTop - safeAreaTop      // 26
         let kokoIdRelativeY = designKokoIdTop - safeAreaTop  // 52
@@ -155,19 +185,22 @@ class UserProfileHeaderView: UIView {
         )
         
         // Name Label 位置（左側）
-        let labelMaxWidth = width - horizontalPadding * 2 - avatarSize - 15
+        let labelMaxWidth = max(0, width - horizontalPadding * 2 - avatarSize - 15)
+        // 確保在 Loading (文字為空) 時，Label 仍有佔位寬度供 Shimmer 顯示
+        let nameWidth = (nameLabel.text?.isEmpty ?? true) ? 120 : labelMaxWidth
         nameLabel.frame = CGRect(
             x: horizontalPadding,
             y: nameRelativeY,
-            width: labelMaxWidth,
+            width: nameWidth,
             height: 18
         )
         
         // KOKO ID Label 位置（左側，在姓名下方）
+        let kokoIdWidth = (kokoIdLabel.text?.isEmpty ?? true) ? 160 : labelMaxWidth
         kokoIdLabel.frame = CGRect(
             x: horizontalPadding,
             y: kokoIdRelativeY,
-            width: labelMaxWidth,
+            width: kokoIdWidth,
             height: 18
         )
         
@@ -191,6 +224,23 @@ class UserProfileHeaderView: UIView {
             width: chevronSize,
             height: chevronSize
         )
+        
+        // Shimmer views 布局（與對應的元件相同位置和大小）
+        // 確保 ShimmerView 有固定高度，避免 Header View 被壓扁
+        avatarShimmerView.frame = avatarImageView.frame
+        
+        // 即使 label 因為沒有文字而高度為 0，Shimmer 仍需顯示佔位高度
+        var nameFrame = nameLabel.frame
+        if nameFrame.height == 0 {
+            nameFrame.size.height = 18
+        }
+        nameShimmerView.frame = nameFrame
+        
+        var kokoIdFrame = kokoIdLabel.frame
+        if kokoIdFrame.height == 0 {
+            kokoIdFrame.size.height = 18
+        }
+        kokoIdShimmerView.frame = kokoIdFrame
     }
     
     private func layoutRequestsSection(width: CGFloat, animated: Bool = false) {
@@ -308,7 +358,8 @@ class UserProfileHeaderView: UIView {
         nameLabel.text = name
         kokoIdLabel.text = "KOKO ID：\(kokoId)"
         
-        // 資料載入完成後顯示 chevron
+        // 資料載入完成後停止 Shimmer 並顯示 chevron
+        stopShimmer()
         chevronImageView.isHidden = false
         
         updateLayout()
@@ -427,6 +478,26 @@ class UserProfileHeaderView: UIView {
         isForcedExpanded = false
         // 注意：不在這裡修改 isRequestsExpanded，因為它應該由 ViewModel 管理
         // 這個方法只是取消強制展開的限制
+    }
+    
+    // MARK: - Shimmer
+    
+    private func startShimmer() {
+        avatarShimmerView.isHidden = false
+        nameShimmerView.isHidden = false
+        kokoIdShimmerView.isHidden = false
+        avatarShimmerView.startAnimating()
+        nameShimmerView.startAnimating()
+        kokoIdShimmerView.startAnimating()
+    }
+    
+    private func stopShimmer() {
+        avatarShimmerView.stopAnimating()
+        nameShimmerView.stopAnimating()
+        kokoIdShimmerView.stopAnimating()
+        avatarShimmerView.isHidden = true
+        nameShimmerView.isHidden = true
+        kokoIdShimmerView.isHidden = true
     }
 }
 
@@ -577,3 +648,4 @@ private class FriendRequestCardView: UIView {
         rejectButton.layer.borderColor = DesignConstants.Colors.warmGrey.resolvedColor(with: traitCollection).cgColor
     }
 }
+
