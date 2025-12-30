@@ -151,7 +151,7 @@ class FriendsViewController: UIViewController {
         let safeAreaTop = view.safeAreaInsets.top
         let safeAreaBottom = view.safeAreaInsets.bottom
         
-        // 自訂 TabBar 高度（從 FullyCustomTabBarController 的設定）
+        // 自訂 TabBar 高度（從 CustomTabBarController 的設定）
         let customTabBarHeight: CGFloat = 55
         
         // 內容 Inset：必須完整避開鍵盤、Safe Area 和自訂 TabBar
