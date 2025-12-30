@@ -383,7 +383,6 @@ class FullyCustomTabBarView: UIView {
     @objc private func tabContainerTapped(_ gesture: UITapGestureRecognizer) {
         guard let container = gesture.view else { return }
         let index = container.tag
-        print("Tab container tapped at index: \(index)")
         selectedIndex = index
         updateAppearance()
         delegate?.tabBarView(self, didSelectTabAt: index)
@@ -391,7 +390,6 @@ class FullyCustomTabBarView: UIView {
     
     @objc private func tabButtonTapped(_ sender: UIButton) {
         let index = sender.tag
-        print("Tab button tapped at index: \(index)")
         selectedIndex = index
         updateAppearance()
         delegate?.tabBarView(self, didSelectTabAt: index)
