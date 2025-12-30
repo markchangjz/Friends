@@ -40,6 +40,12 @@ class FriendsViewController: UIViewController {
     private let emptyStateView = EmptyStateView()
     private let refreshControl = UIRefreshControl()
     private let loadingIndicator = UIActivityIndicatorView(style: .large)
+    private let menuButton = UIBarButtonItem(
+        image: UIImage(systemName: "line.3.horizontal.decrease.circle"),
+        style: .plain,
+        target: nil,
+        action: nil
+    )
     
     // Header Container (保持持久引用以避免重複重建)
     private lazy var tableHeaderContainerView: UIView = {
@@ -178,7 +184,7 @@ class FriendsViewController: UIViewController {
                 // 使用異步更新選單狀態，確保 menu 關閉後再更新
                 DispatchQueue.main.async { [weak self] in
                     guard let self else { return }
-                    self.navigationItem.leftBarButtonItem?.menu = self.viewModel.createMenu()
+                    self.menuButton.menu = self.viewModel.createMenu()
                 }
                 // 重置首次載入標記（因為切換選項時會重新載入資料）
                 isFirstRequestsLoad = true
@@ -502,12 +508,6 @@ extension FriendsViewController: UISearchBarDelegate {
 extension FriendsViewController {
     
     private func setupNavigationBar() {
-        let menuButton = UIBarButtonItem(
-            image: UIImage(systemName: "line.3.horizontal.decrease.circle"),
-            style: .plain,
-            target: nil,
-            action: nil
-        )
         menuButton.tintColor = .label
         menuButton.menu = viewModel.createMenu()
         
