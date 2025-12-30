@@ -33,6 +33,9 @@ class FriendsViewController: UIViewController {
     // 追蹤鍵盤高度造成的 inset
     private var currentKeyboardInset: CGFloat = 0
     
+    // 追蹤當前選中的 tab
+    private var currentTab: TabSwitchView.Tab = .friends
+    
     // UI 元件
     private lazy var userProfileHeaderView = UserProfileHeaderView(width: view.bounds.width)
     private let tabSwitchView = TabSwitchView()
@@ -307,11 +310,19 @@ class FriendsViewController: UIViewController {
 
 extension FriendsViewController: UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
+        // 如果當前是聊天 tab，不顯示任何 section
+        if currentTab == .chat {
+            return 0
+        }
         // 只有 Friends section（Requests 已移到 header）
         return viewModel.hasConfirmedFriends ? 1 : 0
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        // 如果當前是聊天 tab，不顯示任何 row
+        if currentTab == .chat {
+            return 0
+        }
         // 好友列表：加上搜尋列 (如果沒有使用真實 SearchController)
         let searchBarCount = viewModel.isUsingRealSearchController ? 0 : 1
         return viewModel.displayConfirmedFriends.count + searchBarCount
@@ -375,6 +386,40 @@ extension FriendsViewController: UISearchResultsUpdating {
         // 搜尋關鍵字更新時，同步更新 cardViews 過濾結果
         updateRequestsSection()
         updateEmptyState()
+        tableView.reloadData()
+    }
+}
+
+// MARK: - TabSwitchViewDelegate
+
+extension FriendsViewController: TabSwitchViewDelegate {
+    func tabSwitchView(_ view: TabSwitchView, didSelectTab tab: TabSwitchView.Tab) {
+        currentTab = tab
+        updateTableViewForCurrentTab()
+    }
+    
+    private func updateTableViewForCurrentTab() {
+        switch currentTab {
+        case .friends:
+            // 恢復顯示好友資料
+            updateEmptyState()
+            tableView.reloadData()
+        case .chat:
+            // 顯示「無資料」文字
+            showChatEmptyState()
+        }
+    }
+    
+    private func showChatEmptyState() {
+        // 創建一個簡單的「無資料」標籤作為 tableFooterView
+        let emptyLabel = UILabel()
+        emptyLabel.text = "無資料"
+        emptyLabel.font = DesignConstants.Typography.friendNameFont()
+        emptyLabel.textColor = DesignConstants.Colors.lightGrey
+        emptyLabel.textAlignment = .center
+        emptyLabel.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: 200)
+        
+        tableView.tableFooterView = emptyLabel
         tableView.reloadData()
     }
 }
@@ -609,6 +654,7 @@ extension FriendsViewController {
         
         // 設定 delegate
         userProfileHeaderView.delegate = self
+        tabSwitchView.delegate = self
         
         setupTableView()
         setupSearchBarContainer()

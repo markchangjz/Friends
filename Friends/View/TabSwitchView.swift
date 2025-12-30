@@ -7,9 +7,15 @@
 
 import UIKit
 
+protocol TabSwitchViewDelegate: AnyObject {
+    func tabSwitchView(_ view: TabSwitchView, didSelectTab tab: TabSwitchView.Tab)
+}
+
 class TabSwitchView: UIView {
     
     // MARK: - Properties
+    
+    weak var delegate: TabSwitchViewDelegate?
     
     private let friendsButton = UIButton(type: .system)
     private let chatButton = UIButton(type: .system)
@@ -20,6 +26,8 @@ class TabSwitchView: UIView {
     
     private var indicatorLeadingConstraint: NSLayoutConstraint?
     private var badgeWidthConstraint: NSLayoutConstraint?
+    
+    private var currentTab: Tab = .friends
     
     // MARK: - Initialization
     
@@ -144,6 +152,10 @@ class TabSwitchView: UIView {
         case chat
     }
     
+    var selectedTab: Tab {
+        return currentTab
+    }
+    
     /// 更新好友按鈕的 badge 數量
     /// - Parameter count: 待處理邀請數量，0 時隱藏 badge
     func updateBadgeCount(_ count: Int) {
@@ -182,6 +194,10 @@ class TabSwitchView: UIView {
     }
     
     private func selectTab(_ tab: Tab, animated: Bool = true) {
+        guard currentTab != tab else { return }
+        
+        currentTab = tab
+        
         // 更新按鈕樣式
         switch tab {
         case .friends:
@@ -190,6 +206,8 @@ class TabSwitchView: UIView {
         case .chat:
             friendsButton.titleLabel?.font = DesignConstants.Typography.tabRegularFont()
             chatButton.titleLabel?.font = DesignConstants.Typography.tabMediumFont()
+            // 確保聊天按鈕標題為「聊天」
+            chatButton.setTitle("聊天", for: .normal)
         }
         
         // 更新指示器位置
@@ -207,6 +225,9 @@ class TabSwitchView: UIView {
             // 不執行動畫，直接更新布局
             layoutIfNeeded()
         }
+        
+        // 通知 delegate
+        delegate?.tabSwitchView(self, didSelectTab: tab)
     }
 }
 
