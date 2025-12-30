@@ -83,11 +83,19 @@ class FriendTableViewCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
+        updateBorderColors()
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { [weak self] (_: FriendTableViewCell, _: UITraitCollection) in
+            self?.updateBorderColors()
+        }
     }
     
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         setupUI()
+        updateBorderColors()
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { [weak self] (_: FriendTableViewCell, _: UITraitCollection) in
+            self?.updateBorderColors()
+        }
     }
     
     private func setupUI() {
@@ -176,5 +184,18 @@ class FriendTableViewCell: UITableViewCell {
         invitationButton.isHidden = true
         transferButton.isHidden = false
         moreButton.isHidden = false
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        // 確保邊框顏色在 layout 時也是正確的
+        updateBorderColors()
+    }
+    
+    // MARK: - Private Methods
+    
+    /// 更新按鈕邊框顏色（處理 Dark Mode 切換）
+    private func updateBorderColors() {
+        invitationButton.layer.borderColor = DesignConstants.Colors.buttonBorderGray.resolvedColor(with: traitCollection).cgColor
     }
 }
