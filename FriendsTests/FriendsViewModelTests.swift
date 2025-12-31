@@ -217,14 +217,167 @@ final class FriendsViewModelTests: XCTestCase {
     }
     
     func testClearSearch() async throws {
-        // Given
+        // Given - 載入資料並設定搜尋文字
+        let expectation = XCTestExpectation(description: "Friends data loaded")
+        
+        viewModel.friendsDataLoadedPublisher
+            .sink { _ in
+                expectation.fulfill()
+            }
+            .store(in: &cancellables)
+        
+        viewModel.loadFriendsData(for: .friendsListWithInvitation)
+        await fulfillment(of: [expectation], timeout: 2.0)
+        
+        let initialConfirmedCount = viewModel.displayConfirmedFriends.count
         viewModel.searchText = "test"
+        viewModel.filterFriends()
         
         // When
         viewModel.clearSearch()
         
-        // Then
+        // Then - 搜尋文字應該被清空，且過濾結果應該恢復
         XCTAssertEqual(viewModel.searchText, "")
+        XCTAssertEqual(viewModel.displayConfirmedFriends.count, initialConfirmedCount, "清除搜尋後應該顯示所有好友")
+    }
+    
+    // MARK: - 測試搜尋狀態管理
+    
+    func testStartSearching_WithFriendRequests() async throws {
+        // Given - 載入含有邀請的資料
+        let expectation = XCTestExpectation(description: "Friends data loaded")
+        
+        viewModel.friendsDataLoadedPublisher
+            .sink { _ in
+                expectation.fulfill()
+            }
+            .store(in: &cancellables)
+        
+        viewModel.loadFriendsData(for: .friendsListWithInvitation)
+        await fulfillment(of: [expectation], timeout: 2.0)
+        
+        guard viewModel.hasFriendRequests else {
+            throw XCTSkip("此測試需要包含邀請的資料")
+        }
+        
+        // 預設折疊狀態
+        viewModel.isRequestsSectionExpanded = false
+        let previousState = viewModel.isRequestsSectionExpanded
+        
+        // When - 開始搜尋
+        viewModel.startSearching()
+        
+        // Then - 應該設為搜尋中，如果有邀請則強制展開
+        XCTAssertTrue(viewModel.isSearching, "應該設為搜尋中")
+        XCTAssertTrue(viewModel.isRequestsSectionExpanded, "如果有邀請，應該強制展開")
+        
+        // 驗證狀態被保存：結束搜尋後應該恢復到之前的狀態
+        viewModel.stopSearching()
+        XCTAssertEqual(viewModel.isRequestsSectionExpanded, previousState, "結束搜尋後應該恢復到搜尋前的狀態")
+    }
+    
+    func testStartSearching_WithoutFriendRequests() async throws {
+        // Given - 載入沒有邀請的資料
+        let expectation = XCTestExpectation(description: "Friends data loaded")
+        
+        viewModel.friendsDataLoadedPublisher
+            .sink { _ in
+                expectation.fulfill()
+            }
+            .store(in: &cancellables)
+        
+        viewModel.loadFriendsData(for: .friendsListOnly)
+        await fulfillment(of: [expectation], timeout: 2.0)
+        
+        // 預設折疊狀態
+        viewModel.isRequestsSectionExpanded = false
+        let previousState = viewModel.isRequestsSectionExpanded
+        
+        // When - 開始搜尋
+        viewModel.startSearching()
+        
+        // Then - 應該設為搜尋中，但不會改變展開狀態（因為沒有邀請）
+        XCTAssertTrue(viewModel.isSearching, "應該設為搜尋中")
+        XCTAssertEqual(viewModel.isRequestsSectionExpanded, previousState, "沒有邀請時，展開狀態不應該改變")
+        
+        // 驗證狀態被保存：結束搜尋後應該恢復到之前的狀態
+        viewModel.stopSearching()
+        XCTAssertEqual(viewModel.isRequestsSectionExpanded, previousState, "結束搜尋後應該恢復到搜尋前的狀態")
+    }
+    
+    func testStopSearching() async throws {
+        // Given - 載入資料並開始搜尋
+        let expectation = XCTestExpectation(description: "Friends data loaded")
+        
+        viewModel.friendsDataLoadedPublisher
+            .sink { _ in
+                expectation.fulfill()
+            }
+            .store(in: &cancellables)
+        
+        viewModel.loadFriendsData(for: .friendsListWithInvitation)
+        await fulfillment(of: [expectation], timeout: 2.0)
+        
+        // 設定初始狀態為折疊
+        viewModel.isRequestsSectionExpanded = false
+        let originalState = viewModel.isRequestsSectionExpanded
+        
+        // 開始搜尋（如果有邀請會改變狀態）
+        viewModel.startSearching()
+        
+        // When - 結束搜尋
+        viewModel.stopSearching()
+        
+        // Then - 應該恢復搜尋前的狀態
+        XCTAssertFalse(viewModel.isSearching, "應該設為非搜尋中")
+        XCTAssertEqual(viewModel.isRequestsSectionExpanded, originalState, "應該恢復到原始狀態")
+        
+        // 驗證：如果搜尋前是展開的，結束後也應該是展開的
+        viewModel.isRequestsSectionExpanded = true
+        let expandedState = viewModel.isRequestsSectionExpanded
+        viewModel.startSearching()
+        viewModel.stopSearching()
+        XCTAssertEqual(viewModel.isRequestsSectionExpanded, expandedState, "應該恢復到搜尋前的展開狀態")
+    }
+    
+    func testStartSearching_StopSearching_CompleteFlow() async throws {
+        // Given - 載入含有邀請的資料
+        let expectation = XCTestExpectation(description: "Friends data loaded")
+        
+        viewModel.friendsDataLoadedPublisher
+            .sink { _ in
+                expectation.fulfill()
+            }
+            .store(in: &cancellables)
+        
+        viewModel.loadFriendsData(for: .friendsListWithInvitation)
+        await fulfillment(of: [expectation], timeout: 2.0)
+        
+        guard viewModel.hasFriendRequests else {
+            throw XCTSkip("此測試需要包含邀請的資料")
+        }
+        
+        // 設定初始折疊狀態
+        viewModel.isRequestsSectionExpanded = false
+        let initialState = viewModel.isRequestsSectionExpanded
+        
+        // When - 開始搜尋
+        viewModel.startSearching()
+        
+        // Then - 驗證搜尋開始後的狀態
+        XCTAssertTrue(viewModel.isSearching)
+        XCTAssertTrue(viewModel.isRequestsSectionExpanded, "有邀請時應該強制展開")
+        
+        // 驗證狀態被保存：結束搜尋後應該恢復到原始狀態
+        viewModel.stopSearching()
+        XCTAssertEqual(viewModel.isRequestsSectionExpanded, initialState, "應該恢復到原始折疊狀態")
+        
+        // When - 結束搜尋
+        viewModel.stopSearching()
+        
+        // Then - 驗證搜尋結束後的狀態
+        XCTAssertFalse(viewModel.isSearching)
+        XCTAssertEqual(viewModel.isRequestsSectionExpanded, initialState, "應該恢復到原始折疊狀態")
     }
     
     // MARK: - 測試排序功能
