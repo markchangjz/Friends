@@ -21,7 +21,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Create window programmatically
         window = UIWindow(windowScene: windowScene)
         
-        // Create and set the fully custom tab bar controller as root
+        // Create and set the custom tab bar controller as root
         let tabBarController = CustomTabBarController()
         window?.rootViewController = tabBarController
         window?.makeKeyAndVisible()

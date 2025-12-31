@@ -11,7 +11,7 @@ class CustomTabBarController: UITabBarController {
     
     // MARK: - Properties
     
-    private var customTabBarView: CustomTabBarView!
+    private var customTabBarView = CustomTabBarView()
     
     // MARK: - Lifecycle
     
@@ -31,7 +31,6 @@ class CustomTabBarController: UITabBarController {
         tabBar.isHidden = true
         
         // Create custom tab bar
-        customTabBarView = CustomTabBarView()
         customTabBarView.delegate = self
         customTabBarView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(customTabBarView)
@@ -42,7 +41,7 @@ class CustomTabBarController: UITabBarController {
             customTabBarView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             customTabBarView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             customTabBarView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            customTabBarView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -55)
+            customTabBarView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -CustomTabBarView.tabBarHeight)
         ])
     }
     
@@ -101,26 +100,22 @@ class CustomTabBarController: UITabBarController {
     
     // MARK: - Override UITabBarController Methods
     
+    /// 覆寫 selectedIndex 屬性觀察器
+    /// 當 UITabBarController 的 selectedIndex 改變時（例如程式碼中設定 `selectedIndex = 1`），
+    /// 自動同步更新 CustomTabBarView 的外觀，讓對應的 tab 顯示為選中狀態（高亮顯示）
+    /// 
+    /// 注意：UITabBarController 內部會確保 selectedIndex 和 selectedViewController 同步，
+    /// 所以只需要監聽 selectedIndex 即可涵蓋所有切換情況
     override var selectedIndex: Int {
         didSet {
-            // Update custom tab bar appearance when selectedIndex changes
-            customTabBarView?.updateSelectedIndex(selectedIndex)
-        }
-    }
-    
-    override var selectedViewController: UIViewController? {
-        didSet {
-            // Update custom tab bar appearance when selectedViewController changes
-            if let index = viewControllers?.firstIndex(where: { $0 == selectedViewController }) {
-                customTabBarView?.updateSelectedIndex(index)
-            }
+            customTabBarView.updateSelectedIndex(selectedIndex)
         }
     }
 }
 
-// MARK: - FullyCustomTabBarViewDelegate
+// MARK: - CustomTabBarViewDelegate
 
-extension CustomTabBarController: FullyCustomTabBarViewDelegate {
+extension CustomTabBarController: CustomTabBarViewDelegate {
     func tabBarView(_ tabBarView: CustomTabBarView, didSelectTabAt index: Int) {
         // Use UITabBarController's selectedIndex to switch tabs
         selectedIndex = index

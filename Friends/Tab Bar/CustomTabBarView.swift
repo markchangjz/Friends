@@ -7,7 +7,7 @@
 
 import UIKit
 
-protocol FullyCustomTabBarViewDelegate: AnyObject {
+protocol CustomTabBarViewDelegate: AnyObject {
     func tabBarView(_ tabBarView: CustomTabBarView, didSelectTabAt index: Int)
 }
 
@@ -15,7 +15,7 @@ class CustomTabBarView: UIView {
     
     // MARK: - Properties
     
-    weak var delegate: FullyCustomTabBarViewDelegate?
+    weak var delegate: CustomTabBarViewDelegate?
     private var selectedIndex: Int = 1
     
     private var backgroundView: UIView!
@@ -29,6 +29,16 @@ class CustomTabBarView: UIView {
     
     // Home tab 的索引（center button）
     private let homeTabIndex = 2
+    
+    // Tab bar 高度
+    static let tabBarHeight: CGFloat = 55
+    
+    // MARK: - Layout Constants
+    
+    // 一般 Tab 按鈕
+    private let tabIconSize: CGFloat = 32
+    private let tabIconPointSize: CGFloat = 32
+    private let tabLabelFontSize: CGFloat = 12
     
     // MARK: - Initialization
     
@@ -279,7 +289,7 @@ class CustomTabBarView: UIView {
             stackView.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 3),
             stackView.leadingAnchor.constraint(equalTo: leadingAnchor),
             stackView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            stackView.heightAnchor.constraint(equalToConstant: 48) // Further reduced height for no spacing
+            stackView.heightAnchor.constraint(equalToConstant: 48)
         ])
     }
     
@@ -302,7 +312,7 @@ class CustomTabBarView: UIView {
         
         // Configure image
         if let image = UIImage(systemName: item.imageName) {
-            let config = UIImage.SymbolConfiguration(pointSize: 32, weight: .medium) // Increased icon size
+            let config = UIImage.SymbolConfiguration(pointSize: tabIconPointSize, weight: .medium)
             let resizedImage = image.withConfiguration(config)
             button.setImage(resizedImage, for: .normal)
         }
@@ -313,7 +323,7 @@ class CustomTabBarView: UIView {
         // Create label for the text
         let label = UILabel()
         label.text = item.title
-        label.font = UIFont.systemFont(ofSize: 12, weight: .regular) // Reduced font size to 12pt
+        label.font = UIFont.systemFont(ofSize: tabLabelFontSize, weight: .regular)
         label.textColor = DesignConstants.Colors.warmGrey
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -328,8 +338,8 @@ class CustomTabBarView: UIView {
         // Setup constraints
         NSLayoutConstraint.activate([
             // Button size
-            button.widthAnchor.constraint(equalToConstant: 32),
-            button.heightAnchor.constraint(equalToConstant: 32),
+            button.widthAnchor.constraint(equalToConstant: tabIconSize),
+            button.heightAnchor.constraint(equalToConstant: tabIconSize),
             
             // Vertical stack constraints
             verticalStack.centerXAnchor.constraint(equalTo: container.centerXAnchor),
@@ -454,7 +464,7 @@ class CustomTabBarView: UIView {
             } else if let label = subview as? UILabel, label.accessibilityIdentifier == "label_\(index)" {
                 label.textColor = color
                 // Use system font with appropriate weight
-                label.font = UIFont.systemFont(ofSize: 12, weight: isSelected ? .medium : .regular)
+                label.font = UIFont.systemFont(ofSize: tabLabelFontSize, weight: isSelected ? .medium : .regular)
             } else if let stackView = subview as? UIStackView {
                 // Handle UIStackView case
                 for arrangedSubview in stackView.arrangedSubviews {
