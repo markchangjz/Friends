@@ -24,7 +24,7 @@ class FriendTableViewCell: UITableViewCell {
     
     private let nameLabel: UILabel = {
         let label = UILabel()
-        label.font = DesignConstants.Typography.friendNameFont()
+        label.font = .systemFont(ofSize: 16, weight: .regular)
         label.textColor = DesignConstants.Colors.lightGrey
         label.translatesAutoresizingMaskIntoConstraints = false
         label.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
@@ -44,7 +44,7 @@ class FriendTableViewCell: UITableViewCell {
     private let transferButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("轉帳", for: .normal)
-        button.titleLabel?.font = DesignConstants.Typography.buttonFont()
+        button.titleLabel?.font = .systemFont(ofSize: 14, weight: .medium)
         button.setTitleColor(DesignConstants.Colors.hotPink, for: .normal)
         button.layer.borderWidth = 1.2
         button.layer.borderColor = DesignConstants.Colors.hotPink.cgColor
@@ -66,7 +66,7 @@ class FriendTableViewCell: UITableViewCell {
     private let invitationButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("邀請中", for: .normal)
-        button.titleLabel?.font = DesignConstants.Typography.invitationButtonFont()
+        button.titleLabel?.font = .systemFont(ofSize: 14, weight: .medium)
         button.setTitleColor(DesignConstants.Colors.warmGrey, for: .normal)
         button.layer.borderWidth = 1.2
         button.layer.borderColor = DesignConstants.Colors.buttonBorderGray.cgColor

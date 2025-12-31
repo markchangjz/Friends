@@ -435,7 +435,7 @@ extension FriendsViewController: TabSwitchViewDelegate {
         // 創建一個簡單的「無資料」標籤作為 tableFooterView
         let emptyLabel = UILabel()
         emptyLabel.text = "無資料"
-        emptyLabel.font = DesignConstants.Typography.friendNameFont()
+        emptyLabel.font = .systemFont(ofSize: 16, weight: .regular)
         emptyLabel.textColor = DesignConstants.Colors.lightGrey
         emptyLabel.textAlignment = .center
         emptyLabel.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: 200)
@@ -639,7 +639,7 @@ extension FriendsViewController {
         
         // 使用 searchTextField（公開 API，iOS 13+）
         let textField = searchBar.searchTextField
-        textField.font = DesignConstants.Typography.searchPlaceholderFont()
+        textField.font = .systemFont(ofSize: 14, weight: .regular)
         textField.textColor = DesignConstants.Colors.lightGrey
         textField.backgroundColor = DesignConstants.Colors.searchBarBackground
         textField.layer.cornerRadius = 10
@@ -649,7 +649,7 @@ extension FriendsViewController {
         // 設定 placeholder 樣式
         let placeholderAttributes: [NSAttributedString.Key: Any] = [
             .foregroundColor: DesignConstants.Colors.steel,
-            .font: DesignConstants.Typography.searchPlaceholderFont()
+            .font: UIFont.systemFont(ofSize: 14, weight: .regular)
         ]
         textField.attributedPlaceholder = NSAttributedString(
             string: placeholder,

@@ -143,49 +143,5 @@ struct DesignConstants {
             }
         }
     }
-    
-    // MARK: - Typography
-    
-    struct Typography {
-        // 姓名（大標題）
-        static func nameFont() -> UIFont {
-            return UIFont(name: "PingFangTC-Medium", size: 17) ?? .systemFont(ofSize: 17, weight: .medium)
-        }
-        
-        // KOKO ID
-        static func kokoIdFont() -> UIFont {
-            return UIFont(name: "PingFangTC-Regular", size: 13) ?? .systemFont(ofSize: 13, weight: .regular)
-        }
-        
-        // Tab 文字（Medium）
-        static func tabMediumFont() -> UIFont {
-            return UIFont(name: "PingFangTC-Medium", size: 13) ?? .systemFont(ofSize: 13, weight: .medium)
-        }
-        
-        // Tab 文字（Regular）
-        static func tabRegularFont() -> UIFont {
-            return UIFont(name: "PingFangTC-Regular", size: 13) ?? .systemFont(ofSize: 13, weight: .regular)
-        }
-        
-        // 搜尋列佔位符
-        static func searchPlaceholderFont() -> UIFont {
-            return UIFont(name: "PingFangTC-Regular", size: 14) ?? .systemFont(ofSize: 14, weight: .regular)
-        }
-        
-        // 好友姓名
-        static func friendNameFont() -> UIFont {
-            return UIFont(name: "PingFangTC-Regular", size: 16) ?? .systemFont(ofSize: 16, weight: .regular)
-        }
-        
-        // 按鈕文字
-        static func buttonFont() -> UIFont {
-            return UIFont(name: "PingFangTC-Medium", size: 14) ?? .systemFont(ofSize: 14, weight: .medium)
-        }
-        
-        // 邀請中按鈕文字
-        static func invitationButtonFont() -> UIFont {
-            return UIFont(name: "PingFangTC-Medium", size: 14) ?? .systemFont(ofSize: 14, weight: .medium)
-        }
-    }
 }
 

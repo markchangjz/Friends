@@ -44,7 +44,7 @@ class EmptyStateView: UIView {
         
         // 主標題設定
         titleLabel.text = "就從加好友開始吧：）"
-        titleLabel.font = UIFont(name: "PingFangTC-Medium", size: 21) ?? .systemFont(ofSize: 21, weight: .medium)
+        titleLabel.font = .systemFont(ofSize: 21, weight: .medium)
         titleLabel.textColor = DesignConstants.Colors.lightGrey
         titleLabel.textAlignment = .center
         titleLabel.numberOfLines = 0
@@ -53,7 +53,7 @@ class EmptyStateView: UIView {
         
         // 副標題設定
         subtitleLabel.text = "與好友們一起用 KOKO 聊起來！\n還能互相收付款、發紅包喔：）"
-        subtitleLabel.font = UIFont(name: "PingFangTC-Regular", size: 14) ?? .systemFont(ofSize: 14, weight: .regular)
+        subtitleLabel.font = .systemFont(ofSize: 14, weight: .regular)
         subtitleLabel.textColor = DesignConstants.Colors.warmGrey
         subtitleLabel.textAlignment = .center
         subtitleLabel.numberOfLines = 0
@@ -88,7 +88,7 @@ class EmptyStateView: UIView {
         
         // 加好友按鈕內容設定 - 實現文字置中、圖示固定靠右
         buttonLabel.text = "加好友"
-        buttonLabel.font = UIFont(name: "PingFangTC-Medium", size: 16) ?? .systemFont(ofSize: 16, weight: .medium)
+        buttonLabel.font = .systemFont(ofSize: 16, weight: .medium)
         buttonLabel.textColor = .white
         buttonLabel.translatesAutoresizingMaskIntoConstraints = false
         addFriendButton.addSubview(buttonLabel)
@@ -109,7 +109,7 @@ class EmptyStateView: UIView {
         let range = (helpText as NSString).range(of: "設定 KOKO ID")
         attributedString.addAttribute(.foregroundColor, value: DesignConstants.Colors.warmGrey, range: NSRange(location: 0, length: helpText.count))
         attributedString.addAttribute(.foregroundColor, value: DesignConstants.Colors.hotPink, range: range)
-        attributedString.addAttribute(.font, value: UIFont(name: "PingFangTC-Regular", size: 13) ?? .systemFont(ofSize: 13, weight: .regular), range: NSRange(location: 0, length: helpText.count))
+        attributedString.addAttribute(.font, value: UIFont.systemFont(ofSize: 13, weight: .regular), range: NSRange(location: 0, length: helpText.count))
         attributedString.addAttribute(.underlineStyle, value: NSUnderlineStyle.single.rawValue, range: range)
         
         helpButton.setAttributedTitle(attributedString, for: .normal)

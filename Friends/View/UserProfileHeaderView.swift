@@ -101,7 +101,7 @@ class UserProfileHeaderView: UIView {
         addSubview(avatarImageView)
         
         // Name Label 設定
-        nameLabel.font = DesignConstants.Typography.nameFont()
+        nameLabel.font = .systemFont(ofSize: 17, weight: .medium)
         nameLabel.textColor = DesignConstants.Colors.lightGrey
         // 設置固定高度，確保即使沒有文字也會佔據空間
         nameLabel.numberOfLines = 1
@@ -109,7 +109,7 @@ class UserProfileHeaderView: UIView {
         addSubview(nameLabel)
         
         // KOKO ID Label 設定
-        kokoIdLabel.font = DesignConstants.Typography.kokoIdFont()
+        kokoIdLabel.font = .systemFont(ofSize: 13, weight: .regular)
         kokoIdLabel.textColor = DesignConstants.Colors.lightGrey
         // 設置固定高度，確保即使沒有文字也會佔據空間
         kokoIdLabel.numberOfLines = 1
@@ -211,7 +211,7 @@ class UserProfileHeaderView: UIView {
         let textSize = (kokoIdText as NSString).boundingRect(
             with: CGSize(width: labelMaxWidth, height: 18),
             options: [.usesLineFragmentOrigin, .usesFontLeading],
-            attributes: [.font: DesignConstants.Typography.kokoIdFont()],
+            attributes: [.font: UIFont.systemFont(ofSize: 13, weight: .regular)],
             context: nil
         )
         let chevronX = horizontalPadding + textSize.width + chevronSpacing
@@ -505,7 +505,7 @@ private class FriendRequestCardView: UIView {
     
     private let nameLabel: UILabel = {
         let label = UILabel()
-        label.font = DesignConstants.Typography.friendNameFont()
+        label.font = .systemFont(ofSize: 16, weight: .regular)
         label.textColor = DesignConstants.Colors.lightGrey
         return label
     }()
@@ -513,7 +513,7 @@ private class FriendRequestCardView: UIView {
     private let invitationLabel: UILabel = {
         let label = UILabel()
         label.text = "邀請你成為好友：）"
-        label.font = DesignConstants.Typography.kokoIdFont()
+        label.font = .systemFont(ofSize: 13, weight: .regular)
         label.textColor = DesignConstants.Colors.warmGrey
         return label
     }()
