@@ -17,6 +17,9 @@ class TabSwitchView: UIView {
     
     weak var delegate: TabSwitchViewDelegate?
     
+    // Tab 按鈕字體大小
+    private let tabButtonFontSize: CGFloat = 13
+    
     private let friendsButton = UIButton(type: .system)
     private let chatButton = UIButton(type: .system)
     private let indicatorView = UIView()
@@ -53,7 +56,7 @@ class TabSwitchView: UIView {
         
         // 好友按鈕
         friendsButton.setTitle("好友", for: .normal)
-        friendsButton.titleLabel?.font = .systemFont(ofSize: 13, weight: .medium)
+        friendsButton.titleLabel?.font = .systemFont(ofSize: tabButtonFontSize, weight: .medium)
         friendsButton.setTitleColor(DesignConstants.Colors.lightGrey, for: .normal)
         friendsButton.translatesAutoresizingMaskIntoConstraints = false
         friendsButton.addTarget(self, action: #selector(friendsButtonTapped), for: .touchUpInside)
@@ -61,7 +64,7 @@ class TabSwitchView: UIView {
         
         // 聊天按鈕
         chatButton.setTitle("聊天", for: .normal)
-        chatButton.titleLabel?.font = .systemFont(ofSize: 13, weight: .regular)
+        chatButton.titleLabel?.font = .systemFont(ofSize: tabButtonFontSize, weight: .regular)
         chatButton.setTitleColor(DesignConstants.Colors.lightGrey, for: .normal)
         chatButton.translatesAutoresizingMaskIntoConstraints = false
         chatButton.addTarget(self, action: #selector(chatButtonTapped), for: .touchUpInside)
@@ -203,11 +206,11 @@ class TabSwitchView: UIView {
         // 更新按鈕樣式
         switch tab {
         case .friends:
-            friendsButton.titleLabel?.font = .systemFont(ofSize: 13, weight: .medium)
-            chatButton.titleLabel?.font = .systemFont(ofSize: 13, weight: .regular)
+            friendsButton.titleLabel?.font = .systemFont(ofSize: tabButtonFontSize, weight: .medium)
+            chatButton.titleLabel?.font = .systemFont(ofSize: tabButtonFontSize, weight: .regular)
         case .chat:
-            friendsButton.titleLabel?.font = .systemFont(ofSize: 13, weight: .regular)
-            chatButton.titleLabel?.font = .systemFont(ofSize: 13, weight: .medium)
+            friendsButton.titleLabel?.font = .systemFont(ofSize: tabButtonFontSize, weight: .regular)
+            chatButton.titleLabel?.font = .systemFont(ofSize: tabButtonFontSize, weight: .medium)
             // 確保聊天按鈕標題為「聊天」
             chatButton.setTitle("聊天", for: .normal)
         }
