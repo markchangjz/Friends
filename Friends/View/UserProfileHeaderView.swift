@@ -28,7 +28,6 @@ class UserProfileHeaderView: UIView {
     private let cardSpacing: CGFloat = 10  // 展開時卡片間距
     private let stackedCardOffset: CGFloat = 10  // 堆疊卡片的垂直偏移量
     private let bottomPadding: CGFloat = 22  // 卡片區塊與底部 TabSwitchView 的間距
-    private let animationDuration: TimeInterval = 0.3
     
     // MARK: - Properties
     

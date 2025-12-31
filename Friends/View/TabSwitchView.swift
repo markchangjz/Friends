@@ -157,10 +157,6 @@ class TabSwitchView: UIView {
         case chat
     }
     
-    var selectedTab: Tab {
-        return currentTab
-    }
-    
     /// 更新好友按鈕的 badge 數量
     /// - Parameter count: 待處理邀請數量，0 時隱藏 badge
     func updateBadgeCount(_ count: Int) {
