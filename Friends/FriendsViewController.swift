@@ -144,11 +144,6 @@ class FriendsViewController: UIViewController {
         }
     }
     
-    /// 重新建立 TableHeaderView（保留相容性，但內部改用 updateHeaderLayout）
-    private func rebuildTableHeaderView() {
-        updateHeaderLayout(animated: true)
-    }
-    
     private func updateTableViewContentInset() {
         let safeAreaTop = view.safeAreaInsets.top
         let safeAreaBottom = view.safeAreaInsets.bottom
@@ -322,7 +317,8 @@ class FriendsViewController: UIViewController {
             isFirstRequestsLoad = false
             updateHeaderLayout(animated: false)
         } else {
-            rebuildTableHeaderView()
+            /// 重新建立 TableHeaderView（保留相容性，但內部改用 updateHeaderLayout）
+            updateHeaderLayout(animated: true)
         }
     }
 }
@@ -758,6 +754,9 @@ extension FriendsViewController {
         
         currentKeyboardInset = bottomInset
         
+        // UIView.AnimationOptions 使用位元遮罩，動畫曲線值需要放在第 16-19 位
+        // curveValue 是 0-3 的整數（對應 easeInOut, easeIn, easeOut, linear）
+        // 左移 16 位才能正確轉換為 UIView.AnimationOptions 格式
         let options = UIView.AnimationOptions(rawValue: curveValue << 16)
         
         UIView.animate(withDuration: duration, delay: 0, options: options) {
