@@ -187,16 +187,5 @@ struct DesignConstants {
             return UIFont(name: "PingFangTC-Medium", size: 14) ?? .systemFont(ofSize: 14, weight: .medium)
         }
     }
-    
-    // MARK: - Spacing
-    
-    struct Spacing {
-        static let horizontalPadding: CGFloat = 30
-        static let avatarSize: CGFloat = 52
-        static let friendAvatarSize: CGFloat = 40
-        static let starSize: CGFloat = 14
-        static let tabIndicatorHeight: CGFloat = 4
-        static let tabIndicatorCornerRadius: CGFloat = 2
-    }
 }
 

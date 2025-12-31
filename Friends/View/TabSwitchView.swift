@@ -69,7 +69,7 @@ class TabSwitchView: UIView {
         
         // 選中指示器
         indicatorView.backgroundColor = DesignConstants.Colors.hotPink
-        indicatorView.layer.cornerRadius = DesignConstants.Spacing.tabIndicatorCornerRadius
+        indicatorView.layer.cornerRadius = 2
         indicatorView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(indicatorView)
         
@@ -108,7 +108,7 @@ class TabSwitchView: UIView {
             
             // 選中指示器（bottom, height, width 固定，leading 由 indicatorLeadingConstraint 動態控制）
             indicatorView.bottomAnchor.constraint(equalTo: dividerView.topAnchor),
-            indicatorView.heightAnchor.constraint(equalToConstant: DesignConstants.Spacing.tabIndicatorHeight),
+            indicatorView.heightAnchor.constraint(equalToConstant: 4),
             indicatorView.widthAnchor.constraint(equalToConstant: 20),
             
             // Badge（在 friendsButton 左上角，根據設計稿 x: 59, y: 262）

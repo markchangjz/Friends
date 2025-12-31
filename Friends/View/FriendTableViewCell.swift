@@ -116,16 +116,16 @@ class FriendTableViewCell: UITableViewCell {
             // Star (靠左，有星號時顯示，根據設計稿位置在 x: 30)
             starImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 30),
             starImageView.centerYAnchor.constraint(equalTo: avatarImageView.centerYAnchor),
-            starImageView.widthAnchor.constraint(equalToConstant: DesignConstants.Spacing.starSize),
-            starImageView.heightAnchor.constraint(equalToConstant: DesignConstants.Spacing.starSize),
+            starImageView.widthAnchor.constraint(equalToConstant: 14),
+            starImageView.heightAnchor.constraint(equalToConstant: 14),
             
             // Avatar (根據設計稿 x: 50)
             avatarImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 50),
             avatarImageView.topAnchor.constraint(greaterThanOrEqualTo: contentView.topAnchor, constant: 10),
             avatarImageView.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -10),
             avatarImageView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            avatarImageView.widthAnchor.constraint(equalToConstant: DesignConstants.Spacing.friendAvatarSize),
-            avatarImageView.heightAnchor.constraint(equalToConstant: DesignConstants.Spacing.friendAvatarSize),
+            avatarImageView.widthAnchor.constraint(equalToConstant: 40),
+            avatarImageView.heightAnchor.constraint(equalToConstant: 40),
             
             // Name label (根據設計稿 x: 105)
             nameLabel.leadingAnchor.constraint(equalTo: avatarImageView.trailingAnchor, constant: 15),
