@@ -14,7 +14,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        setupNavigationBarAppearance()
         return true
+    }
+    
+    private func setupNavigationBarAppearance() {
+        // 設定全域 Navigation Bar 外觀
+        let appearance = UINavigationBarAppearance()
+        if #available(iOS 26.0, *) {
+            // iOS 26+ 使用預設背景設置即可獲得最佳的液態玻璃效果
+            appearance.configureWithDefaultBackground()
+        } else {
+            appearance.configureWithDefaultBackground()
+            appearance.backgroundEffect = UIBlurEffect(style: .regular)
+        }
+        appearance.shadowColor = .clear // 移除底部陰影線
+        
+        UINavigationBar.appearance().standardAppearance = appearance
+        UINavigationBar.appearance().scrollEdgeAppearance = appearance
+        UINavigationBar.appearance().compactAppearance = appearance
+        if #available(iOS 15.0, *) {
+            UINavigationBar.appearance().compactScrollEdgeAppearance = appearance
+        }
     }
 
     // MARK: UISceneSession Lifecycle

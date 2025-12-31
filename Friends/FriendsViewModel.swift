@@ -20,12 +20,6 @@ class FriendsViewModel {
         case friendsListWithInvitation = "好友列表含邀請"
     }
     
-    // Section 索引常數
-    enum Section {
-        static let requests = 0
-        static let friends = 1
-    }
-    
     // MARK: - Public Properties
     
     // 用戶資料
@@ -47,22 +41,9 @@ class FriendsViewModel {
     // 錯誤處理 - 使用 PassthroughSubject 發布錯誤
     let errorPublisher = PassthroughSubject<Error, Never>()
     
-    // Section 計算
-    var numberOfSections: Int {
-        if allFriends.isEmpty {
-            return 0
-        } else {
-            return hasFriendRequests && hasConfirmedFriends ? 2 : 1
-        }
-    }
-    
     // 是否有任何好友資料（包含邀請和已確認好友）
     var hasFriends: Bool {
         return !allFriends.isEmpty
-    }
-    
-    var hasFilteredFriends: Bool {
-        return hasFriendRequests || hasConfirmedFriends
     }
     
     var hasFriendRequests: Bool {
@@ -73,16 +54,22 @@ class FriendsViewModel {
         return !displayConfirmedFriends.isEmpty
     }
     
-    // Requests section 展開狀態
-    var isRequestsSectionExpanded: Bool = true
+    // 未過濾的 pending 好友數量（用於 Badge）
+    var pendingFriendCount: Int {
+        return allConfirmedFriends.filter { $0.status == .pending }.count
+    }
+    
+    // Requests section 展開狀態（預設折疊）
+    var isRequestsSectionExpanded: Bool = false
     
     // 是否正在使用真實的 searchController (決定是否顯示 placeholder search bar)
     var isUsingRealSearchController: Bool = false
     
-    // 好友 section 的索引
-    var friendsSection: Int {
-        return hasFriendRequests ? Section.friends : Section.requests
-    }
+    // 是否正在搜尋（用於追蹤搜尋狀態，搜尋時強制展開 cardViews）
+    private(set) var isSearching: Bool = false
+    
+    // 搜尋前的展開狀態（用於搜尋結束時恢復）
+    private var previousExpandedState: Bool = false
 
     // MARK: - Private Properties
     
@@ -119,23 +106,6 @@ class FriendsViewModel {
     }
     
     // MARK: - Public Methods
-    
-    func loadUserData() {
-        Task {
-            do {
-                let userProfile = try await repository.fetchUserProfile()
-                await MainActor.run {
-                    self.userName = userProfile.name
-                    self.userKokoId = userProfile.kokoid
-                    self.userProfileDataLoadedPublisher.send()
-                }
-            } catch {
-                await MainActor.run {
-                    self.errorPublisher.send(error)
-                }
-            }
-        }
-    }
     
     func loadFriendsData(for option: ViewOption) {
         Task {
@@ -217,8 +187,10 @@ class FriendsViewModel {
             self?.selectOption(.friendsListWithInvitation)
         }
         
+        // 使用 .singleSelection 選項讓系統自動管理勾選狀態
         return UIMenu(
             title: "",
+            options: .singleSelection,
             children: [
                 noFriendsAction,
                 friendsListOnlyAction,
@@ -227,46 +199,7 @@ class FriendsViewModel {
         )
     }
     
-    // MARK: - TableView Data Source Helpers
-    
-    func numberOfRows(in section: Int) -> Int {
-        guard section < numberOfSections else { return 0 }
-        
-        if isRequestSection(section) {
-            return isRequestsSectionExpanded ? displayRequestFriends.count : 0
-        } else {
-            // 好友列表區塊：加上搜尋列 (如果沒有使用真實 SearchController)
-            let searchBarCount = isUsingRealSearchController ? 0 : 1
-            return displayConfirmedFriends.count + searchBarCount
-        }
-    }
-    
-    /// 檢查特定 IndexPath 是否為搜尋列 Row
-    func isSearchBarRow(at indexPath: IndexPath) -> Bool {
-        return !isRequestSection(indexPath.section) && !isUsingRealSearchController && indexPath.row == 0
-    }
-    
-    func isRequestSection(_ section: Int) -> Bool {
-        return hasFriendRequests && section == Section.requests
-    }
-    
-    func friendRequest(at index: Int) -> Friend {
-        return displayRequestFriends[index]
-    }
-    
-    func confirmedFriend(at row: Int) -> Friend {
-        // 如果有 placeholder search bar，索引需要減 1
-        let friendIndex = isUsingRealSearchController ? row : row - 1
-        return displayConfirmedFriends[friendIndex]
-    }
-    
-    func titleForHeader(in section: Int) -> String {
-        if isRequestSection(section) {
-            return "Requests"
-        } else {
-            return "Friends"
-        }
-    }
+    // MARK: - Data Access
     
     /// 根據搜尋文字過濾好友資料
     func filterFriends() {
@@ -290,6 +223,23 @@ class FriendsViewModel {
     func clearSearch() {
         searchText = ""
         filterFriends()
+    }
+    
+    /// 開始搜尋（強制展開 cardViews）
+    func startSearching() {
+        previousExpandedState = isRequestsSectionExpanded
+        isSearching = true
+        // 如果有邀請，強制展開
+        if hasFriendRequests {
+            isRequestsSectionExpanded = true
+        }
+    }
+    
+    /// 結束搜尋（恢復原本折疊狀態）
+    func stopSearching() {
+        isSearching = false
+        // 恢復搜尋前的狀態
+        isRequestsSectionExpanded = previousExpandedState
     }
     
     // MARK: - Private Methods

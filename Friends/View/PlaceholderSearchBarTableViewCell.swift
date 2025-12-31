@@ -28,9 +28,28 @@ class PlaceholderSearchBarTableViewCell: UITableViewCell {
     
     // MARK: - Setup
     
+    private let addFriendButton: UIButton = {
+        let button = UIButton(type: .custom)
+        button.setImage(UIImage(named: "icBtnAddFriends"), for: .normal)
+        return button
+    }()
+    
+    // MARK: - Setup
+    
     private func setupUI() {
         selectionStyle = .none
-        backgroundColor = .systemBackground
+        backgroundColor = DesignConstants.Colors.cellBackground
+        contentView.backgroundColor = DesignConstants.Colors.cellBackground
+        
+        contentView.addSubview(addFriendButton)
+        addFriendButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            addFriendButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -30),
+            addFriendButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            addFriendButton.widthAnchor.constraint(equalToConstant: 24),
+            addFriendButton.heightAnchor.constraint(equalToConstant: 24)
+        ])
     }
     
     // MARK: - Configuration
@@ -51,8 +70,8 @@ class PlaceholderSearchBarTableViewCell: UITableViewCell {
         
         NSLayoutConstraint.activate([
             searchBar.topAnchor.constraint(equalTo: contentView.topAnchor),
-            searchBar.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            searchBar.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            searchBar.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20), // 增加左側間距以匹配整體設計
+            searchBar.trailingAnchor.constraint(equalTo: addFriendButton.leadingAnchor, constant: -10),
             searchBar.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
         ])
     }
