@@ -68,8 +68,8 @@ class EmptyStateView: UIView {
         // 綠色漸變背景
         let gradientLayer = CAGradientLayer()
         gradientLayer.colors = [
-            UIColor(red: 86/255, green: 179/255, blue: 11/255, alpha: 1.0).cgColor,
-            UIColor(red: 166/255, green: 204/255, blue: 66/255, alpha: 1.0).cgColor
+            DesignConstants.Colors.color(hex: "56B30B").cgColor,
+            DesignConstants.Colors.color(hex: "A6CC42").cgColor
         ]
         gradientLayer.startPoint = CGPoint(x: 0, y: 0.5)
         gradientLayer.endPoint = CGPoint(x: 1, y: 0.5)
@@ -77,7 +77,7 @@ class EmptyStateView: UIView {
         addFriendButton.layer.insertSublayer(gradientLayer, at: 0)
         
         // 陰影
-        addFriendButton.layer.shadowColor = UIColor(red: 121/255, green: 196/255, blue: 27/255, alpha: 0.4).cgColor
+        addFriendButton.layer.shadowColor = DesignConstants.Colors.color(hex: "79C41B", alpha: 0.4).cgColor
         addFriendButton.layer.shadowOffset = CGSize(width: 0, height: 4)
         addFriendButton.layer.shadowRadius = 8
         addFriendButton.layer.shadowOpacity = 1.0

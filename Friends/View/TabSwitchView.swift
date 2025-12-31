@@ -74,7 +74,7 @@ class TabSwitchView: UIView {
         addSubview(indicatorView)
         
         // Badge（顯示待處理邀請數量）
-        badgeView.backgroundColor = UIColor(red: 249/255, green: 178/255, blue: 220/255, alpha: 1.0)
+        badgeView.backgroundColor = DesignConstants.Colors.color(hex: "F9B2DC")
         badgeView.layer.cornerRadius = 9
         badgeView.translatesAutoresizingMaskIntoConstraints = false
         badgeView.isHidden = true
