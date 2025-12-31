@@ -135,12 +135,16 @@ class FriendsViewController: UIViewController {
             } completion: { _ in
                 // 動畫完成後重新設定 tableHeaderView 以確保正確
                 self.tableView.tableHeaderView = self.tableHeaderContainerView
+                // 更新 scrollIndicatorInsets 以確保底部對齊
+                self.updateTableViewContentInset()
             }
         } else {
             tableHeaderContainerView.frame = CGRect(x: 0, y: 0, width: width, height: containerHeight)
             userProfileHeaderView.updateLayout(for: width, safeAreaTop: 64)
             tableHeaderContainerView.layoutIfNeeded()
             tableView.tableHeaderView = tableHeaderContainerView
+            // 更新 scrollIndicatorInsets 以確保底部對齊
+            updateTableViewContentInset()
         }
     }
     
@@ -164,23 +168,17 @@ class FriendsViewController: UIViewController {
         }
         
         // Indicator Inset：
-        // 將 Top Inset 設為 view.safeAreaInsets.top，這會讓 Indicator 完美的從 Navigation Bar 下緣開始。
-        // 下緣則避開鍵盤或 TabBar（鍵盤顯示時會覆蓋 TabBar，所以不需要同時加兩者）。
-        let indicatorBottomInset: CGFloat
-        if currentKeyboardInset > 0 {
-            // 鍵盤顯示時，使用鍵盤高度（減去 safeAreaBottom，因為原邏輯是這樣處理的）
-            indicatorBottomInset = max(0, currentKeyboardInset - safeAreaBottom)
-        } else {
-            // 鍵盤隱藏時，使用 TabBar 高度（safeAreaBottom + TabBar高度）
-            indicatorBottomInset = tabBarInset
-        }
-        
-        tableView.scrollIndicatorInsets = UIEdgeInsets(
-            top: 0,
+        // 1. 停用自動調整（在 setupTableView 中設定），避免系統重複加入 Safe Area
+        // 2. 為了讓滾動條與內容正確對齊，scrollIndicatorInsets 應該與 contentInset 的 top 和 bottom 保持一致
+        // 3. 這樣滾動條會在導覽列下方開始，並在 tab bar 頂部結束
+        let indicatorInsets = UIEdgeInsets(
+            top: safeAreaTop,
             left: 0,
-            bottom: indicatorBottomInset,
+            bottom: contentBottomInset,
             right: 0
         )
+        tableView.scrollIndicatorInsets = indicatorInsets
+        tableView.verticalScrollIndicatorInsets = indicatorInsets
     }
     
     // MARK: - Private Methods
@@ -493,6 +491,9 @@ extension FriendsViewController: UserProfileHeaderViewDelegate {
             self.tableView.beginUpdates()
             self.tableView.tableHeaderView = self.tableHeaderContainerView
             self.tableView.endUpdates()
+        } completion: { _ in
+            // 動畫完成後更新 scrollIndicatorInsets 以確保底部對齊
+            self.updateTableViewContentInset()
         }
     }
 }
@@ -674,6 +675,7 @@ extension FriendsViewController {
         tableView.estimatedRowHeight = 80
         tableView.separatorColor = DesignConstants.Colors.divider
         tableView.contentInsetAdjustmentBehavior = .never
+        tableView.automaticallyAdjustsScrollIndicatorInsets = false
         
         if #available(iOS 26.0, *) {
             tableView.topEdgeEffect.style = .soft
