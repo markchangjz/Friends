@@ -27,6 +27,9 @@ class CustomTabBarView: UIView {
     
     private let tabItems: [TabBarItem] = [.products, .friends, .home, .manage, .settings]
     
+    // Home tab 的索引（center button）
+    private let homeTabIndex = 2
+    
     // MARK: - Initialization
     
     override init(frame: CGRect) {
@@ -260,7 +263,7 @@ class CustomTabBarView: UIView {
         
         // Create tab buttons with proper indexing
         for (index, item) in tabItems.enumerated() {
-            if index == 2 { // Home tab - center button placeholder
+            if index == homeTabIndex { // Home tab - center button placeholder
                 let spacerView = UIView()
                 stackView.addArrangedSubview(spacerView)
                 tabButtons.append(spacerView)
@@ -363,7 +366,7 @@ class CustomTabBarView: UIView {
         centerButton.layer.shadowOffset = CGSize(width: 0, height: 12)
         centerButton.layer.shadowRadius = 12
         centerButton.layer.shadowOpacity = 0.1
-        centerButton.tag = 2 // Home tab index
+        centerButton.tag = homeTabIndex
         centerButton.translatesAutoresizingMaskIntoConstraints = false
         
         // Set home icon
@@ -430,7 +433,7 @@ class CustomTabBarView: UIView {
         
         // Update all tab containers
         for (arrayIndex, container) in tabButtons.enumerated() {
-            if arrayIndex == 2 { continue } // Skip center button (handled separately)
+            if arrayIndex == homeTabIndex { continue } // Skip center button (handled separately)
             
             let isSelected = arrayIndex == selectedIndex
             let selectedColor = isSelected ? DesignConstants.Colors.hotPink : DesignConstants.Colors.warmGrey
@@ -440,7 +443,7 @@ class CustomTabBarView: UIView {
         }
         
         // Update center button
-        let isCenterSelected = selectedIndex == 2
+        let isCenterSelected = selectedIndex == homeTabIndex
         centerButton.tintColor = isCenterSelected ? DesignConstants.Colors.hotPink : DesignConstants.Colors.warmGrey
     }
     
