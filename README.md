@@ -12,7 +12,9 @@
 
 ### 測試狀態切換
 支援無好友、好友列表、好友列表含邀請等多種情境。
-<img src="https://github.com/user-attachments/assets/05f66753-6dbb-47bc-9c67-1ff6b3b4b447" width=60%>
+
+<img src="https://github.com/user-attachments/assets/01fadc65-ff15-4ec1-83f0-99b1117adae9" width=60%>
+
 
 ### 技術驗證
 - **單元測試**：確保核心邏輯穩定。
