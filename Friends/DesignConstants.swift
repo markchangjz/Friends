@@ -12,86 +12,104 @@ struct DesignConstants {
     // MARK: - Colors
     
     struct Colors {
-        // 背景顏色（支援 Dark Mode）
+        
+        /// 從 hex 字串建立 UIColor
+        /// - Parameters:
+        ///   - hex: hex 字串，格式為 "RRGGBB" 或 "#RRGGBB"
+        ///   - alpha: 透明度，預設為 1.0
+        /// - Returns: UIColor 物件
+        static func color(hex: String, alpha: CGFloat = 1.0) -> UIColor {
+            var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+            hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
+            
+            var rgb: UInt64 = 0
+            
+            Scanner(string: hexSanitized).scanHexInt64(&rgb)
+            
+            let red = CGFloat((rgb & 0xFF0000) >> 16) / 255.0
+            let green = CGFloat((rgb & 0x00FF00) >> 8) / 255.0
+            let blue = CGFloat(rgb & 0x0000FF) / 255.0
+            
+            return UIColor(red: red, green: green, blue: blue, alpha: alpha)
+        }
+        
         static let background = UIColor { traitCollection in
             switch traitCollection.userInterfaceStyle {
             case .dark:
-                return UIColor(red: 28/255, green: 28/255, blue: 30/255, alpha: 1.0) // 深色模式背景
+                return color(hex: "1C1C1E")
             default:
-                return UIColor(red: 252/255, green: 252/255, blue: 252/255, alpha: 1.0) // 淺色模式背景
+                return color(hex: "FCFCFC")
             }
         }
         
-        // 文字顏色（支援 Dark Mode）
         static let lightGrey = UIColor { traitCollection in
             switch traitCollection.userInterfaceStyle {
             case .dark:
-                return UIColor(red: 229/255, green: 229/255, blue: 234/255, alpha: 1.0) // 深色模式文字
+                return color(hex: "E5E5EA")
             default:
-                return UIColor(red: 71/255, green: 71/255, blue: 71/255, alpha: 1.0) // 淺色模式文字
+                return color(hex: "474747")
             }
         }
         
         static let warmGrey = UIColor { traitCollection in
             switch traitCollection.userInterfaceStyle {
             case .dark:
-                return UIColor(red: 174/255, green: 174/255, blue: 178/255, alpha: 1.0) // 深色模式
+                return color(hex: "AEAEB2")
             default:
-                return UIColor(red: 153/255, green: 153/255, blue: 153/255, alpha: 1.0) // 淺色模式
+                return color(hex: "999999")
             }
         }
         
         static let steel = UIColor { traitCollection in
             switch traitCollection.userInterfaceStyle {
             case .dark:
-                return UIColor(red: 174/255, green: 174/255, blue: 178/255, alpha: 1.0) // 深色模式
+                return color(hex: "AEAEB2")
             default:
-                return UIColor(red: 142/255, green: 142/255, blue: 147/255, alpha: 1.0) // 淺色模式
+                return color(hex: "8E8E93")
             }
         }
         
-        // 主色調（不變）
-        static let hotPink = UIColor(red: 236/255, green: 0/255, blue: 140/255, alpha: 1.0) // rgb(236, 0, 140)
+        // 主色調
+        static let hotPink = color(hex: "EC008C")
         
-        // 分隔線（支援 Dark Mode）
         static let divider = UIColor { traitCollection in
             switch traitCollection.userInterfaceStyle {
             case .dark:
-                return UIColor(red: 58/255, green: 58/255, blue: 60/255, alpha: 1.0) // 深色模式
+                return color(hex: "3A3A3C")
             default:
-                return UIColor(red: 228/255, green: 228/255, blue: 228/255, alpha: 1.0) // 淺色模式
+                return color(hex: "E4E4E4")
             }
         }
         
         static let dividerLight = UIColor { traitCollection in
             switch traitCollection.userInterfaceStyle {
             case .dark:
-                return UIColor(red: 58/255, green: 58/255, blue: 60/255, alpha: 1.0) // 深色模式
+                return color(hex: "3A3A3C")
             default:
-                return UIColor(red: 239/255, green: 239/255, blue: 239/255, alpha: 1.0) // 淺色模式
+                return color(hex: "EFEFEF")
             }
         }
         
-        // 按鈕邊框（支援 Dark Mode）
+        // 按鈕邊框
         static let buttonBorderGray = UIColor { traitCollection in
             switch traitCollection.userInterfaceStyle {
             case .dark:
-                return UIColor(red: 99/255, green: 99/255, blue: 102/255, alpha: 1.0) // 深色模式
+                return color(hex: "636366")
             default:
-                return UIColor(red: 201/255, green: 201/255, blue: 201/255, alpha: 1.0) // 淺色模式
+                return color(hex: "C9C9C9")
             }
         }
         
         // 星號背景（不變）
-        static let starBackground = UIColor(red: 244/255, green: 180/255, blue: 0/255, alpha: 1.0) // rgb(244, 180, 0)
+        static let starBackground = color(hex: "F4B400")
         
         // 搜尋列背景（支援 Dark Mode）
         static let searchBarBackground = UIColor { traitCollection in
             switch traitCollection.userInterfaceStyle {
             case .dark:
-                return UIColor(red: 142/255, green: 142/255, blue: 147/255, alpha: 0.24) // 深色模式，提高不透明度
+                return color(hex: "8E8E93", alpha: 0.24)
             default:
-                return UIColor(red: 142/255, green: 142/255, blue: 147/255, alpha: 0.12) // 淺色模式
+                return color(hex: "8E8E93", alpha: 0.12)
             }
         }
         
@@ -99,29 +117,29 @@ struct DesignConstants {
         static let cellBackground = UIColor { traitCollection in
             switch traitCollection.userInterfaceStyle {
             case .dark:
-                return UIColor(red: 28/255, green: 28/255, blue: 30/255, alpha: 1.0) // 深色模式：與背景色相同
+                return color(hex: "1C1C1E")
             default:
-                return UIColor(red: 252/255, green: 252/255, blue: 252/255, alpha: 1.0) // 淺色模式：與背景色相同
+                return color(hex: "FCFCFC")
             }
         }
         
-        // Tab Bar 背景色（支援 Dark Mode）
+        // Tab Bar 背景色
         static let tabBarBackground = UIColor { traitCollection in
             switch traitCollection.userInterfaceStyle {
             case .dark:
-                return UIColor(red: 22/255, green: 22/255, blue: 24/255, alpha: 1.0) // 深色模式：稍微深一點
+                return color(hex: "161618")
             default:
-                return UIColor(red: 248/255, green: 248/255, blue: 248/255, alpha: 1.0) // 淺色模式：稍微深一點
+                return color(hex: "F8F8F8")
             }
         }
         
-        // Tab Bar 上邊框線（支援 Dark Mode）
+        // Tab Bar 上邊框線
         static let tabBarTopBorder = UIColor { traitCollection in
             switch traitCollection.userInterfaceStyle {
             case .dark:
-                return UIColor(red: 99/255, green: 99/255, blue: 102/255, alpha: 1.0) // 深色模式：較淺的灰色
+                return color(hex: "636366")
             default:
-                return UIColor(red: 200/255, green: 200/255, blue: 200/255, alpha: 1.0) // 淺色模式：較深的灰色
+                return color(hex: "C8C8C8")
             }
         }
     }
