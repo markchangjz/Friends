@@ -219,6 +219,7 @@ class FriendsViewController: UIViewController {
             .sink { [weak self] in
                 guard let self else { return }
                 updateRequestsSection()
+                updateChatBadge()
                 updateEmptyState()
                 tableView.reloadData()
                 refreshControl.endRefreshing()
@@ -298,6 +299,11 @@ class FriendsViewController: UIViewController {
         viewModel.loadFriendsData(for: viewModel.selectedOption)
     }
     
+    /// 更新聊天 Badge
+    private func updateChatBadge() {
+        tabSwitchView.updateBadgeCount(viewModel.chatBadgeCount, for: .chat)
+    }
+    
     /// 更新 Requests Section
     private func updateRequestsSection() {
         userProfileHeaderView.configureRequests(
@@ -308,7 +314,7 @@ class FriendsViewController: UIViewController {
         userProfileHeaderView.setExpandedState(viewModel.isRequestsSectionExpanded)
         
         // 更新 badge 數量（使用未過濾的 pending 數量，確保搜尋時數字不變）
-        tabSwitchView.updateBadgeCount(viewModel.pendingFriendCount)
+        tabSwitchView.updateBadgeCount(viewModel.pendingFriendCount, for: .friends)
         
         // 首次載入時不使用動畫，避免出現由左往右的動畫
         if isFirstRequestsLoad {

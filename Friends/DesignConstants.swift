@@ -142,6 +142,19 @@ struct DesignConstants {
                 return color(hex: "C8C8C8")
             }
         }
+        
+        // Badge 背景色
+        static let badgeBackground = color(hex: "F9B2DC")
+        
+        // Badge 文字顏色（支援 Dark Mode）
+        static let badgeTextColor = UIColor { traitCollection in
+            switch traitCollection.userInterfaceStyle {
+            case .dark:
+                return .darkGray
+            default:
+                return .white
+            }
+        }
     }
 }
 

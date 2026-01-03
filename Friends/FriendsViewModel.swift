@@ -59,6 +59,11 @@ class FriendsViewModel {
         return allConfirmedFriends.filter { $0.status == .pending }.count
     }
     
+    // 聊天 Badge 數量（固定為 100，顯示為 99+）
+    var chatBadgeCount: Int {
+        return 100
+    }
+    
     // Requests section 展開狀態（預設折疊）
     var isRequestsSectionExpanded: Bool = false
     
