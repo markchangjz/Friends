@@ -73,6 +73,9 @@ class FriendsViewModel {
     
     // 搜尋前的展開狀態（用於搜尋結束時恢復）
     private var previousExpandedState: Bool = false
+    
+    // 當前選中的 tab（Friends 或 Chat）
+    var currentTab: TabSwitchView.Tab = .friends
 
     // MARK: - Private Properties
     

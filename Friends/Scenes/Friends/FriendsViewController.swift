@@ -24,9 +24,6 @@ class FriendsViewController: UIViewController {
     // 追蹤鍵盤高度造成的 inset
     private var currentKeyboardInset: CGFloat = 0
     
-    // 追蹤當前選中的 tab
-    private var currentTab: TabSwitchView.Tab = .friends
-    
     // UI 元件
     private lazy var userProfileHeaderView = UserProfileHeaderView(width: view.bounds.width)
     private let tableView = UITableView()
@@ -124,7 +121,7 @@ class FriendsViewController: UIViewController {
     
     private func updateEmptyState() {
         // 如果當前是聊天 tab，顯示聊天專用的空狀態
-        if currentTab == .chat {
+        if viewModel.currentTab == .chat {
             showChatEmptyState()
             return
         }
@@ -262,7 +259,7 @@ class FriendsViewController: UIViewController {
 
 extension FriendsViewController: UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
-        switch currentTab {
+        switch viewModel.currentTab {
         case .chat:
             // 如果當前是聊天 tab，不顯示任何 section
             return 0
@@ -273,7 +270,7 @@ extension FriendsViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        switch currentTab {
+        switch viewModel.currentTab {
         case .chat:
             // 如果當前是聊天 tab，不顯示任何 row
             return 0
@@ -349,12 +346,12 @@ extension FriendsViewController: UISearchResultsUpdating {
 
 extension FriendsViewController: UserProfileHeaderViewDelegate {
     func userProfileHeaderView(_ headerView: UserProfileHeaderView, didSelectTab tab: TabSwitchView.Tab) {
-        currentTab = tab
+        viewModel.currentTab = tab
         updateTableViewForCurrentTab()
     }
     
     private func updateTableViewForCurrentTab() {
-        switch currentTab {
+        switch viewModel.currentTab {
         case .friends:
             // 恢復顯示好友資料
             updateEmptyState()
