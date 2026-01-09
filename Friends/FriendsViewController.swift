@@ -193,11 +193,7 @@ class FriendsViewController: UIViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] option in
                 guard let self else { return }
-                // 使用異步更新選單狀態，確保 menu 關閉後再更新
-                DispatchQueue.main.async { [weak self] in
-                    guard let self else { return }
-                    self.menuButton.menu = self.viewModel.createMenu()
-                }
+                menuButton.menu = viewModel.createMenu()
                 // 重置首次載入標記（因為切換選項時會重新載入資料）
                 isFirstRequestsLoad = true
                 // 顯示 loading 並同時載入使用者資料和好友資料
