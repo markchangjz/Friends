@@ -335,7 +335,7 @@ extension FriendsViewController: UITableViewDelegate {
 extension FriendsViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         let searchText = searchController.searchBar.text ?? ""
-        viewModel.filterFriends(with: searchText)
+        viewModel.filterFriends(name: searchText)
         // 搜尋關鍵字更新時，同步更新 cardViews 過濾結果
         updateRequestsSection()
         updateEmptyState()

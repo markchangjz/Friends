@@ -182,7 +182,7 @@ final class FriendsViewModelTests: XCTestCase {
         let initialConfirmedCount = viewModel.displayConfirmedFriends.count
         
         // When
-        viewModel.filterFriends(with: "")
+        viewModel.filterFriends(name: "")
         
         // Then - 空搜尋應該顯示所有已確認好友
         XCTAssertEqual(viewModel.displayConfirmedFriends.count, initialConfirmedCount)
@@ -204,7 +204,7 @@ final class FriendsViewModelTests: XCTestCase {
         await fulfillment(of: [expectation], timeout: 2.0)
         
         // When - 搜尋 friend3.json 中的實際好友名稱（例如 "黃"）
-        viewModel.filterFriends(with: "黃")
+        viewModel.filterFriends(name: "黃")
         
         // Then - 應該過濾出包含 "黃" 的好友
         let filteredCount = viewModel.displayConfirmedFriends.count
@@ -228,7 +228,7 @@ final class FriendsViewModelTests: XCTestCase {
         await fulfillment(of: [expectation], timeout: 2.0)
         
         let initialConfirmedCount = viewModel.displayConfirmedFriends.count
-        viewModel.filterFriends(with: "test")
+        viewModel.filterFriends(name: "test")
         
         // When
         viewModel.clearSearch()

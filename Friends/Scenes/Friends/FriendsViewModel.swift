@@ -191,7 +191,7 @@ class FriendsViewModel {
     
     /// 根據搜尋文字過濾好友資料
     /// - Parameter searchText: 搜尋關鍵字，空字串表示不過濾
-    func filterFriends(with searchText: String = "") {
+    func filterFriends(name searchText: String = "") {
         // 先從 allFriends 分類
         let requestFriends = allFriends.filter { $0.status == .requestSent }
         let confirmedFriends = allFriends.filter { $0.status == .accepted || $0.status == .pending }
@@ -214,7 +214,7 @@ class FriendsViewModel {
     
     /// 清除搜尋文字並重置過濾
     func clearSearch() {
-        filterFriends(with: "")
+        filterFriends(name: "")
     }
     
     /// 開始搜尋（強制展開 cardViews）
