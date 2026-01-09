@@ -95,12 +95,8 @@ class FriendsViewController: UIViewController {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        setupTableHeaderView()
-        updateTableViewContentInset()
-    }
-    
-    private func setupTableHeaderView() {
         updateHeaderLayout(animated: false)
+        updateTableViewContentInset()
     }
     
     /// 更新或初始化 TableHeaderView
