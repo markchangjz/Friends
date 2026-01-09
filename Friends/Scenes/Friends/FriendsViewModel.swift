@@ -71,13 +71,13 @@ class FriendsViewModel {
     // 是否正在搜尋（用於追蹤搜尋狀態，搜尋時強制展開 cardViews）
     private(set) var isSearching: Bool = false
     
-    // 搜尋前的展開狀態（用於搜尋結束時恢復）
-    private var previousExpandedState: Bool = false
-    
     // 當前選中的 tab（Friends 或 Chat）
     var currentTab: TabSwitchView.Tab = .friends
 
     // MARK: - Private Properties
+    
+    // 搜尋前的展開狀態（用於搜尋結束時恢復）
+    private var previousExpandedState: Bool = false
     
     // Repository
     private let repository: FriendsRepositoryProtocol

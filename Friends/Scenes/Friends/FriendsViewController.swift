@@ -10,7 +10,25 @@ import Combine
 
 class FriendsViewController: UIViewController {
     
+    // MARK: - Lifecycle
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupViewModel()
+        setupNavigationBar()
+        setupUI()
+        loadData()
+        setupKeyboardHandling()
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        updateHeaderLayout()
+        updateTableViewContentInset()
+    }
+    
     // MARK: - Properties
+    
     private let viewModel = FriendsViewModel()
     private var cancellables = Set<AnyCancellable>()
     private let transitionManager = FriendSearchTransitionManager()
@@ -36,23 +54,6 @@ class FriendsViewController: UIViewController {
         target: nil,
         action: nil
     )
-    
-    // MARK: - Lifecycle
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupViewModel()
-        setupNavigationBar()
-        setupUI()
-        loadData()
-        setupKeyboardHandling()
-    }
-    
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        updateHeaderLayout()
-        updateTableViewContentInset()
-    }
     
     // MARK: - ViewModel Setup
     
@@ -253,6 +254,75 @@ class FriendsViewController: UIViewController {
         tableView.scrollIndicatorInsets = indicatorInsets
         tableView.verticalScrollIndicatorInsets = indicatorInsets
     }
+    
+    // MARK: - Private
+    
+    private func isSearchBarRow(at indexPath: IndexPath) -> Bool {
+        return !viewModel.isUsingRealSearchController && indexPath.row == 0
+    }
+    
+    private func configureSearchBarCell(for indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: PlaceholderSearchBarTableViewCell.identifier, for: indexPath) as? PlaceholderSearchBarTableViewCell else {
+            return UITableViewCell()
+        }
+        cell.configure(with: placeholderSearchBar)
+        return cell
+    }
+    
+    private func configureFriendCell(for indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: FriendTableViewCell.identifier, for: indexPath) as? FriendTableViewCell else {
+            return UITableViewCell()
+        }
+        
+        // 如果有 placeholder search bar，索引需要減 1
+        let friendIndex = viewModel.isUsingRealSearchController ? indexPath.row : indexPath.row - 1
+        let friend = viewModel.displayConfirmedFriends[friendIndex]
+        cell.configure(with: friend)
+        return cell
+    }
+    
+    private func updateTableViewForCurrentTab() {
+        switch viewModel.currentTab {
+        case .friends:
+            // 恢復顯示好友資料
+            updateEmptyState()
+            tableView.reloadData()
+        case .chat:
+            // 顯示「無資料」文字
+            showChatEmptyState()
+        }
+    }
+    
+    private func showChatEmptyState() {
+        // 創建一個簡單的「無資料」標籤作為 tableFooterView
+        let emptyLabel = UILabel()
+        emptyLabel.text = "無資料"
+        emptyLabel.font = .systemFont(ofSize: 16, weight: .regular)
+        emptyLabel.textColor = DesignConstants.Colors.lightGrey
+        emptyLabel.textAlignment = .center
+        emptyLabel.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: 200)
+        
+        tableView.tableFooterView = emptyLabel
+        tableView.reloadData()
+    }
+    
+    private func activateRealSearchController() {
+        viewModel.isUsingRealSearchController = true
+        // 開始搜尋時，強制展開 cardViews
+        viewModel.startSearching()
+        if viewModel.hasFriendRequests {
+            userProfileHeaderView.forceExpand()
+            // 更新 header layout 以反映展開狀態
+            updateHeaderLayout()
+        }
+        transitionManager.activateSearch(
+            placeholderSearchBar: placeholderSearchBar,
+            realSearchController: searchController,
+            tableView: tableView,
+            in: self,
+            friendsSectionIndex: 0  // 現在只有一個 section
+        )
+    }
 }
 
 // MARK: - UITableViewDataSource
@@ -294,31 +364,6 @@ extension FriendsViewController: UITableViewDataSource {
         cell.separatorInset = UIEdgeInsets(top: 0, left: 105, bottom: 0, right: 20)
         return cell
     }
-    
-    private func isSearchBarRow(at indexPath: IndexPath) -> Bool {
-        return !viewModel.isUsingRealSearchController && indexPath.row == 0
-    }
-    
-    private func configureSearchBarCell(for indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: PlaceholderSearchBarTableViewCell.identifier, for: indexPath) as? PlaceholderSearchBarTableViewCell else {
-            return UITableViewCell()
-        }
-        cell.configure(with: placeholderSearchBar)
-        return cell
-    }
-    
-    private func configureFriendCell(for indexPath: IndexPath) -> UITableViewCell {
-        
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: FriendTableViewCell.identifier, for: indexPath) as? FriendTableViewCell else {
-            return UITableViewCell()
-        }
-        
-        // 如果有 placeholder search bar，索引需要減 1
-        let friendIndex = viewModel.isUsingRealSearchController ? indexPath.row : indexPath.row - 1
-        let friend = viewModel.displayConfirmedFriends[friendIndex]
-        cell.configure(with: friend)
-        return cell
-    }
 }
 
 // MARK: - UITableViewDelegate
@@ -348,31 +393,6 @@ extension FriendsViewController: UserProfileHeaderViewDelegate {
     func userProfileHeaderView(_ headerView: UserProfileHeaderView, didSelectTab tab: TabSwitchView.Tab) {
         viewModel.currentTab = tab
         updateTableViewForCurrentTab()
-    }
-    
-    private func updateTableViewForCurrentTab() {
-        switch viewModel.currentTab {
-        case .friends:
-            // 恢復顯示好友資料
-            updateEmptyState()
-            tableView.reloadData()
-        case .chat:
-            // 顯示「無資料」文字
-            showChatEmptyState()
-        }
-    }
-    
-    private func showChatEmptyState() {
-        // 創建一個簡單的「無資料」標籤作為 tableFooterView
-        let emptyLabel = UILabel()
-        emptyLabel.text = "無資料"
-        emptyLabel.font = .systemFont(ofSize: 16, weight: .regular)
-        emptyLabel.textColor = DesignConstants.Colors.lightGrey
-        emptyLabel.textAlignment = .center
-        emptyLabel.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: 200)
-        
-        tableView.tableFooterView = emptyLabel
-        tableView.reloadData()
     }
     
     func userProfileHeaderViewDidTapRequests(_ headerView: UserProfileHeaderView) {
@@ -476,24 +496,6 @@ extension FriendsViewController: UISearchBarDelegate {
                 // 動畫完成後更新空白狀態
                 self?.updateEmptyState()
             }
-        )
-    }
-    
-    private func activateRealSearchController() {
-        viewModel.isUsingRealSearchController = true
-        // 開始搜尋時，強制展開 cardViews
-        viewModel.startSearching()
-        if viewModel.hasFriendRequests {
-            userProfileHeaderView.forceExpand()
-            // 更新 header layout 以反映展開狀態
-            updateHeaderLayout()
-        }
-        transitionManager.activateSearch(
-            placeholderSearchBar: placeholderSearchBar,
-            realSearchController: searchController,
-            tableView: tableView,
-            in: self,
-            friendsSectionIndex: 0  // 現在只有一個 section
         )
     }
 }
