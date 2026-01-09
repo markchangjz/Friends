@@ -29,8 +29,6 @@ class FriendsViewModel {
     // 當前選中的選項 - 使用 @Published 自動發布變更
     @Published private(set) var selectedOption: ViewOption = .noFriends
     
-    // 搜尋文字 - 使用 @Published 自動發布變更
-    @Published var searchText: String = ""
     
     // 使用者資料載入狀態 - 使用 PassthroughSubject 發布事件
     let userProfileDataLoadedPublisher = PassthroughSubject<Void, Never>()
@@ -56,7 +54,7 @@ class FriendsViewModel {
     
     // 未過濾的 pending 好友數量（用於 Badge）
     var pendingFriendCount: Int {
-        return allConfirmedFriends.filter { $0.status == .pending }.count
+        return allFriends.filter { $0.status == .pending }.count
     }
     
     // 聊天 Badge 數量（固定為 100，顯示為 99+）
@@ -73,32 +71,26 @@ class FriendsViewModel {
     // 是否正在搜尋（用於追蹤搜尋狀態，搜尋時強制展開 cardViews）
     private(set) var isSearching: Bool = false
     
-    // 搜尋前的展開狀態（用於搜尋結束時恢復）
-    private var previousExpandedState: Bool = false
+    // 當前選中的 tab（Friends 或 Chat）
+    var currentTab: TabSwitchView.Tab = .friends
 
     // MARK: - Private Properties
+    
+    // 搜尋前的展開狀態（用於搜尋結束時恢復）
+    private var previousExpandedState: Bool = false
     
     // Repository
     private let repository: FriendsRepositoryProtocol
     
     /*
     allFriends: [Friend]              // 所有好友（未分類）- 從 API 載入
-        ↓ 分類
-    ├── allRequestFriends: [Friend]   // 所有請求狀態的好友
-    │   ↓ 過濾/搜尋
-    │   └── displayRequestFriends     // 要顯示的請求好友
-    │
-    └── allConfirmedFriends: [Friend] // 所有已確認的好友
-        ↓ 過濾/搜尋
-        └── displayConfirmedFriends   // 要顯示的已確認好友
+        ↓ 分類 + 過濾/搜尋
+    ├── displayRequestFriends         // 要顯示的請求好友
+    └── displayConfirmedFriends       // 要顯示的已確認好友
     */
     
     // 所有好友資料（未分類）
     private(set) var allFriends: [Friend] = []
-    
-    // 原始未過濾的資料（已分類）
-    private var allRequestFriends: [Friend] = []
-    private var allConfirmedFriends: [Friend] = []
     
     // 要顯示的資料（根據搜尋過濾後）
     private(set) var displayRequestFriends: [Friend] = []
@@ -110,31 +102,29 @@ class FriendsViewModel {
         self.repository = repository
     }
     
-    // MARK: - Public Methods
+    // MARK: - Data Loading
     
     func loadFriendsData(for option: ViewOption) {
-        Task {
+        Task { [weak self] in
+            guard let self else { return }
             do {
                 // 取得好友資料
                 let friendsData = try await fetchFriendsData(for: option)
                 
                 // 所有資料都載入完成後，一起更新 UI
-                await MainActor.run {
-                    self.processFriendsData(friendsData)
-                    self.friendsDataLoadedPublisher.send()
-                }
+                self.processFriendsData(friendsData)
+                self.friendsDataLoadedPublisher.send()
             } catch {
-                await MainActor.run {
-                    self.errorPublisher.send(error)
-                    self.friendsDataLoadedPublisher.send()
-                }
+                self.errorPublisher.send(error)
+                self.friendsDataLoadedPublisher.send()
             }
         }
     }
     
     /// 同時載入使用者資料和好友資料，等兩者都完成後才一起更新 UI
     func loadAllData(for option: ViewOption) {
-        Task {
+        Task { [weak self] in
+            guard let self else { return }
             do {
                 // 並行執行兩個 API 呼叫
                 async let userProfileTask = repository.fetchUserProfile()
@@ -144,24 +134,22 @@ class FriendsViewModel {
                 let (userProfile, friendsData) = try await (userProfileTask, friendsTask)
                 
                 // 所有資料都載入完成後，一起更新 UI
-                await MainActor.run {
-                    // 更新使用者資料
-                    self.userName = userProfile.name
-                    self.userKokoId = userProfile.kokoid
-                    self.userProfileDataLoadedPublisher.send()
-                    
-                    // 更新好友資料
-                    self.processFriendsData(friendsData)
-                    self.friendsDataLoadedPublisher.send()
-                }
+                // 更新使用者資料
+                self.userName = userProfile.name
+                self.userKokoId = userProfile.kokoid
+                self.userProfileDataLoadedPublisher.send()
+                
+                // 更新好友資料
+                self.processFriendsData(friendsData)
+                self.friendsDataLoadedPublisher.send()
             } catch {
-                await MainActor.run {
-                    self.errorPublisher.send(error)
-                    self.friendsDataLoadedPublisher.send()
-                }
+                self.errorPublisher.send(error)
+                self.friendsDataLoadedPublisher.send()
             }
         }
     }
+    
+    // MARK: - Option Selection
     
     func selectOption(_ option: ViewOption) {
         selectedOption = option
@@ -207,18 +195,23 @@ class FriendsViewModel {
     // MARK: - Data Access
     
     /// 根據搜尋文字過濾好友資料
-    func filterFriends() {
+    /// - Parameter searchText: 搜尋關鍵字，空字串表示不過濾
+    func filterFriends(name searchText: String = "") {
+        // 先從 allFriends 分類
+        let requestFriends = allFriends.filter { $0.status == .requestSent }
+        let confirmedFriends = allFriends.filter { $0.status == .accepted || $0.status == .pending }
+        
         if searchText.isEmpty {
             // 沒有搜尋文字，顯示所有資料
-            displayRequestFriends = allRequestFriends
-            displayConfirmedFriends = allConfirmedFriends
+            displayRequestFriends = requestFriends
+            displayConfirmedFriends = confirmedFriends
         } else {
             // 有搜尋文字，根據 name 進行過濾（不區分大小寫）
             let lowercasedSearch = searchText.lowercased()
-            displayRequestFriends = allRequestFriends.filter { 
+            displayRequestFriends = requestFriends.filter { 
                 $0.name.lowercased().contains(lowercasedSearch) 
             }
-            displayConfirmedFriends = allConfirmedFriends.filter { 
+            displayConfirmedFriends = confirmedFriends.filter { 
                 $0.name.lowercased().contains(lowercasedSearch) 
             }
         }
@@ -226,8 +219,7 @@ class FriendsViewModel {
     
     /// 清除搜尋文字並重置過濾
     func clearSearch() {
-        searchText = ""
-        filterFriends()
+        filterFriends(name: "")
     }
     
     /// 開始搜尋（強制展開 cardViews）
@@ -284,10 +276,6 @@ class FriendsViewModel {
     
     private func processFriendsData(_ friendsData: [Friend]) {
         self.allFriends = friendsData
-        
-        // 分類：status = .requestSent 為邀請，status = .accepted 或 .pending 為已確認好友
-        self.allRequestFriends = friendsData.filter { $0.status == .requestSent }
-        self.allConfirmedFriends = friendsData.filter { $0.status == .accepted || $0.status == .pending }
         
         // 初始化時套用當前的搜尋條件
         filterFriends()

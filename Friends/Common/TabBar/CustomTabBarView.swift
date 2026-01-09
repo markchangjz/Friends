@@ -18,9 +18,7 @@ class CustomTabBarView: UIView {
     weak var delegate: CustomTabBarViewDelegate?
     private var selectedIndex: Int = 1
     
-    private var backgroundView: UIView!
-    private var stackView: UIStackView!
-    private var tabButtons: [UIView] = [] // Changed to UIView to contain button + label
+    private var tabContainers: [UIView] = [] // Tab 容器陣列（包含 icon 和 label）
     private var centerButton: UIButton!
     private var centerButtonContainer: UIView!
     private var topBorderLine: UIView! // Add top border line
@@ -32,6 +30,13 @@ class CustomTabBarView: UIView {
     
     // Tab bar 高度
     static let tabBarHeight: CGFloat = 55
+    
+    /// 計算 TabBar 的總 inset（包含 safe area bottom）
+    /// - Parameter safeAreaBottom: Safe area 底部高度
+    /// - Returns: TabBar 的總 inset
+    static func calculateTabBarInset(safeAreaBottom: CGFloat) -> CGFloat {
+        return safeAreaBottom + tabBarHeight
+    }
     
     // MARK: - Layout Constants
     
@@ -62,16 +67,14 @@ class CustomTabBarView: UIView {
         updateAppearance()
         
         // Register for trait changes
-        if #available(iOS 17.0, *) {
-            registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, previousTraitCollection: UITraitCollection) in
-                self.updateAppearance()
-            }
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, previousTraitCollection: UITraitCollection) in
+            self.updateAppearance()
         }
     }
     
     private func setupBackground() {
         // Background view with custom color
-        backgroundView = UIView()
+        let backgroundView = UIView()
         backgroundView.backgroundColor = DesignConstants.Colors.tabBarBackground
         backgroundView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(backgroundView)
@@ -264,22 +267,22 @@ class CustomTabBarView: UIView {
     }
     
     private func setupTabButtons() {
-        stackView = UIStackView()
+        let stackView = UIStackView()
         stackView.axis = .horizontal
         stackView.distribution = .fillEqually
         stackView.alignment = .top
         stackView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(stackView)
         
-        // Create tab buttons with proper indexing
+        // Create tab containers with proper indexing
         for (index, item) in tabItems.enumerated() {
             if index == homeTabIndex { // Home tab - center button placeholder
                 let spacerView = UIView()
                 stackView.addArrangedSubview(spacerView)
-                tabButtons.append(spacerView)
+                tabContainers.append(spacerView)
             } else {
                 let tabContainer = createTabContainer(for: item, at: index)
-                tabButtons.append(tabContainer)
+                tabContainers.append(tabContainer)
                 stackView.addArrangedSubview(tabContainer)
             }
         }
@@ -305,20 +308,18 @@ class CustomTabBarView: UIView {
         verticalStack.spacing = 0 // No spacing between icon and text
         verticalStack.translatesAutoresizingMaskIntoConstraints = false
         
-        // Create button for the icon
-        let button = UIButton(type: .custom)
-        button.tag = index
-        button.translatesAutoresizingMaskIntoConstraints = false
+        // Create image view for the icon
+        let iconImageView = UIImageView()
+        iconImageView.translatesAutoresizingMaskIntoConstraints = false
+        iconImageView.contentMode = .scaleAspectFit
+        iconImageView.tintColor = DesignConstants.Colors.warmGrey
         
         // Configure image
         if let image = UIImage(systemName: item.imageName) {
             let config = UIImage.SymbolConfiguration(pointSize: tabIconPointSize, weight: .medium)
             let resizedImage = image.withConfiguration(config)
-            button.setImage(resizedImage, for: .normal)
+            iconImageView.image = resizedImage
         }
-        
-        button.tintColor = DesignConstants.Colors.warmGrey
-        button.imageView?.contentMode = .scaleAspectFit
         
         // Create label for the text
         let label = UILabel()
@@ -329,7 +330,7 @@ class CustomTabBarView: UIView {
         label.translatesAutoresizingMaskIntoConstraints = false
         
         // Add to vertical stack
-        verticalStack.addArrangedSubview(button)
+        verticalStack.addArrangedSubview(iconImageView)
         verticalStack.addArrangedSubview(label)
         
         // Add stack to container
@@ -337,9 +338,9 @@ class CustomTabBarView: UIView {
         
         // Setup constraints
         NSLayoutConstraint.activate([
-            // Button size
-            button.widthAnchor.constraint(equalToConstant: tabIconSize),
-            button.heightAnchor.constraint(equalToConstant: tabIconSize),
+            // Icon image view size
+            iconImageView.widthAnchor.constraint(equalToConstant: tabIconSize),
+            iconImageView.heightAnchor.constraint(equalToConstant: tabIconSize),
             
             // Vertical stack constraints
             verticalStack.centerXAnchor.constraint(equalTo: container.centerXAnchor),
@@ -348,15 +349,12 @@ class CustomTabBarView: UIView {
         ])
         
         // Add tap gesture to the entire container
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tabContainerTapped(_:)))
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTabSelection(_:)))
         container.addGestureRecognizer(tapGesture)
         container.isUserInteractionEnabled = true
         
-        // Also add target to button as backup
-        button.addTarget(self, action: #selector(tabButtonTapped(_:)), for: .touchUpInside)
-        
         // Store references for later updates
-        button.accessibilityIdentifier = "button_\(index)"
+        iconImageView.accessibilityIdentifier = "icon_\(index)"
         label.accessibilityIdentifier = "label_\(index)"
         
         return container
@@ -390,7 +388,7 @@ class CustomTabBarView: UIView {
         centerButtonContainer.addSubview(centerButton)
         
         // Add target
-        centerButton.addTarget(self, action: #selector(tabButtonTapped(_:)), for: .touchUpInside)
+        centerButton.addTarget(self, action: #selector(handleTabSelection(_:)), for: .touchUpInside)
         
         // Constraints
         NSLayoutConstraint.activate([
@@ -410,16 +408,23 @@ class CustomTabBarView: UIView {
     
     // MARK: - Actions
     
-    @objc private func tabContainerTapped(_ gesture: UITapGestureRecognizer) {
-        guard let container = gesture.view else { return }
-        let index = container.tag
-        selectedIndex = index
-        updateAppearance()
-        delegate?.tabBarView(self, didSelectTabAt: index)
-    }
-    
-    @objc private func tabButtonTapped(_ sender: UIButton) {
-        let index = sender.tag
+    /// 處理 Tab 選擇
+    /// - UITapGestureRecognizer: tab 容器的點擊手勢（tab 按鈕已改為 UIImageView）
+    /// - UIButton: centerButton 的點擊事件
+    @objc private func handleTabSelection(_ sender: Any) {
+        let index: Int
+        
+        if let gesture = sender as? UITapGestureRecognizer {
+            // Tab 容器的點擊手勢
+            guard let container = gesture.view else { return }
+            index = container.tag
+        } else if let button = sender as? UIButton {
+            // Center button 的點擊事件
+            index = button.tag
+        } else {
+            return
+        }
+        
         selectedIndex = index
         updateAppearance()
         delegate?.tabBarView(self, didSelectTabAt: index)
@@ -442,13 +447,13 @@ class CustomTabBarView: UIView {
         createBorderWithCutout()
         
         // Update all tab containers
-        for (arrayIndex, container) in tabButtons.enumerated() {
+        for (arrayIndex, container) in tabContainers.enumerated() {
             if arrayIndex == homeTabIndex { continue } // Skip center button (handled separately)
             
             let isSelected = arrayIndex == selectedIndex
             let selectedColor = isSelected ? DesignConstants.Colors.hotPink : DesignConstants.Colors.warmGrey
             
-            // Find button and label in container using recursive search
+            // Find icon and label in container using recursive search
             updateContainerAppearance(container, isSelected: isSelected, color: selectedColor, index: arrayIndex)
         }
         
@@ -458,24 +463,18 @@ class CustomTabBarView: UIView {
     }
     
     private func updateContainerAppearance(_ view: UIView, isSelected: Bool, color: UIColor, index: Int) {
-        for subview in view.subviews {
-            if let button = subview as? UIButton, button.accessibilityIdentifier == "button_\(index)" {
-                button.tintColor = color
-            } else if let label = subview as? UILabel, label.accessibilityIdentifier == "label_\(index)" {
+        // 直接取得 stackView（container 的第一個 subview）
+        guard let stackView = view.subviews.first as? UIStackView else { return }
+        
+        // 使用 accessibilityIdentifier 找到對應的 UI 元素
+        for arrangedSubview in stackView.arrangedSubviews {
+            if let iconImageView = arrangedSubview as? UIImageView, 
+               iconImageView.accessibilityIdentifier == "icon_\(index)" {
+                iconImageView.tintColor = color
+            } else if let label = arrangedSubview as? UILabel, 
+                      label.accessibilityIdentifier == "label_\(index)" {
                 label.textColor = color
-                // Use system font with appropriate weight
                 label.font = UIFont.systemFont(ofSize: tabLabelFontSize, weight: isSelected ? .medium : .regular)
-            } else if let stackView = subview as? UIStackView {
-                // Handle UIStackView case
-                for arrangedSubview in stackView.arrangedSubviews {
-                    if let button = arrangedSubview as? UIButton, button.accessibilityIdentifier == "button_\(index)" {
-                        button.tintColor = color
-                    } else if let label = arrangedSubview as? UILabel, label.accessibilityIdentifier == "label_\(index)" {
-                        label.textColor = color
-                        // Use system font with appropriate weight
-                        label.font = UIFont.systemFont(ofSize: 12, weight: isSelected ? .medium : .regular)
-                    }
-                }
             }
         }
     }
@@ -487,16 +486,5 @@ class CustomTabBarView: UIView {
         default:
             centerButton.layer.shadowColor = UIColor.black.cgColor
         }
-    }
-    
-    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        // Extend hit test area for center button
-        if centerButtonContainer.frame.contains(point) {
-            let convertedPoint = convert(point, to: centerButtonContainer)
-            if centerButton.frame.contains(convertedPoint) {
-                return centerButton
-            }
-        }
-        return super.hitTest(point, with: event)
     }
 }

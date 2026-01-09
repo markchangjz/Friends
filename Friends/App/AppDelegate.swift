@@ -33,9 +33,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UINavigationBar.appearance().standardAppearance = appearance
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
         UINavigationBar.appearance().compactAppearance = appearance
-        if #available(iOS 15.0, *) {
-            UINavigationBar.appearance().compactScrollEdgeAppearance = appearance
-        }
+        UINavigationBar.appearance().compactScrollEdgeAppearance = appearance
     }
 
     // MARK: UISceneSession Lifecycle

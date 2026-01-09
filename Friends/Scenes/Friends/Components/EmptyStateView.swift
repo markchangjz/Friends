@@ -68,8 +68,8 @@ class EmptyStateView: UIView {
         // 綠色漸變背景
         let gradientLayer = CAGradientLayer()
         gradientLayer.colors = [
-            DesignConstants.Colors.color(hex: "56B30B").cgColor,
-            DesignConstants.Colors.color(hex: "A6CC42").cgColor
+            UIColor(hex: "56B30B").cgColor,
+            UIColor(hex: "A6CC42").cgColor
         ]
         gradientLayer.startPoint = CGPoint(x: 0, y: 0.5)
         gradientLayer.endPoint = CGPoint(x: 1, y: 0.5)
@@ -77,7 +77,7 @@ class EmptyStateView: UIView {
         addFriendButton.layer.insertSublayer(gradientLayer, at: 0)
         
         // 陰影
-        addFriendButton.layer.shadowColor = DesignConstants.Colors.color(hex: "79C41B", alpha: 0.4).cgColor
+        addFriendButton.layer.shadowColor = UIColor(hex: "79C41B", alpha: 0.4).cgColor
         addFriendButton.layer.shadowOffset = CGSize(width: 0, height: 4)
         addFriendButton.layer.shadowRadius = 8
         addFriendButton.layer.shadowOpacity = 1.0
@@ -169,14 +169,16 @@ class EmptyStateView: UIView {
     // MARK: - Actions
     
     @objc private func buttonTouchDown() {
-        UIView.animate(withDuration: 0.1) {
+        UIView.animate(withDuration: 0.1) { [weak self] in
+            guard let self else { return }
             self.addFriendButton.transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
             self.addFriendButton.alpha = 0.8
         }
     }
     
     @objc private func buttonTouchUp() {
-        UIView.animate(withDuration: 0.1) {
+        UIView.animate(withDuration: 0.1) { [weak self] in
+            guard let self else { return }
             self.addFriendButton.transform = .identity
             self.addFriendButton.alpha = 1.0
         }

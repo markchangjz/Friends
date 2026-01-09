@@ -10,78 +10,6 @@ import Combine
 
 class FriendsViewController: UIViewController {
     
-    // MARK: - Properties
-    
-    // ViewModel
-    private let viewModel = FriendsViewModel()
-    
-    // Combine 訂閱管理
-    private var cancellables = Set<AnyCancellable>()
-    
-    // 搜尋控制器（用於實際搜尋）
-    private let searchController = UISearchController()
-    
-    // 假的搜尋列（顯示在 cell 中）
-    private let placeholderSearchBar = UISearchBar()
-    
-    // Transition Manager
-    private let transitionManager = FriendSearchTransitionManager()
-    
-    // 追蹤是否為首次載入 Requests
-    private var isFirstRequestsLoad = true
-    
-    // 追蹤鍵盤高度造成的 inset
-    private var currentKeyboardInset: CGFloat = 0
-    
-    // 追蹤當前選中的 tab
-    private var currentTab: TabSwitchView.Tab = .friends
-    
-    // UI 元件
-    private lazy var userProfileHeaderView = UserProfileHeaderView(width: view.bounds.width)
-    private let tabSwitchView = TabSwitchView()
-    private let tableView = UITableView()
-    private let emptyStateView = EmptyStateView()
-    private let refreshControl = UIRefreshControl()
-    private let loadingIndicator = UIActivityIndicatorView(style: .large)
-    private let menuButton = UIBarButtonItem(
-        image: UIImage(systemName: "line.3.horizontal.decrease.circle"),
-        style: .plain,
-        target: nil,
-        action: nil
-    )
-    
-    // Header Container (保持持久引用以避免重複重建)
-    private lazy var tableHeaderContainerView: UIView = {
-        let container = UIView()
-        container.backgroundColor = DesignConstants.Colors.background
-        container.addSubview(userProfileHeaderView)
-        container.addSubview(tabSwitchView)
-        
-        userProfileHeaderView.translatesAutoresizingMaskIntoConstraints = false
-        tabSwitchView.translatesAutoresizingMaskIntoConstraints = false
-        
-        NSLayoutConstraint.activate([
-            userProfileHeaderView.topAnchor.constraint(equalTo: container.topAnchor),
-            userProfileHeaderView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-            userProfileHeaderView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-            userProfileHeaderViewHeightConstraint,
-            
-            tabSwitchView.topAnchor.constraint(equalTo: userProfileHeaderView.bottomAnchor),
-            tabSwitchView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-            tabSwitchView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-            tabSwitchView.heightAnchor.constraint(equalToConstant: 28),
-            tabSwitchView.bottomAnchor.constraint(equalTo: container.bottomAnchor)
-        ])
-        
-        return container
-    }()
-    
-    private lazy var userProfileHeaderViewHeightConstraint: NSLayoutConstraint = {
-        let constraint = userProfileHeaderView.heightAnchor.constraint(equalToConstant: 100)
-        constraint.priority = UILayoutPriority(999)
-        return constraint
-    }()
-
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
@@ -95,93 +23,39 @@ class FriendsViewController: UIViewController {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        setupTableHeaderView()
+        updateHeaderLayout()
         updateTableViewContentInset()
     }
     
-    private func setupTableHeaderView() {
-        updateHeaderLayout(animated: false)
-    }
+    // MARK: - Properties
     
-    /// 更新或初始化 TableHeaderView
-    private func updateHeaderLayout(animated: Bool = false) {
-        let width = view.bounds.width
-        guard width > 0 else { return }
-        
-        let hasRequests = viewModel.hasFriendRequests
-        let requestCount = viewModel.displayRequestFriends.count
-        let userProfileHeight = userProfileHeaderView.calculateHeight(
-            hasRequests: hasRequests,
-            isExpanded: viewModel.isRequestsSectionExpanded,
-            requestCount: requestCount
-        )
-        
-        let tabSwitchHeight: CGFloat = 28
-        let containerHeight = userProfileHeight + tabSwitchHeight
-        
-        // 更新高度約束
-        userProfileHeaderViewHeightConstraint.constant = userProfileHeight
-        
-        if animated {
-            // 在動畫開始前，先確保卡片有正確的初始位置（無動畫）
-            userProfileHeaderView.ensureInitialLayout()
-            view.layoutIfNeeded()
-            
-            UIView.animate(withDuration: 0.3, delay: 0, options: [.curveEaseInOut]) {
-                // 在動畫塊內觸發佈局更新
-                self.tableHeaderContainerView.frame = CGRect(x: 0, y: 0, width: width, height: containerHeight)
-                self.tableHeaderContainerView.layoutIfNeeded()
-                self.userProfileHeaderView.layoutIfNeeded()
-            } completion: { _ in
-                // 動畫完成後重新設定 tableHeaderView 以確保正確
-                self.tableView.tableHeaderView = self.tableHeaderContainerView
-                // 更新 scrollIndicatorInsets 以確保底部對齊
-                self.updateTableViewContentInset()
-            }
-        } else {
-            tableHeaderContainerView.frame = CGRect(x: 0, y: 0, width: width, height: containerHeight)
-            userProfileHeaderView.updateLayout(for: width, safeAreaTop: 64)
-            tableHeaderContainerView.layoutIfNeeded()
-            tableView.tableHeaderView = tableHeaderContainerView
-            // 更新 scrollIndicatorInsets 以確保底部對齊
-            updateTableViewContentInset()
-        }
-    }
+    private let viewModel = FriendsViewModel()
+    private var cancellables = Set<AnyCancellable>()
+    private let transitionManager = FriendSearchTransitionManager()
     
-    private func updateTableViewContentInset() {
-        let safeAreaTop = view.safeAreaInsets.top
-        let safeAreaBottom = view.safeAreaInsets.bottom
-        
-        // 自訂 TabBar 高度（從 CustomTabBarController 的設定）
-        let customTabBarHeight: CGFloat = 55
-        
-        // 內容 Inset：必須完整避開鍵盤、Safe Area 和自訂 TabBar
-        // 鍵盤顯示時會覆蓋 TabBar，所以用 max(鍵盤高度, TabBar高度)
-        let tabBarInset = safeAreaBottom + customTabBarHeight
-        let contentBottomInset = max(currentKeyboardInset, tabBarInset)
-        tableView.contentInset = UIEdgeInsets(top: safeAreaTop, left: 0, bottom: contentBottomInset, right: 0)
-        
-        // 修正初始位移：如果目前的 offset 為 0 或大於 -safeAreaTop（代表內容被 safeArea 遮擋），則調整為 -safeAreaTop
-        // 這通常發生在視圖剛載入或 safeArea 變更時，確保 Header 不會被 Navigation Bar 遮住
-        if safeAreaTop > 0 && tableView.contentOffset.y > -safeAreaTop {
-            tableView.contentOffset = CGPoint(x: 0, y: -safeAreaTop)
-        }
-        
-        // Indicator Inset：
-        // 1. 停用自動調整（在 setupTableView 中設定），避免系統重複加入 Safe Area
-        // 2. 為了讓滾動條與內容正確對齊，scrollIndicatorInsets 應該與 contentInset 的 top 和 bottom 保持一致
-        // 3. 這樣滾動條會在導覽列下方開始，並在 tab bar 頂部結束
-        let indicatorInsets = UIEdgeInsets(
-            top: safeAreaTop,
-            left: 0,
-            bottom: contentBottomInset,
-            right: 0
-        )
-        tableView.scrollIndicatorInsets = indicatorInsets
-        tableView.verticalScrollIndicatorInsets = indicatorInsets
-    }
+    // 搜尋控制器（用於實際搜尋）
+    private let searchController = UISearchController()
     
-    // MARK: - Private Methods
+    // 假的搜尋列（顯示在 cell 中）
+    private let placeholderSearchBar = UISearchBar()
+    
+    // 追蹤鍵盤高度造成的 inset
+    private var currentKeyboardInset: CGFloat = 0
+    
+    // UI 元件
+    private lazy var userProfileHeaderView = UserProfileHeaderView(width: view.bounds.width)
+    private let tableView = UITableView()
+    private let emptyStateView = EmptyStateView()
+    private let refreshControl = UIRefreshControl()
+    private let loadingIndicator = UIActivityIndicatorView(style: .large)
+    private let menuButton = UIBarButtonItem(
+        image: UIImage(systemName: "line.3.horizontal.decrease.circle"),
+        style: .plain,
+        target: nil,
+        action: nil
+    )
+    
+    // MARK: - ViewModel Setup
     
     private func setupViewModel() {
         // 使用 Combine 訂閱選項變更
@@ -191,13 +65,7 @@ class FriendsViewController: UIViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] option in
                 guard let self else { return }
-                // 使用異步更新選單狀態，確保 menu 關閉後再更新
-                DispatchQueue.main.async { [weak self] in
-                    guard let self else { return }
-                    self.menuButton.menu = self.viewModel.createMenu()
-                }
-                // 重置首次載入標記（因為切換選項時會重新載入資料）
-                isFirstRequestsLoad = true
+                menuButton.menu = viewModel.createMenu()
                 // 顯示 loading 並同時載入使用者資料和好友資料
                 showLoading()
                 viewModel.loadAllData(for: option)
@@ -237,14 +105,24 @@ class FriendsViewController: UIViewController {
             .store(in: &cancellables)
     }
     
+    // MARK: - Data Loading
+    
     private func loadData() {
         showLoading()
         viewModel.loadAllData(for: viewModel.selectedOption)
     }
     
+    // MARK: - Actions
+    
+    @objc private func handleRefresh(_ sender: UIRefreshControl) {
+        viewModel.loadFriendsData(for: viewModel.selectedOption)
+    }
+    
+    // MARK: - UI Update
+    
     private func updateEmptyState() {
         // 如果當前是聊天 tab，顯示聊天專用的空狀態
-        if currentTab == .chat {
+        if viewModel.currentTab == .chat {
             showChatEmptyState()
             return
         }
@@ -295,13 +173,9 @@ class FriendsViewController: UIViewController {
         present(alert, animated: true)
     }
     
-    @objc private func handleRefresh(_ sender: UIRefreshControl) {
-        viewModel.loadFriendsData(for: viewModel.selectedOption)
-    }
-    
     /// 更新聊天 Badge
     private func updateChatBadge() {
-        tabSwitchView.updateBadgeCount(viewModel.chatBadgeCount, for: .chat)
+        userProfileHeaderView.updateTabSwitchBadgeCount(viewModel.chatBadgeCount, for: .chat)
     }
     
     /// 更新 Requests Section
@@ -314,54 +188,74 @@ class FriendsViewController: UIViewController {
         userProfileHeaderView.setExpandedState(viewModel.isRequestsSectionExpanded)
         
         // 更新 badge 數量（使用未過濾的 pending 數量，確保搜尋時數字不變）
-        tabSwitchView.updateBadgeCount(viewModel.pendingFriendCount, for: .friends)
+        userProfileHeaderView.updateTabSwitchBadgeCount(viewModel.pendingFriendCount, for: .friends)
         
-        // 首次載入時不使用動畫，避免出現由左往右的動畫
-        if isFirstRequestsLoad {
-            isFirstRequestsLoad = false
-            updateHeaderLayout(animated: false)
-        } else {
-            /// 重新建立 TableHeaderView（保留相容性，但內部改用 updateHeaderLayout）
-            updateHeaderLayout(animated: true)
-        }
-    }
-}
-
-// MARK: - UITableViewDataSource
-
-extension FriendsViewController: UITableViewDataSource {
-    func numberOfSections(in tableView: UITableView) -> Int {
-        // 如果當前是聊天 tab，不顯示任何 section
-        if currentTab == .chat {
-            return 0
-        }
-        // 只有 Friends section（Requests 已移到 header）
-        return viewModel.hasConfirmedFriends ? 1 : 0
+        updateHeaderLayout()
     }
     
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // 如果當前是聊天 tab，不顯示任何 row
-        if currentTab == .chat {
-            return 0
-        }
-        // 好友列表：加上搜尋列 (如果沒有使用真實 SearchController)
-        let searchBarCount = viewModel.isUsingRealSearchController ? 0 : 1
-        return viewModel.displayConfirmedFriends.count + searchBarCount
+    private func updateUserProfileHeaderView() {
+        userProfileHeaderView.configure(name: viewModel.userName, kokoId: viewModel.userKokoId)
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if isSearchBarRow(at: indexPath) {
-            let cell = configureSearchBarCell(for: indexPath)
-            // 隱藏 Search Bar Cell 的分隔線
-            cell.separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: .greatestFiniteMagnitude)
-            return cell
+    /// 更新或初始化 TableHeaderView
+    private func updateHeaderLayout() {
+        let width = view.bounds.width
+        guard width > 0 else { return }
+        
+        let hasRequests = viewModel.hasFriendRequests
+        let requestCount = viewModel.displayRequestFriends.count
+        let headerHeight = userProfileHeaderView.calculateHeight(
+            hasRequests: hasRequests,
+            isExpanded: viewModel.isRequestsSectionExpanded,
+            requestCount: requestCount
+        )
+        
+        // 更新佈局
+        userProfileHeaderView.frame = CGRect(x: 0, y: 0, width: width, height: headerHeight)
+        userProfileHeaderView.updateLayout(for: width, safeAreaTop: 64)
+        // 確保 view 的佈局已經更新完成，避免 table view 位置跑掉
+        view.layoutIfNeeded()
+        userProfileHeaderView.layoutIfNeeded()
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.tableView.tableHeaderView = self.userProfileHeaderView
+            // 更新 scrollIndicatorInsets 以確保底部對齊
+            self.updateTableViewContentInset()
+        }
+    }
+    
+    private func updateTableViewContentInset() {
+        let safeAreaTop = view.safeAreaInsets.top
+        let safeAreaBottom = view.safeAreaInsets.bottom
+        
+        // 內容 Inset：必須完整避開鍵盤、Safe Area 和自訂 TabBar
+        // 鍵盤顯示時會覆蓋 TabBar，所以用 max(鍵盤高度, TabBar高度)
+        let tabBarInset = CustomTabBarView.calculateTabBarInset(safeAreaBottom: safeAreaBottom)
+        let contentBottomInset = max(currentKeyboardInset, tabBarInset)
+        tableView.contentInset = UIEdgeInsets(top: safeAreaTop, left: 0, bottom: contentBottomInset, right: 0)
+        
+        // 修正初始位移：如果目前的 offset 為 0 或大於 -safeAreaTop（代表內容被 safeArea 遮擋），則調整為 -safeAreaTop
+        // 這通常發生在視圖剛載入或 safeArea 變更時，確保 Header 不會被 Navigation Bar 遮住
+        if safeAreaTop > 0 && tableView.contentOffset.y > -safeAreaTop {
+            tableView.contentOffset = CGPoint(x: 0, y: -safeAreaTop)
         }
         
-        let cell = configureFriendCell(for: indexPath)
-        // 設定分隔線 leading 跟 nameLabel leading 一樣 (50 + 40 + 15 = 105)
-        cell.separatorInset = UIEdgeInsets(top: 0, left: 105, bottom: 0, right: 0)
-        return cell
+        // Indicator Inset：
+        // 1. 停用自動調整（在 setupTableView 中設定），避免系統重複加入 Safe Area
+        // 2. 為了讓滾動條與內容正確對齊，scrollIndicatorInsets 應該與 contentInset 的 top 和 bottom 保持一致
+        // 3. 這樣滾動條會在導覽列下方開始，並在 tab bar 頂部結束
+        let indicatorInsets = UIEdgeInsets(
+            top: safeAreaTop,
+            left: 0,
+            bottom: contentBottomInset,
+            right: 0
+        )
+        tableView.scrollIndicatorInsets = indicatorInsets
+        tableView.verticalScrollIndicatorInsets = indicatorInsets
     }
+    
+    // MARK: - Private
     
     private func isSearchBarRow(at indexPath: IndexPath) -> Bool {
         return !viewModel.isUsingRealSearchController && indexPath.row == 0
@@ -376,7 +270,6 @@ extension FriendsViewController: UITableViewDataSource {
     }
     
     private func configureFriendCell(for indexPath: IndexPath) -> UITableViewCell {
-        
         guard let cell = tableView.dequeueReusableCell(withIdentifier: FriendTableViewCell.identifier, for: indexPath) as? FriendTableViewCell else {
             return UITableViewCell()
         }
@@ -387,40 +280,9 @@ extension FriendsViewController: UITableViewDataSource {
         cell.configure(with: friend)
         return cell
     }
-}
-
-// MARK: - UITableViewDelegate
-
-extension FriendsViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-    }
-}
-
-// MARK: - UISearchResultsUpdating
-
-extension FriendsViewController: UISearchResultsUpdating {
-    func updateSearchResults(for searchController: UISearchController) {
-        let searchText = searchController.searchBar.text ?? ""
-        viewModel.searchText = searchText
-        viewModel.filterFriends()
-        // 搜尋關鍵字更新時，同步更新 cardViews 過濾結果
-        updateRequestsSection()
-        updateEmptyState()
-        tableView.reloadData()
-    }
-}
-
-// MARK: - TabSwitchViewDelegate
-
-extension FriendsViewController: TabSwitchViewDelegate {
-    func tabSwitchView(_ view: TabSwitchView, didSelectTab tab: TabSwitchView.Tab) {
-        currentTab = tab
-        updateTableViewForCurrentTab()
-    }
     
     private func updateTableViewForCurrentTab() {
-        switch currentTab {
+        switch viewModel.currentTab {
         case .friends:
             // 恢復顯示好友資料
             updateEmptyState()
@@ -443,11 +305,96 @@ extension FriendsViewController: TabSwitchViewDelegate {
         tableView.tableFooterView = emptyLabel
         tableView.reloadData()
     }
+    
+    private func activateRealSearchController() {
+        viewModel.isUsingRealSearchController = true
+        // 開始搜尋時，強制展開 cardViews
+        viewModel.startSearching()
+        if viewModel.hasFriendRequests {
+            userProfileHeaderView.forceExpand()
+            // 更新 header layout 以反映展開狀態
+            updateHeaderLayout()
+        }
+        transitionManager.activateSearch(
+            placeholderSearchBar: placeholderSearchBar,
+            realSearchController: searchController,
+            tableView: tableView,
+            in: self,
+            friendsSectionIndex: 0  // 現在只有一個 section
+        )
+    }
+}
+
+// MARK: - UITableViewDataSource
+
+extension FriendsViewController: UITableViewDataSource {
+    func numberOfSections(in tableView: UITableView) -> Int {
+        switch viewModel.currentTab {
+        case .chat:
+            // 如果當前是聊天 tab，不顯示任何 section
+            return 0
+        case .friends:
+            // 只有 Friends section（Requests 已移到 header）
+            return viewModel.hasConfirmedFriends ? 1 : 0
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        switch viewModel.currentTab {
+        case .chat:
+            // 如果當前是聊天 tab，不顯示任何 row
+            return 0
+        case .friends:
+            // 好友列表：加上搜尋列 (如果沒有使用真實 SearchController)
+            let searchBarCount = viewModel.isUsingRealSearchController ? 0 : 1
+            return viewModel.displayConfirmedFriends.count + searchBarCount
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        if isSearchBarRow(at: indexPath) {
+            let cell = configureSearchBarCell(for: indexPath)
+            // 隱藏 Search Bar Cell 的分隔線
+            cell.separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: .greatestFiniteMagnitude)
+            return cell
+        }
+        
+        let cell = configureFriendCell(for: indexPath)
+        // 設定分隔線 leading 跟 nameLabel leading 一樣 (50 + 40 + 15 = 105)
+        cell.separatorInset = UIEdgeInsets(top: 0, left: 105, bottom: 0, right: 20)
+        return cell
+    }
+}
+
+// MARK: - UITableViewDelegate
+
+extension FriendsViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+}
+
+// MARK: - UISearchResultsUpdating
+
+extension FriendsViewController: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        let searchText = searchController.searchBar.text ?? ""
+        viewModel.filterFriends(name: searchText)
+        // 搜尋關鍵字更新時，同步更新 cardViews 過濾結果
+        updateRequestsSection()
+        updateEmptyState()
+        tableView.reloadData()
+    }
 }
 
 // MARK: - UserProfileHeaderViewDelegate
 
 extension FriendsViewController: UserProfileHeaderViewDelegate {
+    func userProfileHeaderView(_ headerView: UserProfileHeaderView, didSelectTab tab: TabSwitchView.Tab) {
+        viewModel.currentTab = tab
+        updateTableViewForCurrentTab()
+    }
+    
     func userProfileHeaderViewDidTapRequests(_ headerView: UserProfileHeaderView) {
         // 如果正在搜尋，不允許折疊
         guard !viewModel.isSearching else { return }
@@ -466,16 +413,11 @@ extension FriendsViewController: UserProfileHeaderViewDelegate {
         // 計算目標高度
         let hasRequests = viewModel.hasFriendRequests
         let requestCount = viewModel.displayRequestFriends.count
-        let userProfileHeight = userProfileHeaderView.calculateHeight(
+        let headerHeight = userProfileHeaderView.calculateHeight(
             hasRequests: hasRequests,
             isExpanded: viewModel.isRequestsSectionExpanded,
             requestCount: requestCount
         )
-        let tabSwitchHeight: CGFloat = 28
-        let containerHeight = userProfileHeight + tabSwitchHeight
-        
-        // 更新約束常數
-        userProfileHeaderViewHeightConstraint.constant = userProfileHeight
         
         // 在動畫開始前，先暫時恢復到切換前的狀態來布局起始位置
         // 這很重要，因為卡片從折疊狀態（有 horizontalInset）到展開狀態（無 horizontalInset）時，
@@ -488,16 +430,18 @@ extension FriendsViewController: UserProfileHeaderViewDelegate {
         userProfileHeaderView.setExpandedState(viewModel.isRequestsSectionExpanded)
         
         // 動畫到目標狀態
-        UIView.animate(withDuration: 0.3, delay: 0, options: [.curveEaseInOut]) {
-            // 更新容器高度
-            self.tableHeaderContainerView.frame.size.height = containerHeight
-            self.tableHeaderContainerView.layoutIfNeeded()
+        UIView.animate(withDuration: 0.3, delay: 0, options: [.curveEaseInOut]) { [weak self] in
+            guard let self else { return }
+            // 更新 header 高度
+            self.userProfileHeaderView.frame.size.height = headerHeight
+            self.userProfileHeaderView.layoutIfNeeded()
             
             // 使用 beginUpdates/endUpdates 強制 TableView 重新計算 Header 高度並動畫
             self.tableView.beginUpdates()
-            self.tableView.tableHeaderView = self.tableHeaderContainerView
+            self.tableView.tableHeaderView = self.userProfileHeaderView
             self.tableView.endUpdates()
-        } completion: { _ in
+        } completion: { [weak self] _ in
+            guard let self else { return }
             // 動畫完成後更新 scrollIndicatorInsets 以確保底部對齊
             self.updateTableViewContentInset()
         }
@@ -532,7 +476,7 @@ extension FriendsViewController: UISearchBarDelegate {
         // 立即同步 UserProfileHeaderView 的狀態（但不立即更新佈局）
         userProfileHeaderView.setExpandedState(viewModel.isRequestsSectionExpanded)
         
-        // 計算目標 header 高度
+        // 計算目標 header 高度（已包含 tabSwitchView）
         let hasRequests = viewModel.hasFriendRequests
         let requestCount = viewModel.displayRequestFriends.count
         let targetHeaderHeight = userProfileHeaderView.calculateHeight(
@@ -540,41 +484,18 @@ extension FriendsViewController: UISearchBarDelegate {
             isExpanded: viewModel.isRequestsSectionExpanded,
             requestCount: requestCount
         )
-        let tabSwitchHeight: CGFloat = 28
-        let targetContainerHeight = targetHeaderHeight + tabSwitchHeight
         
         transitionManager.deactivateSearchWithHeaderAnimation(
             placeholderSearchBar: placeholderSearchBar,
             realSearchController: searchController,
             tableView: tableView,
             headerView: userProfileHeaderView,
-            headerContainer: tableHeaderContainerView,
-            headerHeightConstraint: userProfileHeaderViewHeightConstraint,
             targetHeaderHeight: targetHeaderHeight,
-            targetContainerHeight: targetContainerHeight,
             in: self,
             completion: { [weak self] in
                 // 動畫完成後更新空白狀態
                 self?.updateEmptyState()
             }
-        )
-    }
-    
-    private func activateRealSearchController() {
-        viewModel.isUsingRealSearchController = true
-        // 開始搜尋時，強制展開 cardViews
-        viewModel.startSearching()
-        if viewModel.hasFriendRequests {
-            userProfileHeaderView.forceExpand()
-            // 更新 header layout 以反映展開狀態
-            updateHeaderLayout(animated: true)
-        }
-        transitionManager.activateSearch(
-            placeholderSearchBar: placeholderSearchBar,
-            realSearchController: searchController,
-            tableView: tableView,
-            in: self,
-            friendsSectionIndex: 0  // 現在只有一個 section
         )
     }
 }
@@ -665,7 +586,6 @@ extension FriendsViewController {
         
         // 設定 delegate
         userProfileHeaderView.delegate = self
-        tabSwitchView.delegate = self
         
         setupTableView()
         setupSearchBarContainer()
@@ -708,12 +628,6 @@ extension FriendsViewController {
         
         // 設定初始 contentInset
         updateTableViewContentInset()
-        
-        // Header 會在 viewDidLayoutSubviews 中設定
-    }
-    
-    private func updateUserProfileHeaderView() {
-        userProfileHeaderView.configure(name: viewModel.userName, kokoId: viewModel.userKokoId)
     }
     
     private func setupEmptyStateView() {
@@ -733,8 +647,11 @@ extension FriendsViewController {
             loadingIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
     }
-    
-    // MARK: - Keyboard Handling
+}
+
+// MARK: - Keyboard Handling
+
+extension FriendsViewController {
     
     private func setupKeyboardHandling() {
         NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)
@@ -767,7 +684,8 @@ extension FriendsViewController {
         // 左移 16 位才能正確轉換為 UIView.AnimationOptions 格式
         let options = UIView.AnimationOptions(rawValue: curveValue << 16)
         
-        UIView.animate(withDuration: duration, delay: 0, options: options) {
+        UIView.animate(withDuration: duration, delay: 0, options: options) { [weak self] in
+            guard let self else { return }
             self.updateTableViewContentInset()
             self.view.layoutIfNeeded()
         }

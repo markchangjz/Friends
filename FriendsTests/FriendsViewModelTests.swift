@@ -182,8 +182,7 @@ final class FriendsViewModelTests: XCTestCase {
         let initialConfirmedCount = viewModel.displayConfirmedFriends.count
         
         // When
-        viewModel.searchText = ""
-        viewModel.filterFriends()
+        viewModel.filterFriends(name: "")
         
         // Then - 空搜尋應該顯示所有已確認好友
         XCTAssertEqual(viewModel.displayConfirmedFriends.count, initialConfirmedCount)
@@ -205,8 +204,7 @@ final class FriendsViewModelTests: XCTestCase {
         await fulfillment(of: [expectation], timeout: 2.0)
         
         // When - 搜尋 friend3.json 中的實際好友名稱（例如 "黃"）
-        viewModel.searchText = "黃"
-        viewModel.filterFriends()
+        viewModel.filterFriends(name: "黃")
         
         // Then - 應該過濾出包含 "黃" 的好友
         let filteredCount = viewModel.displayConfirmedFriends.count
@@ -230,14 +228,12 @@ final class FriendsViewModelTests: XCTestCase {
         await fulfillment(of: [expectation], timeout: 2.0)
         
         let initialConfirmedCount = viewModel.displayConfirmedFriends.count
-        viewModel.searchText = "test"
-        viewModel.filterFriends()
+        viewModel.filterFriends(name: "test")
         
         // When
         viewModel.clearSearch()
         
-        // Then - 搜尋文字應該被清空，且過濾結果應該恢復
-        XCTAssertEqual(viewModel.searchText, "")
+        // Then - 過濾結果應該恢復（顯示所有好友）
         XCTAssertEqual(viewModel.displayConfirmedFriends.count, initialConfirmedCount, "清除搜尋後應該顯示所有好友")
     }
     
@@ -599,10 +595,54 @@ final class FriendsViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.userName, "")
         XCTAssertEqual(viewModel.userKokoId, "")
         XCTAssertEqual(viewModel.selectedOption, .noFriends)
-        XCTAssertEqual(viewModel.searchText, "")
         XCTAssertFalse(viewModel.hasFriends)
         XCTAssertFalse(viewModel.hasFriendRequests)
         XCTAssertFalse(viewModel.hasConfirmedFriends)
+        XCTAssertEqual(viewModel.currentTab, .friends, "預設應該選中 Friends tab")
+    }
+    
+    // MARK: - 測試 currentTab
+    
+    func testCurrentTab_Default() {
+        // Then - 預設應該是 .friends
+        XCTAssertEqual(viewModel.currentTab, .friends)
+    }
+    
+    func testCurrentTab_SetToChat() {
+        // When
+        viewModel.currentTab = .chat
+        
+        // Then
+        XCTAssertEqual(viewModel.currentTab, .chat)
+    }
+    
+    func testCurrentTab_SetToFriends() {
+        // Given - 先設為 .chat
+        viewModel.currentTab = .chat
+        XCTAssertEqual(viewModel.currentTab, .chat)
+        
+        // When - 改回 .friends
+        viewModel.currentTab = .friends
+        
+        // Then
+        XCTAssertEqual(viewModel.currentTab, .friends)
+    }
+    
+    func testCurrentTab_Toggle() {
+        // Given - 初始為 .friends
+        XCTAssertEqual(viewModel.currentTab, .friends)
+        
+        // When - 切換到 .chat
+        viewModel.currentTab = .chat
+        
+        // Then
+        XCTAssertEqual(viewModel.currentTab, .chat)
+        
+        // When - 切換回 .friends
+        viewModel.currentTab = .friends
+        
+        // Then
+        XCTAssertEqual(viewModel.currentTab, .friends)
     }
     
     // MARK: - 測試 isRequestsSectionExpanded

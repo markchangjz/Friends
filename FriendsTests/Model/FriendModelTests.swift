@@ -35,9 +35,9 @@ final class FriendModelTests: XCTestCase {
         XCTAssertEqual(friend.fid, "001")
     }
     
-    func testFriendDecoding_StatusValues() throws {
-        // Test requestSent (0)
-        let requestSentJSON = """
+    func testFriendDecoding_Status_RequestSent() throws {
+        // Given
+        let jsonString = """
         {
             "name": "Bob",
             "status": 0,
@@ -46,11 +46,18 @@ final class FriendModelTests: XCTestCase {
             "updateDate": "2023/12/01"
         }
         """
-        let requestSentFriend = try JSONDecoder().decode(Friend.self, from: requestSentJSON.data(using: .utf8)!)
-        XCTAssertEqual(requestSentFriend.status, .requestSent)
+        let data = jsonString.data(using: .utf8)!
         
-        // Test accepted (1)
-        let acceptedJSON = """
+        // When
+        let friend = try JSONDecoder().decode(Friend.self, from: data)
+        
+        // Then
+        XCTAssertEqual(friend.status, .requestSent)
+    }
+    
+    func testFriendDecoding_Status_Accepted() throws {
+        // Given
+        let jsonString = """
         {
             "name": "Charlie",
             "status": 1,
@@ -59,11 +66,18 @@ final class FriendModelTests: XCTestCase {
             "updateDate": "2023/12/01"
         }
         """
-        let acceptedFriend = try JSONDecoder().decode(Friend.self, from: acceptedJSON.data(using: .utf8)!)
-        XCTAssertEqual(acceptedFriend.status, .accepted)
+        let data = jsonString.data(using: .utf8)!
         
-        // Test pending (2)
-        let pendingJSON = """
+        // When
+        let friend = try JSONDecoder().decode(Friend.self, from: data)
+        
+        // Then
+        XCTAssertEqual(friend.status, .accepted)
+    }
+    
+    func testFriendDecoding_Status_Pending() throws {
+        // Given
+        let jsonString = """
         {
             "name": "David",
             "status": 2,
@@ -72,8 +86,13 @@ final class FriendModelTests: XCTestCase {
             "updateDate": "2023/12/01"
         }
         """
-        let pendingFriend = try JSONDecoder().decode(Friend.self, from: pendingJSON.data(using: .utf8)!)
-        XCTAssertEqual(pendingFriend.status, .pending)
+        let data = jsonString.data(using: .utf8)!
+        
+        // When
+        let friend = try JSONDecoder().decode(Friend.self, from: data)
+        
+        // Then
+        XCTAssertEqual(friend.status, .pending)
     }
     
     func testFriendDecoding_InvalidStatus() throws {

@@ -13,6 +13,10 @@ protocol TabSwitchViewDelegate: AnyObject {
 
 class TabSwitchView: UIView {
     
+    // MARK: - Constants
+    
+    static let tabSwitchHeight: CGFloat = 28
+    
     // MARK: - Properties
     
     weak var delegate: TabSwitchViewDelegate?
@@ -128,8 +132,8 @@ class TabSwitchView: UIView {
             chatButton.topAnchor.constraint(equalTo: topAnchor),
             chatButton.heightAnchor.constraint(equalToConstant: 18),
             
-            // 選中指示器（bottom, height, width 固定，leading 由 indicatorLeadingConstraint 動態控制）
-            indicatorView.bottomAnchor.constraint(equalTo: dividerView.topAnchor),
+            // 選中指示器（在按鈕文字下方，間距 6pt，height, width 固定，leading 由 indicatorLeadingConstraint 動態控制）
+            indicatorView.topAnchor.constraint(equalTo: friendsButton.bottomAnchor, constant: 6),
             indicatorView.heightAnchor.constraint(equalToConstant: 4),
             indicatorView.widthAnchor.constraint(equalToConstant: 20),
             
@@ -283,8 +287,8 @@ class TabSwitchView: UIView {
         indicatorLeadingConstraint?.isActive = true
         
         if animated {
-            UIView.animate(withDuration: 0.2) {
-                self.layoutIfNeeded()
+            UIView.animate(withDuration: 0.2) { [weak self] in
+                self?.layoutIfNeeded()
             }
         } else {
             // 不執行動畫，直接更新布局
