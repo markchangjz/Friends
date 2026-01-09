@@ -111,15 +111,11 @@ class FriendsViewModel {
                 let friendsData = try await fetchFriendsData(for: option)
                 
                 // 所有資料都載入完成後，一起更新 UI
-                await MainActor.run {
-                    self.processFriendsData(friendsData)
-                    self.friendsDataLoadedPublisher.send()
-                }
+                self.processFriendsData(friendsData)
+                self.friendsDataLoadedPublisher.send()
             } catch {
-                await MainActor.run {
-                    self.errorPublisher.send(error)
-                    self.friendsDataLoadedPublisher.send()
-                }
+                self.errorPublisher.send(error)
+                self.friendsDataLoadedPublisher.send()
             }
         }
     }
@@ -137,21 +133,17 @@ class FriendsViewModel {
                 let (userProfile, friendsData) = try await (userProfileTask, friendsTask)
                 
                 // 所有資料都載入完成後，一起更新 UI
-                await MainActor.run {
-                    // 更新使用者資料
-                    self.userName = userProfile.name
-                    self.userKokoId = userProfile.kokoid
-                    self.userProfileDataLoadedPublisher.send()
-                    
-                    // 更新好友資料
-                    self.processFriendsData(friendsData)
-                    self.friendsDataLoadedPublisher.send()
-                }
+                // 更新使用者資料
+                self.userName = userProfile.name
+                self.userKokoId = userProfile.kokoid
+                self.userProfileDataLoadedPublisher.send()
+                
+                // 更新好友資料
+                self.processFriendsData(friendsData)
+                self.friendsDataLoadedPublisher.send()
             } catch {
-                await MainActor.run {
-                    self.errorPublisher.send(error)
-                    self.friendsDataLoadedPublisher.send()
-                }
+                self.errorPublisher.send(error)
+                self.friendsDataLoadedPublisher.send()
             }
         }
     }
