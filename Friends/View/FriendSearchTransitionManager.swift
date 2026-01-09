@@ -104,10 +104,7 @@ class FriendSearchTransitionManager {
         realSearchController: UISearchController,
         tableView: UITableView,
         headerView: UIView,
-        headerContainer: UIView,
-        headerHeightConstraint: NSLayoutConstraint,
         targetHeaderHeight: CGFloat,
-        targetContainerHeight: CGFloat,
         in viewController: UIViewController,
         completion: (() -> Void)? = nil
     ) {
@@ -150,9 +147,9 @@ class FriendSearchTransitionManager {
             
             // 計算動畫的起始和結束位置
             let safeAreaTop = view.safeAreaInsets.top
-            let currentHeaderHeight = headerContainer.frame.height
+            let currentHeaderHeight = headerView.frame.height
             let startY = safeAreaTop + currentHeaderHeight
-            let endY = safeAreaTop + targetContainerHeight
+            let endY = safeAreaTop + targetHeaderHeight
             
             let startFrame = CGRect(
                 x: searchBarFrame.origin.x,
@@ -171,9 +168,6 @@ class FriendSearchTransitionManager {
             // 設定快照的起始位置
             snapshotView.frame = startFrame
             
-            // 更新約束
-            headerHeightConstraint.constant = targetHeaderHeight
-            
             // 同步執行 header 縮小動畫和搜尋列位移動畫
             UIView.animate(
                 withDuration: 0.5,
@@ -183,15 +177,14 @@ class FriendSearchTransitionManager {
                 options: [.curveEaseOut, .allowUserInteraction]
             ) {
                 // Header 縮小動畫
-                headerContainer.frame.size.height = targetContainerHeight
-                headerContainer.layoutIfNeeded()
+                headerView.frame.size.height = targetHeaderHeight
                 headerView.layoutIfNeeded()
                 
                 // 搜尋列跟隨動畫
                 snapshotView.frame = endFrame
                 
                 // 更新 TableView header
-                tableView.tableHeaderView = headerContainer
+                tableView.tableHeaderView = headerView
             } completion: { _ in
                 snapshotView.removeFromSuperview()
 

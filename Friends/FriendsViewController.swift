@@ -35,7 +35,6 @@ class FriendsViewController: UIViewController {
     
     // UI 元件
     private lazy var userProfileHeaderView = UserProfileHeaderView(width: view.bounds.width)
-    private let tabSwitchView = TabSwitchView()
     private let tableView = UITableView()
     private let emptyStateView = EmptyStateView()
     private let refreshControl = UIRefreshControl()
@@ -47,37 +46,6 @@ class FriendsViewController: UIViewController {
         action: nil
     )
     
-    // Header Container (保持持久引用以避免重複重建)
-    private lazy var tableHeaderContainerView: UIView = {
-        let container = UIView()
-        container.backgroundColor = DesignConstants.Colors.background
-        container.addSubview(userProfileHeaderView)
-        container.addSubview(tabSwitchView)
-        
-        userProfileHeaderView.translatesAutoresizingMaskIntoConstraints = false
-        tabSwitchView.translatesAutoresizingMaskIntoConstraints = false
-        
-        NSLayoutConstraint.activate([
-            userProfileHeaderView.topAnchor.constraint(equalTo: container.topAnchor),
-            userProfileHeaderView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-            userProfileHeaderView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-            userProfileHeaderViewHeightConstraint,
-            
-            tabSwitchView.topAnchor.constraint(equalTo: userProfileHeaderView.bottomAnchor),
-            tabSwitchView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-            tabSwitchView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-            tabSwitchView.heightAnchor.constraint(equalToConstant: 28),
-            tabSwitchView.bottomAnchor.constraint(equalTo: container.bottomAnchor)
-        ])
-        
-        return container
-    }()
-    
-    private lazy var userProfileHeaderViewHeightConstraint: NSLayoutConstraint = {
-        let constraint = userProfileHeaderView.heightAnchor.constraint(equalToConstant: 100)
-        constraint.priority = UILayoutPriority(999)
-        return constraint
-    }()
 
     // MARK: - Lifecycle
     
@@ -103,27 +71,22 @@ class FriendsViewController: UIViewController {
         
         let hasRequests = viewModel.hasFriendRequests
         let requestCount = viewModel.displayRequestFriends.count
-        let userProfileHeight = userProfileHeaderView.calculateHeight(
+        let headerHeight = userProfileHeaderView.calculateHeight(
             hasRequests: hasRequests,
             isExpanded: viewModel.isRequestsSectionExpanded,
             requestCount: requestCount
         )
         
-        let containerHeight = userProfileHeight + TabSwitchView.tabSwitchHeight
-        
-        // 更新高度約束
-        userProfileHeaderViewHeightConstraint.constant = userProfileHeight
-        
         // 更新佈局
-        tableHeaderContainerView.frame = CGRect(x: 0, y: 0, width: width, height: containerHeight)
+        userProfileHeaderView.frame = CGRect(x: 0, y: 0, width: width, height: headerHeight)
         userProfileHeaderView.updateLayout(for: width, safeAreaTop: 64)
         // 確保 view 的佈局已經更新完成，避免 table view 位置跑掉
         view.layoutIfNeeded()
-        tableHeaderContainerView.layoutIfNeeded()
+        userProfileHeaderView.layoutIfNeeded()
         
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
-            self.tableView.tableHeaderView = self.tableHeaderContainerView
+            self.tableView.tableHeaderView = self.userProfileHeaderView
             // 更新 scrollIndicatorInsets 以確保底部對齊
             self.updateTableViewContentInset()
         }
@@ -274,7 +237,7 @@ class FriendsViewController: UIViewController {
     
     /// 更新聊天 Badge
     private func updateChatBadge() {
-        tabSwitchView.updateBadgeCount(viewModel.chatBadgeCount, for: .chat)
+        userProfileHeaderView.updateTabSwitchBadgeCount(viewModel.chatBadgeCount, for: .chat)
     }
     
     /// 更新 Requests Section
@@ -287,7 +250,7 @@ class FriendsViewController: UIViewController {
         userProfileHeaderView.setExpandedState(viewModel.isRequestsSectionExpanded)
         
         // 更新 badge 數量（使用未過濾的 pending 數量，確保搜尋時數字不變）
-        tabSwitchView.updateBadgeCount(viewModel.pendingFriendCount, for: .friends)
+        userProfileHeaderView.updateTabSwitchBadgeCount(viewModel.pendingFriendCount, for: .friends)
         
         updateHeaderLayout()
     }
@@ -377,10 +340,10 @@ extension FriendsViewController: UISearchResultsUpdating {
     }
 }
 
-// MARK: - TabSwitchViewDelegate
+// MARK: - UserProfileHeaderViewDelegate
 
-extension FriendsViewController: TabSwitchViewDelegate {
-    func tabSwitchView(_ view: TabSwitchView, didSelectTab tab: TabSwitchView.Tab) {
+extension FriendsViewController: UserProfileHeaderViewDelegate {
+    func userProfileHeaderView(_ headerView: UserProfileHeaderView, didSelectTab tab: TabSwitchView.Tab) {
         currentTab = tab
         updateTableViewForCurrentTab()
     }
@@ -409,11 +372,7 @@ extension FriendsViewController: TabSwitchViewDelegate {
         tableView.tableFooterView = emptyLabel
         tableView.reloadData()
     }
-}
-
-// MARK: - UserProfileHeaderViewDelegate
-
-extension FriendsViewController: UserProfileHeaderViewDelegate {
+    
     func userProfileHeaderViewDidTapRequests(_ headerView: UserProfileHeaderView) {
         // 如果正在搜尋，不允許折疊
         guard !viewModel.isSearching else { return }
@@ -432,15 +391,11 @@ extension FriendsViewController: UserProfileHeaderViewDelegate {
         // 計算目標高度
         let hasRequests = viewModel.hasFriendRequests
         let requestCount = viewModel.displayRequestFriends.count
-        let userProfileHeight = userProfileHeaderView.calculateHeight(
+        let headerHeight = userProfileHeaderView.calculateHeight(
             hasRequests: hasRequests,
             isExpanded: viewModel.isRequestsSectionExpanded,
             requestCount: requestCount
         )
-        let containerHeight = userProfileHeight + TabSwitchView.tabSwitchHeight
-        
-        // 更新約束常數
-        userProfileHeaderViewHeightConstraint.constant = userProfileHeight
         
         // 在動畫開始前，先暫時恢復到切換前的狀態來布局起始位置
         // 這很重要，因為卡片從折疊狀態（有 horizontalInset）到展開狀態（無 horizontalInset）時，
@@ -455,13 +410,13 @@ extension FriendsViewController: UserProfileHeaderViewDelegate {
         // 動畫到目標狀態
         UIView.animate(withDuration: 0.3, delay: 0, options: [.curveEaseInOut]) { [weak self] in
             guard let self else { return }
-            // 更新容器高度
-            self.tableHeaderContainerView.frame.size.height = containerHeight
-            self.tableHeaderContainerView.layoutIfNeeded()
+            // 更新 header 高度
+            self.userProfileHeaderView.frame.size.height = headerHeight
+            self.userProfileHeaderView.layoutIfNeeded()
             
             // 使用 beginUpdates/endUpdates 強制 TableView 重新計算 Header 高度並動畫
             self.tableView.beginUpdates()
-            self.tableView.tableHeaderView = self.tableHeaderContainerView
+            self.tableView.tableHeaderView = self.userProfileHeaderView
             self.tableView.endUpdates()
         } completion: { [weak self] _ in
             guard let self else { return }
@@ -499,7 +454,7 @@ extension FriendsViewController: UISearchBarDelegate {
         // 立即同步 UserProfileHeaderView 的狀態（但不立即更新佈局）
         userProfileHeaderView.setExpandedState(viewModel.isRequestsSectionExpanded)
         
-        // 計算目標 header 高度
+        // 計算目標 header 高度（已包含 tabSwitchView）
         let hasRequests = viewModel.hasFriendRequests
         let requestCount = viewModel.displayRequestFriends.count
         let targetHeaderHeight = userProfileHeaderView.calculateHeight(
@@ -507,17 +462,13 @@ extension FriendsViewController: UISearchBarDelegate {
             isExpanded: viewModel.isRequestsSectionExpanded,
             requestCount: requestCount
         )
-        let targetContainerHeight = targetHeaderHeight + TabSwitchView.tabSwitchHeight
         
         transitionManager.deactivateSearchWithHeaderAnimation(
             placeholderSearchBar: placeholderSearchBar,
             realSearchController: searchController,
             tableView: tableView,
             headerView: userProfileHeaderView,
-            headerContainer: tableHeaderContainerView,
-            headerHeightConstraint: userProfileHeaderViewHeightConstraint,
             targetHeaderHeight: targetHeaderHeight,
-            targetContainerHeight: targetContainerHeight,
             in: self,
             completion: { [weak self] in
                 // 動畫完成後更新空白狀態
@@ -631,7 +582,6 @@ extension FriendsViewController {
         
         // 設定 delegate
         userProfileHeaderView.delegate = self
-        tabSwitchView.delegate = self
         
         setupTableView()
         setupSearchBarContainer()

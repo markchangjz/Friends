@@ -11,6 +11,7 @@ import UIKit
 
 protocol UserProfileHeaderViewDelegate: AnyObject {
     func userProfileHeaderViewDidTapRequests(_ headerView: UserProfileHeaderView)
+    func userProfileHeaderView(_ headerView: UserProfileHeaderView, didSelectTab tab: TabSwitchView.Tab)
 }
 
 class UserProfileHeaderView: UIView {
@@ -62,6 +63,11 @@ class UserProfileHeaderView: UIView {
     /// 堆疊卡片 Views
     private var cardViews: [FriendRequestCardView] = []
     
+    // MARK: - UI Components (Tab Switch)
+    
+    /// 好友/聊天切換視圖
+    private let tabSwitchView = TabSwitchView()
+    
     // MARK: - Initialization
     
     override init(frame: CGRect) {
@@ -88,7 +94,14 @@ class UserProfileHeaderView: UIView {
         
         setupUserProfileSection()
         setupRequestsSection()
+        setupTabSwitchView()
         updateLayout()
+    }
+    
+    private func setupTabSwitchView() {
+        tabSwitchView.delegate = self
+        tabSwitchView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(tabSwitchView)
     }
     
     private func setupUserProfileSection() {
@@ -164,6 +177,23 @@ class UserProfileHeaderView: UIView {
         
         layoutUserProfileSection(width: width)
         layoutRequestsSection(width: width, animated: false)
+        layoutTabSwitchView(width: width)
+    }
+    
+    private func layoutTabSwitchView(width: CGFloat) {
+        guard width > 0 else { return }
+        
+        // 計算 tabSwitchView 的位置（在 requests section 下方）
+        let userProfileHeight: CGFloat = 100
+        let requestsHeight = calculateRequestsSectionHeight()
+        let tabSwitchY = userProfileHeight + requestsHeight
+        
+        tabSwitchView.frame = CGRect(
+            x: 0,
+            y: tabSwitchY,
+            width: width,
+            height: TabSwitchView.tabSwitchHeight
+        )
     }
     
     private func layoutUserProfileSection(width: CGFloat) {
@@ -410,26 +440,27 @@ class UserProfileHeaderView: UIView {
         layoutRequestsSection(width: bounds.width, animated: false)
     }
     
-    /// 計算並回傳 view 的合適高度
+    /// 計算並回傳 view 的合適高度（包含 tabSwitchView）
     func calculateHeight(hasRequests: Bool, isExpanded: Bool, requestCount: Int) -> CGFloat {
         let userProfileHeight: CGFloat = 100
+        let tabSwitchHeight = TabSwitchView.tabSwitchHeight
         
         guard hasRequests && requestCount > 0 else {
-            return userProfileHeight
+            return userProfileHeight + tabSwitchHeight
         }
         
         // 如果只有一個邀請，不論傳入什麼狀態，高度都是單卡高度
         if requestCount == 1 {
-            return userProfileHeight + requestCardHeight + bottomPadding
+            return userProfileHeight + requestCardHeight + bottomPadding + tabSwitchHeight
         }
         
         if isExpanded {
-            return userProfileHeight + CGFloat(requestCount) * requestCardHeight + CGFloat(max(0, requestCount - 1)) * cardSpacing + bottomPadding
+            return userProfileHeight + CGFloat(requestCount) * requestCardHeight + CGFloat(max(0, requestCount - 1)) * cardSpacing + bottomPadding + tabSwitchHeight
         } else {
             // 折疊：第一張卡片完整高度 + 第二張卡片露出的部分 + 底部間距
             let maxVisibleCards = min(requestCount, 2)
             let stackOffset = maxVisibleCards > 1 ? stackedCardOffset : 0
-            return userProfileHeight + requestCardHeight + stackOffset + bottomPadding
+            return userProfileHeight + requestCardHeight + stackOffset + bottomPadding + tabSwitchHeight
         }
     }
     
@@ -467,6 +498,11 @@ class UserProfileHeaderView: UIView {
         // 這個方法只是取消強制展開的限制
     }
     
+    /// 更新 TabSwitchView 的 badge 數量
+    func updateTabSwitchBadgeCount(_ count: Int, for tab: TabSwitchView.Tab) {
+        tabSwitchView.updateBadgeCount(count, for: tab)
+    }
+    
     // MARK: - Shimmer
     
     private func startShimmer() {
@@ -488,3 +524,10 @@ class UserProfileHeaderView: UIView {
     }
 }
 
+// MARK: - TabSwitchViewDelegate
+
+extension UserProfileHeaderView: TabSwitchViewDelegate {
+    func tabSwitchView(_ view: TabSwitchView, didSelectTab tab: TabSwitchView.Tab) {
+        delegate?.userProfileHeaderView(self, didSelectTab: tab)
+    }
+}
