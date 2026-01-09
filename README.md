@@ -4,7 +4,7 @@
 [![Platform](https://img.shields.io/badge/Platform-iOS%2017.0+-lightgrey.svg)](https://apple.com)
 [![Architecture](https://img.shields.io/badge/Architecture-MVVM-blue.svg)](https://en.wikipedia.org/wiki/Model–view–viewmodel)
 
-這是一個精緻的 iOS 好友列表頁面實作，模擬 KOKO App 的核心功能。專案採用 **MVVM** 架構，結合 **Combine** 進行資料流管理，並在 UI/UX 上追求細膩的動畫效果（如堆疊卡片、搜尋轉場與載入動畫）。
+好友列表頁面實作。專案採用 **MVVM** 架構，結合 **Combine** 進行資料流管理。
 
 ---
 
@@ -64,41 +64,68 @@
 
 ## 📁 專案結構
 
+專案採用 **MVVM 架構**，按功能模組化組織，結構清晰易於維護：
+
 ```bash
 Friends/
 ├── Friends/
-│   ├── API Service/
-│   │   ├── FriendsRemoteRepository.swift    # 資料存取層實作
+│   ├── App/                              # App 層級檔案
+│   │   ├── AppDelegate.swift            # App 生命週期管理
+│   │   ├── SceneDelegate.swift           # Scene 生命週期管理
+│   │   └── Info.plist                    # App 設定檔
+│   │
+│   ├── Scenes/                           # 功能場景（按功能模組化）
+│   │   └── Friends/                      # 好友功能模組
+│   │       ├── FriendsViewController.swift    # 主畫面控制器
+│   │       ├── FriendsViewModel.swift         # 主畫面業務邏輯
+│   │       └── Components/                   # 好友功能專屬元件
+│   │           ├── UserProfileHeaderView.swift           # 使用者 Header（含邀請卡片）
+│   │           ├── FriendRequestCardView.swift           # 好友邀請卡片
+│   │           ├── FriendTableViewCell.swift             # 好友列表 Cell
+│   │           ├── PlaceholderSearchBarTableViewCell.swift # 搜尋框佔位 Cell
+│   │           ├── TabSwitchView.swift                   # 好友/聊天切換視圖
+│   │           ├── EmptyStateView.swift                  # 無好友狀態畫面
+│   │           └── FriendSearchTransitionManager.swift   # 搜尋轉場動畫管理
+│   │
+│   ├── Data/                             # 資料層
+│   │   ├── Repository/
+│   │   │   └── FriendsRemoteRepository.swift    # 資料存取層實作
 │   │   ├── Model/
 │   │   │   ├── Friend.swift               # 好友資料模型
 │   │   │   └── Person.swift               # 使用者資料模型
 │   │   └── Utility/
 │   │       └── DateParser.swift           # 日期解析工具
-│   ├── View/
-│   │   ├── FriendTableViewCell.swift      # 好友列表 Cell
-│   │   ├── FriendSearchTransitionManager.swift # 搜尋轉場動畫管理
-│   │   ├── ShimmerView.swift              # 載入動畫效果
-│   │   ├── UserProfileHeaderView.swift    # 使用者 Header（含邀請卡片）
-│   │   ├── TabSwitchView.swift            # 好友/聊天切換視圖
-│   │   ├── EmptyStateView.swift           # 無好友狀態畫面
-│   │   └── PlaceholderSearchBarTableViewCell.swift # 搜尋框佔位 Cell
-│   ├── Tab Bar/
-│   │   ├── TabBarItem.swift               # Tab 項目定義
-│   │   ├── CustomTabBarView.swift         # 自訂 Tab Bar 視圖
-│   │   └── CustomTabBarController.swift   # 自訂 Tab Bar 控制器
-│   ├── Assets.xcassets/                  # 專案圖示與顏色資產
-│   ├── FriendsViewController.swift        # 主畫面控制器
-│   ├── FriendsViewModel.swift             # 主畫面邏輯
-│   ├── DesignConstants.swift              # 設計規範 (Colors, Fonts)
-│   ├── AppDelegate.swift
-│   └── SceneDelegate.swift
-└── FriendsTests/
-    ├── FriendsViewModelTests.swift        # ViewModel 單元測試
+│   │
+│   ├── Common/                           # 共用元件
+│   │   ├── UI/                           # 共用 UI 元件
+│   │   │   └── ShimmerView.swift         # 載入動畫效果（骨架屏）
+│   │   ├── TabBar/                       # Tab Bar 相關（共用）
+│   │   │   ├── CustomTabBarController.swift   # 自訂 Tab Bar 控制器
+│   │   │   ├── CustomTabBarView.swift         # 自訂 Tab Bar 視圖
+│   │   │   └── TabBarItem.swift              # Tab 項目定義
+│   │   └── Design/                       # 設計系統
+│   │       └── DesignConstants.swift     # 設計規範 (Colors, Fonts, Spacing)
+│   │
+│   └── Resources/                        # 資源檔案
+│       ├── Assets.xcassets/              # 專案圖示與顏色資產
+│       └── Base.lproj/                   # 本地化資源
+│           └── LaunchScreen.storyboard
+│
+└── FriendsTests/                         # 測試檔案
+    ├── FriendsViewModelTests.swift       # ViewModel 單元測試
     ├── Model/
-    │   ├── FriendModelTests.swift         # Friend 模型測試
-    │   └── PersonModelTests.swift         # Person 模型測試
+    │   ├── FriendModelTests.swift        # Friend 模型測試
+    │   └── PersonModelTests.swift       # Person 模型測試
     └── Repository/
-        ├── FriendsRemoteRepositoryTests.swift # Repository 整合測試
-        ├── MockFriendsRemoteRepository.swift  # Mock 資料層
-        └── Mock API JSON files/           # 測試用 JSON 檔案
+        ├── FriendsRemoteRepositoryTests.swift    # Repository 整合測試
+        ├── MockFriendsRemoteRepository.swift     # Mock 資料層
+        └── Mock API JSON files/                  # 測試用 JSON 檔案
 ```
+
+### 結構說明
+
+- **App/**：App 層級的生命週期管理與 `Info.plist` 設定。
+- **Scenes/**：功能模組化（ViewController, ViewModel, Components）。
+- **Data/**：Repository 模式資料層與模型。
+- **Common/**：共用元件 (UI, TabBar) 與設計系統 (DesignConstants)。
+- **Resources/**：資產 (Assets) 與啟動畫面。
