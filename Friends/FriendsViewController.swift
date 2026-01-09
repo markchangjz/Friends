@@ -359,7 +359,7 @@ extension FriendsViewController: UITableViewDataSource {
         
         let cell = configureFriendCell(for: indexPath)
         // 設定分隔線 leading 跟 nameLabel leading 一樣 (50 + 40 + 15 = 105)
-        cell.separatorInset = UIEdgeInsets(top: 0, left: 105, bottom: 0, right: 0)
+        cell.separatorInset = UIEdgeInsets(top: 0, left: 105, bottom: 0, right: 20)
         return cell
     }
     
