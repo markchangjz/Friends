@@ -18,8 +18,6 @@ class CustomTabBarView: UIView {
     weak var delegate: CustomTabBarViewDelegate?
     private var selectedIndex: Int = 1
     
-    private var backgroundView: UIView!
-    private var stackView: UIStackView!
     private var tabContainers: [UIView] = [] // Tab 容器陣列（包含 icon 和 label）
     private var centerButton: UIButton!
     private var centerButtonContainer: UIView!
@@ -76,7 +74,7 @@ class CustomTabBarView: UIView {
     
     private func setupBackground() {
         // Background view with custom color
-        backgroundView = UIView()
+        let backgroundView = UIView()
         backgroundView.backgroundColor = DesignConstants.Colors.tabBarBackground
         backgroundView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(backgroundView)
@@ -269,7 +267,7 @@ class CustomTabBarView: UIView {
     }
     
     private func setupTabButtons() {
-        stackView = UIStackView()
+        let stackView = UIStackView()
         stackView.axis = .horizontal
         stackView.distribution = .fillEqually
         stackView.alignment = .top
