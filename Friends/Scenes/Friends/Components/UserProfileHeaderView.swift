@@ -68,6 +68,9 @@ class UserProfileHeaderView: UIView {
     /// 好友/聊天切換視圖
     private let tabSwitchView = TabSwitchView()
     
+    /// 底部分隔線
+    private let bottomDividerView = UIView()
+    
     // MARK: - Initialization
     
     override init(frame: CGRect) {
@@ -102,6 +105,11 @@ class UserProfileHeaderView: UIView {
         tabSwitchView.delegate = self
         tabSwitchView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(tabSwitchView)
+        
+        // 設定底部分隔線
+        bottomDividerView.backgroundColor = DesignConstants.Colors.dividerLight
+        bottomDividerView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(bottomDividerView)
     }
     
     private func setupUserProfileSection() {
@@ -193,6 +201,15 @@ class UserProfileHeaderView: UIView {
             y: tabSwitchY,
             width: width,
             height: TabSwitchView.tabSwitchHeight
+        )
+        
+        // 設定底部分隔線位置（在 tabSwitchView 下方）
+        let dividerY = tabSwitchY + TabSwitchView.tabSwitchHeight
+        bottomDividerView.frame = CGRect(
+            x: 0,
+            y: dividerY,
+            width: width,
+            height: 1
         )
     }
     
@@ -442,27 +459,28 @@ class UserProfileHeaderView: UIView {
         layoutRequestsSection(width: bounds.width, animated: false)
     }
     
-    /// 計算並回傳 view 的合適高度（包含 tabSwitchView）
+    /// 計算並回傳 view 的合適高度（包含 tabSwitchView 和底部分隔線）
     func calculateHeight(hasRequests: Bool, isExpanded: Bool, requestCount: Int) -> CGFloat {
         let userProfileHeight: CGFloat = 100
         let tabSwitchHeight = TabSwitchView.tabSwitchHeight
+        let dividerHeight: CGFloat = 1
         
         guard hasRequests && requestCount > 0 else {
-            return userProfileHeight + tabSwitchHeight
+            return userProfileHeight + tabSwitchHeight + dividerHeight
         }
         
         // 如果只有一個邀請，不論傳入什麼狀態，高度都是單卡高度
         if requestCount == 1 {
-            return userProfileHeight + requestCardHeight + bottomPadding + tabSwitchHeight
+            return userProfileHeight + requestCardHeight + bottomPadding + tabSwitchHeight + dividerHeight
         }
         
         if isExpanded {
-            return userProfileHeight + CGFloat(requestCount) * requestCardHeight + CGFloat(max(0, requestCount - 1)) * cardSpacing + bottomPadding + tabSwitchHeight
+            return userProfileHeight + CGFloat(requestCount) * requestCardHeight + CGFloat(max(0, requestCount - 1)) * cardSpacing + bottomPadding + tabSwitchHeight + dividerHeight
         } else {
             // 折疊：第一張卡片完整高度 + 第二張卡片露出的部分 + 底部間距
             let maxVisibleCards = min(requestCount, 2)
             let stackOffset = maxVisibleCards > 1 ? stackedCardOffset : 0
-            return userProfileHeight + requestCardHeight + stackOffset + bottomPadding + tabSwitchHeight
+            return userProfileHeight + requestCardHeight + stackOffset + bottomPadding + tabSwitchHeight + dividerHeight
         }
     }
     
