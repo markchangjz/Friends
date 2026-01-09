@@ -27,9 +27,6 @@ class FriendsViewController: UIViewController {
     // Transition Manager
     private let transitionManager = FriendSearchTransitionManager()
     
-    // 追蹤是否為首次載入 Requests
-    private var isFirstRequestsLoad = true
-    
     // 追蹤鍵盤高度造成的 inset
     private var currentKeyboardInset: CGFloat = 0
     
@@ -117,34 +114,18 @@ class FriendsViewController: UIViewController {
         // 更新高度約束
         userProfileHeaderViewHeightConstraint.constant = userProfileHeight
         
-        // 首次載入時不使用動畫，避免出現由左往右的動畫
-        let shouldAnimate = !isFirstRequestsLoad
+        // 更新佈局
+        tableHeaderContainerView.frame = CGRect(x: 0, y: 0, width: width, height: containerHeight)
+        userProfileHeaderView.updateLayout(for: width, safeAreaTop: 64)
+        // 確保 view 的佈局已經更新完成，避免 table view 位置跑掉
+        view.layoutIfNeeded()
+        tableHeaderContainerView.layoutIfNeeded()
         
-        if shouldAnimate {
-            // 在動畫開始前，先確保卡片有正確的初始位置（無動畫）
-            userProfileHeaderView.ensureInitialLayout()
-            view.layoutIfNeeded()
-            
-            UIView.animate(withDuration: 0.3, delay: 0, options: [.curveEaseInOut]) { [weak self] in
-                guard let self else { return }
-                // 在動畫塊內觸發佈局更新
-                self.tableHeaderContainerView.frame = CGRect(x: 0, y: 0, width: width, height: containerHeight)
-                self.tableHeaderContainerView.layoutIfNeeded()
-                self.userProfileHeaderView.layoutIfNeeded()
-            } completion: { [weak self] _ in
-                guard let self else { return }
-                // 動畫完成後重新設定 tableHeaderView 以確保正確
-                self.tableView.tableHeaderView = self.tableHeaderContainerView
-                // 更新 scrollIndicatorInsets 以確保底部對齊
-                self.updateTableViewContentInset()
-            }
-        } else {
-            tableHeaderContainerView.frame = CGRect(x: 0, y: 0, width: width, height: containerHeight)
-            userProfileHeaderView.updateLayout(for: width, safeAreaTop: 64)
-            tableHeaderContainerView.layoutIfNeeded()
-            tableView.tableHeaderView = tableHeaderContainerView
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.tableView.tableHeaderView = self.tableHeaderContainerView
             // 更新 scrollIndicatorInsets 以確保底部對齊
-            updateTableViewContentInset()
+            self.updateTableViewContentInset()
         }
     }
     
@@ -192,8 +173,6 @@ class FriendsViewController: UIViewController {
             .sink { [weak self] option in
                 guard let self else { return }
                 menuButton.menu = viewModel.createMenu()
-                // 重置首次載入標記（因為切換選項時會重新載入資料）
-                isFirstRequestsLoad = true
                 // 顯示 loading 並同時載入使用者資料和好友資料
                 showLoading()
                 viewModel.loadAllData(for: option)
@@ -313,10 +292,6 @@ class FriendsViewController: UIViewController {
         // 更新 badge 數量（使用未過濾的 pending 數量，確保搜尋時數字不變）
         tabSwitchView.updateBadgeCount(viewModel.pendingFriendCount, for: .friends)
         
-        // 首次載入時不使用動畫，避免出現由左往右的動畫
-        if isFirstRequestsLoad {
-            isFirstRequestsLoad = false
-        }
         updateHeaderLayout()
     }
 }
