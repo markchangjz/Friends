@@ -386,9 +386,11 @@ class UserProfileHeaderView: UIView {
         nameLabel.text = name
         kokoIdLabel.text = "KOKO ID：\(kokoId)"
         
-        // 資料載入完成後停止 Shimmer 並顯示 chevron
-        stopShimmer()
-        chevronImageView.isHidden = false
+        // 只有在有實際資料時才停止 Shimmer
+        if !name.isEmpty && !kokoId.isEmpty {
+            stopShimmer()
+            chevronImageView.isHidden = false
+        }
         
         updateLayout()
     }
@@ -509,6 +511,7 @@ class UserProfileHeaderView: UIView {
         avatarShimmerView.isHidden = false
         nameShimmerView.isHidden = false
         kokoIdShimmerView.isHidden = false
+        
         avatarShimmerView.startAnimating()
         nameShimmerView.startAnimating()
         kokoIdShimmerView.startAnimating()
