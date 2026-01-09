@@ -260,22 +260,26 @@ class FriendsViewController: UIViewController {
 
 extension FriendsViewController: UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
-        // 如果當前是聊天 tab，不顯示任何 section
-        if currentTab == .chat {
+        switch currentTab {
+        case .chat:
+            // 如果當前是聊天 tab，不顯示任何 section
             return 0
+        case .friends:
+            // 只有 Friends section（Requests 已移到 header）
+            return viewModel.hasConfirmedFriends ? 1 : 0
         }
-        // 只有 Friends section（Requests 已移到 header）
-        return viewModel.hasConfirmedFriends ? 1 : 0
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // 如果當前是聊天 tab，不顯示任何 row
-        if currentTab == .chat {
+        switch currentTab {
+        case .chat:
+            // 如果當前是聊天 tab，不顯示任何 row
             return 0
+        case .friends:
+            // 好友列表：加上搜尋列 (如果沒有使用真實 SearchController)
+            let searchBarCount = viewModel.isUsingRealSearchController ? 0 : 1
+            return viewModel.displayConfirmedFriends.count + searchBarCount
         }
-        // 好友列表：加上搜尋列 (如果沒有使用真實 SearchController)
-        let searchBarCount = viewModel.isUsingRealSearchController ? 0 : 1
-        return viewModel.displayConfirmedFriends.count + searchBarCount
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
