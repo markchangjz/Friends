@@ -95,12 +95,12 @@ class FriendsViewController: UIViewController {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        updateHeaderLayout(animated: false)
+        updateHeaderLayout()
         updateTableViewContentInset()
     }
     
     /// 更新或初始化 TableHeaderView
-    private func updateHeaderLayout(animated: Bool = false) {
+    private func updateHeaderLayout() {
         let width = view.bounds.width
         guard width > 0 else { return }
         
@@ -117,7 +117,10 @@ class FriendsViewController: UIViewController {
         // 更新高度約束
         userProfileHeaderViewHeightConstraint.constant = userProfileHeight
         
-        if animated {
+        // 首次載入時不使用動畫，避免出現由左往右的動畫
+        let shouldAnimate = !isFirstRequestsLoad
+        
+        if shouldAnimate {
             // 在動畫開始前，先確保卡片有正確的初始位置（無動畫）
             userProfileHeaderView.ensureInitialLayout()
             view.layoutIfNeeded()
@@ -313,11 +316,8 @@ class FriendsViewController: UIViewController {
         // 首次載入時不使用動畫，避免出現由左往右的動畫
         if isFirstRequestsLoad {
             isFirstRequestsLoad = false
-            updateHeaderLayout(animated: false)
-        } else {
-            /// 重新建立 TableHeaderView（保留相容性，但內部改用 updateHeaderLayout）
-            updateHeaderLayout(animated: true)
         }
+        updateHeaderLayout()
     }
 }
 
@@ -561,7 +561,7 @@ extension FriendsViewController: UISearchBarDelegate {
         if viewModel.hasFriendRequests {
             userProfileHeaderView.forceExpand()
             // 更新 header layout 以反映展開狀態
-            updateHeaderLayout(animated: true)
+            updateHeaderLayout()
         }
         transitionManager.activateSearch(
             placeholderSearchBar: placeholderSearchBar,
