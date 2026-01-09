@@ -99,7 +99,7 @@ class FriendsViewModel {
         self.repository = repository
     }
     
-    // MARK: - Public Methods
+    // MARK: - Data Loading
     
     func loadFriendsData(for option: ViewOption) {
         Task { [weak self] in
@@ -145,6 +145,8 @@ class FriendsViewModel {
             }
         }
     }
+    
+    // MARK: - Option Selection
     
     func selectOption(_ option: ViewOption) {
         selectedOption = option

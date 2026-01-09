@@ -11,21 +11,15 @@ import Combine
 class FriendsViewController: UIViewController {
     
     // MARK: - Properties
-    
-    // ViewModel
     private let viewModel = FriendsViewModel()
-    
-    // Combine 訂閱管理
     private var cancellables = Set<AnyCancellable>()
+    private let transitionManager = FriendSearchTransitionManager()
     
     // 搜尋控制器（用於實際搜尋）
     private let searchController = UISearchController()
     
     // 假的搜尋列（顯示在 cell 中）
     private let placeholderSearchBar = UISearchBar()
-    
-    // Transition Manager
-    private let transitionManager = FriendSearchTransitionManager()
     
     // 追蹤鍵盤高度造成的 inset
     private var currentKeyboardInset: CGFloat = 0
@@ -46,7 +40,6 @@ class FriendsViewController: UIViewController {
         action: nil
     )
     
-
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
@@ -62,6 +55,148 @@ class FriendsViewController: UIViewController {
         super.viewDidLayoutSubviews()
         updateHeaderLayout()
         updateTableViewContentInset()
+    }
+    
+    // MARK: - ViewModel Setup
+    
+    private func setupViewModel() {
+        // 使用 Combine 訂閱選項變更
+        // 使用 dropFirst() 跳過初始值，避免在 setupViewModel 時就觸發載入
+        viewModel.$selectedOption
+            .dropFirst()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] option in
+                guard let self else { return }
+                menuButton.menu = viewModel.createMenu()
+                // 顯示 loading 並同時載入使用者資料和好友資料
+                showLoading()
+                viewModel.loadAllData(for: option)
+            }
+            .store(in: &cancellables)
+        
+        // 使用 Combine 訂閱使用者資料載入完成
+        viewModel.userProfileDataLoadedPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] in
+                guard let self else { return }
+                updateUserProfileHeaderView()
+            }
+            .store(in: &cancellables)
+        
+        // 使用 Combine 訂閱好友資料載入完成
+        viewModel.friendsDataLoadedPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] in
+                guard let self else { return }
+                updateRequestsSection()
+                updateChatBadge()
+                updateEmptyState()
+                tableView.reloadData()
+                refreshControl.endRefreshing()
+                loadingIndicator.stopAnimating()
+            }
+            .store(in: &cancellables)
+        
+        // 使用 Combine 訂閱錯誤
+        viewModel.errorPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] error in
+                guard let self else { return }
+                showErrorAlert(message: error.localizedDescription)
+            }
+            .store(in: &cancellables)
+    }
+    
+    // MARK: - Data Loading
+    
+    private func loadData() {
+        showLoading()
+        viewModel.loadAllData(for: viewModel.selectedOption)
+    }
+    
+    // MARK: - Actions
+    
+    @objc private func handleRefresh(_ sender: UIRefreshControl) {
+        viewModel.loadFriendsData(for: viewModel.selectedOption)
+    }
+    
+    // MARK: - UI Update
+    
+    private func updateEmptyState() {
+        // 如果當前是聊天 tab，顯示聊天專用的空狀態
+        if currentTab == .chat {
+            showChatEmptyState()
+            return
+        }
+        
+        // 只有在沒有原始資料時才顯示「尚無好友」
+        // 如果有原始資料但搜尋結果為空，只顯示空白 TableView
+        tableView.isHidden = false
+        
+        if viewModel.hasFriends {
+            // 有資料時，移除 tableFooterView 以消除空白
+            emptyStateView.isHidden = true
+            tableView.tableFooterView = nil
+        } else {
+            // 無資料時，設定 tableFooterView 顯示 EmptyStateView
+            emptyStateView.isHidden = false
+            
+            // 計算 EmptyStateView 實際需要的內容高度
+            // 先設定一個足夠大的高度，讓系統能夠正確計算約束
+            emptyStateView.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: 1000)
+            emptyStateView.setNeedsLayout()
+            emptyStateView.layoutIfNeeded()
+            
+            // 計算實際需要的尺寸（根據約束）
+            let targetSize = CGSize(width: view.bounds.width, height: UIView.layoutFittingCompressedSize.height)
+            let fittingSize = emptyStateView.systemLayoutSizeFitting(
+                targetSize,
+                withHorizontalFittingPriority: .required,
+                verticalFittingPriority: .fittingSizeLevel
+            )
+            
+            // 設定 frame 為實際內容高度
+            emptyStateView.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: fittingSize.height)
+            tableView.tableFooterView = emptyStateView
+        }
+    }
+    
+    private func showLoading() {
+        emptyStateView.isHidden = true
+        // 清除 Footer 以避免佔用高度導致與 Header 相加超過螢幕高度而出現 Scroll Bar
+        tableView.tableFooterView = nil
+        tableView.isHidden = false
+        loadingIndicator.startAnimating()
+    }
+    
+    private func showErrorAlert(message: String) {
+        let alert = UIAlertController(title: "錯誤", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "確定", style: .default))
+        present(alert, animated: true)
+    }
+    
+    /// 更新聊天 Badge
+    private func updateChatBadge() {
+        userProfileHeaderView.updateTabSwitchBadgeCount(viewModel.chatBadgeCount, for: .chat)
+    }
+    
+    /// 更新 Requests Section
+    private func updateRequestsSection() {
+        userProfileHeaderView.configureRequests(
+            viewModel.displayRequestFriends,
+            isExpanded: viewModel.isRequestsSectionExpanded
+        )
+        // 強制同步狀態，避免因為數據更新導致狀態不一致
+        userProfileHeaderView.setExpandedState(viewModel.isRequestsSectionExpanded)
+        
+        // 更新 badge 數量（使用未過濾的 pending 數量，確保搜尋時數字不變）
+        userProfileHeaderView.updateTabSwitchBadgeCount(viewModel.pendingFriendCount, for: .friends)
+        
+        updateHeaderLayout()
+    }
+    
+    private func updateUserProfileHeaderView() {
+        userProfileHeaderView.configure(name: viewModel.userName, kokoId: viewModel.userKokoId)
     }
     
     /// 更新或初始化 TableHeaderView
@@ -120,139 +255,6 @@ class FriendsViewController: UIViewController {
         )
         tableView.scrollIndicatorInsets = indicatorInsets
         tableView.verticalScrollIndicatorInsets = indicatorInsets
-    }
-    
-    // MARK: - Private Methods
-    
-    private func setupViewModel() {
-        // 使用 Combine 訂閱選項變更
-        // 使用 dropFirst() 跳過初始值，避免在 setupViewModel 時就觸發載入
-        viewModel.$selectedOption
-            .dropFirst()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] option in
-                guard let self else { return }
-                menuButton.menu = viewModel.createMenu()
-                // 顯示 loading 並同時載入使用者資料和好友資料
-                showLoading()
-                viewModel.loadAllData(for: option)
-            }
-            .store(in: &cancellables)
-        
-        // 使用 Combine 訂閱使用者資料載入完成
-        viewModel.userProfileDataLoadedPublisher
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] in
-                guard let self else { return }
-                updateUserProfileHeaderView()
-            }
-            .store(in: &cancellables)
-        
-        // 使用 Combine 訂閱好友資料載入完成
-        viewModel.friendsDataLoadedPublisher
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] in
-                guard let self else { return }
-                updateRequestsSection()
-                updateChatBadge()
-                updateEmptyState()
-                tableView.reloadData()
-                refreshControl.endRefreshing()
-                loadingIndicator.stopAnimating()
-            }
-            .store(in: &cancellables)
-        
-        // 使用 Combine 訂閱錯誤
-        viewModel.errorPublisher
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] error in
-                guard let self else { return }
-                showErrorAlert(message: error.localizedDescription)
-            }
-            .store(in: &cancellables)
-    }
-    
-    private func loadData() {
-        showLoading()
-        viewModel.loadAllData(for: viewModel.selectedOption)
-    }
-    
-    private func updateEmptyState() {
-        // 如果當前是聊天 tab，顯示聊天專用的空狀態
-        if currentTab == .chat {
-            showChatEmptyState()
-            return
-        }
-        
-        // 只有在沒有原始資料時才顯示「尚無好友」
-        // 如果有原始資料但搜尋結果為空，只顯示空白 TableView
-        tableView.isHidden = false
-        
-        if viewModel.hasFriends {
-            // 有資料時，移除 tableFooterView 以消除空白
-            emptyStateView.isHidden = true
-            tableView.tableFooterView = nil
-        } else {
-            // 無資料時，設定 tableFooterView 顯示 EmptyStateView
-            emptyStateView.isHidden = false
-            
-            // 計算 EmptyStateView 實際需要的內容高度
-            // 先設定一個足夠大的高度，讓系統能夠正確計算約束
-            emptyStateView.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: 1000)
-            emptyStateView.setNeedsLayout()
-            emptyStateView.layoutIfNeeded()
-            
-            // 計算實際需要的尺寸（根據約束）
-            let targetSize = CGSize(width: view.bounds.width, height: UIView.layoutFittingCompressedSize.height)
-            let fittingSize = emptyStateView.systemLayoutSizeFitting(
-                targetSize,
-                withHorizontalFittingPriority: .required,
-                verticalFittingPriority: .fittingSizeLevel
-            )
-            
-            // 設定 frame 為實際內容高度
-            emptyStateView.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: fittingSize.height)
-            tableView.tableFooterView = emptyStateView
-        }
-    }
-    
-    private func showLoading() {
-        emptyStateView.isHidden = true
-        // 清除 Footer 以避免佔用高度導致與 Header 相加超過螢幕高度而出現 Scroll Bar
-        tableView.tableFooterView = nil
-        tableView.isHidden = false
-        loadingIndicator.startAnimating()
-        
-    }
-    
-    private func showErrorAlert(message: String) {
-        let alert = UIAlertController(title: "錯誤", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "確定", style: .default))
-        present(alert, animated: true)
-    }
-    
-    @objc private func handleRefresh(_ sender: UIRefreshControl) {
-        viewModel.loadFriendsData(for: viewModel.selectedOption)
-    }
-    
-    /// 更新聊天 Badge
-    private func updateChatBadge() {
-        userProfileHeaderView.updateTabSwitchBadgeCount(viewModel.chatBadgeCount, for: .chat)
-    }
-    
-    /// 更新 Requests Section
-    private func updateRequestsSection() {
-        userProfileHeaderView.configureRequests(
-            viewModel.displayRequestFriends,
-            isExpanded: viewModel.isRequestsSectionExpanded
-        )
-        // 強制同步狀態，避免因為數據更新導致狀態不一致
-        userProfileHeaderView.setExpandedState(viewModel.isRequestsSectionExpanded)
-        
-        // 更新 badge 數量（使用未過濾的 pending 數量，確保搜尋時數字不變）
-        userProfileHeaderView.updateTabSwitchBadgeCount(viewModel.pendingFriendCount, for: .friends)
-        
-        updateHeaderLayout()
     }
 }
 
@@ -627,12 +629,6 @@ extension FriendsViewController {
         
         // 設定初始 contentInset
         updateTableViewContentInset()
-        
-        // Header 會在 viewDidLayoutSubviews 中設定
-    }
-    
-    private func updateUserProfileHeaderView() {
-        userProfileHeaderView.configure(name: viewModel.userName, kokoId: viewModel.userKokoId)
     }
     
     private func setupEmptyStateView() {
@@ -652,8 +648,11 @@ extension FriendsViewController {
             loadingIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
     }
-    
-    // MARK: - Keyboard Handling
+}
+
+// MARK: - Keyboard Handling
+
+extension FriendsViewController {
     
     private func setupKeyboardHandling() {
         NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)
