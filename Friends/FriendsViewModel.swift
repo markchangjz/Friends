@@ -56,7 +56,7 @@ class FriendsViewModel {
     
     // 未過濾的 pending 好友數量（用於 Badge）
     var pendingFriendCount: Int {
-        return allConfirmedFriends.filter { $0.status == .pending }.count
+        return allFriends.filter { $0.status == .pending }.count
     }
     
     // 聊天 Badge 數量（固定為 100，顯示為 99+）
@@ -83,22 +83,13 @@ class FriendsViewModel {
     
     /*
     allFriends: [Friend]              // 所有好友（未分類）- 從 API 載入
-        ↓ 分類
-    ├── allRequestFriends: [Friend]   // 所有請求狀態的好友
-    │   ↓ 過濾/搜尋
-    │   └── displayRequestFriends     // 要顯示的請求好友
-    │
-    └── allConfirmedFriends: [Friend] // 所有已確認的好友
-        ↓ 過濾/搜尋
-        └── displayConfirmedFriends   // 要顯示的已確認好友
+        ↓ 分類 + 過濾/搜尋
+    ├── displayRequestFriends         // 要顯示的請求好友
+    └── displayConfirmedFriends       // 要顯示的已確認好友
     */
     
     // 所有好友資料（未分類）
     private(set) var allFriends: [Friend] = []
-    
-    // 原始未過濾的資料（已分類）
-    private var allRequestFriends: [Friend] = []
-    private var allConfirmedFriends: [Friend] = []
     
     // 要顯示的資料（根據搜尋過濾後）
     private(set) var displayRequestFriends: [Friend] = []
@@ -210,17 +201,21 @@ class FriendsViewModel {
     
     /// 根據搜尋文字過濾好友資料
     func filterFriends() {
+        // 先從 allFriends 分類
+        let requestFriends = allFriends.filter { $0.status == .requestSent }
+        let confirmedFriends = allFriends.filter { $0.status == .accepted || $0.status == .pending }
+        
         if searchText.isEmpty {
             // 沒有搜尋文字，顯示所有資料
-            displayRequestFriends = allRequestFriends
-            displayConfirmedFriends = allConfirmedFriends
+            displayRequestFriends = requestFriends
+            displayConfirmedFriends = confirmedFriends
         } else {
             // 有搜尋文字，根據 name 進行過濾（不區分大小寫）
             let lowercasedSearch = searchText.lowercased()
-            displayRequestFriends = allRequestFriends.filter { 
+            displayRequestFriends = requestFriends.filter { 
                 $0.name.lowercased().contains(lowercasedSearch) 
             }
-            displayConfirmedFriends = allConfirmedFriends.filter { 
+            displayConfirmedFriends = confirmedFriends.filter { 
                 $0.name.lowercased().contains(lowercasedSearch) 
             }
         }
@@ -286,10 +281,6 @@ class FriendsViewModel {
     
     private func processFriendsData(_ friendsData: [Friend]) {
         self.allFriends = friendsData
-        
-        // 分類：status = .requestSent 為邀請，status = .accepted 或 .pending 為已確認好友
-        self.allRequestFriends = friendsData.filter { $0.status == .requestSent }
-        self.allConfirmedFriends = friendsData.filter { $0.status == .accepted || $0.status == .pending }
         
         // 初始化時套用當前的搜尋條件
         filterFriends()
