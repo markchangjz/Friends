@@ -463,19 +463,18 @@ class CustomTabBarView: UIView {
     }
     
     private func updateContainerAppearance(_ view: UIView, isSelected: Bool, color: UIColor, index: Int) {
-        // 根據 createTabContainer 的結構，container 只有一個 subview（verticalStack）
-        // icon 和 label 都在 verticalStack 的 arrangedSubviews 中
-        for subview in view.subviews {
-            if let stackView = subview as? UIStackView {
-                // 在 stackView 的 arrangedSubviews 中尋找 icon 和 label
-                for arrangedSubview in stackView.arrangedSubviews {
-                    if let iconImageView = arrangedSubview as? UIImageView, iconImageView.accessibilityIdentifier == "icon_\(index)" {
-                        iconImageView.tintColor = color
-                    } else if let label = arrangedSubview as? UILabel, label.accessibilityIdentifier == "label_\(index)" {
-                        label.textColor = color
-                        label.font = UIFont.systemFont(ofSize: tabLabelFontSize, weight: isSelected ? .medium : .regular)
-                    }
-                }
+        // 直接取得 stackView（container 的第一個 subview）
+        guard let stackView = view.subviews.first as? UIStackView else { return }
+        
+        // 使用 accessibilityIdentifier 找到對應的 UI 元素
+        for arrangedSubview in stackView.arrangedSubviews {
+            if let iconImageView = arrangedSubview as? UIImageView, 
+               iconImageView.accessibilityIdentifier == "icon_\(index)" {
+                iconImageView.tintColor = color
+            } else if let label = arrangedSubview as? UILabel, 
+                      label.accessibilityIdentifier == "label_\(index)" {
+                label.textColor = color
+                label.font = UIFont.systemFont(ofSize: tabLabelFontSize, weight: isSelected ? .medium : .regular)
             }
         }
     }
