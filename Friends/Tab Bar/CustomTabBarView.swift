@@ -33,6 +33,13 @@ class CustomTabBarView: UIView {
     // Tab bar 高度
     static let tabBarHeight: CGFloat = 55
     
+    /// 計算 TabBar 的總 inset（包含 safe area bottom）
+    /// - Parameter safeAreaBottom: Safe area 底部高度
+    /// - Returns: TabBar 的總 inset
+    static func calculateTabBarInset(safeAreaBottom: CGFloat) -> CGFloat {
+        return safeAreaBottom + tabBarHeight
+    }
+    
     // MARK: - Layout Constants
     
     // 一般 Tab 按鈕

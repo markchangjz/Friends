@@ -133,12 +133,9 @@ class FriendsViewController: UIViewController {
         let safeAreaTop = view.safeAreaInsets.top
         let safeAreaBottom = view.safeAreaInsets.bottom
         
-        // 自訂 TabBar 高度（從 CustomTabBarController 的設定）
-        let customTabBarHeight: CGFloat = 55
-        
         // 內容 Inset：必須完整避開鍵盤、Safe Area 和自訂 TabBar
         // 鍵盤顯示時會覆蓋 TabBar，所以用 max(鍵盤高度, TabBar高度)
-        let tabBarInset = safeAreaBottom + customTabBarHeight
+        let tabBarInset = CustomTabBarView.calculateTabBarInset(safeAreaBottom: safeAreaBottom)
         let contentBottomInset = max(currentKeyboardInset, tabBarInset)
         tableView.contentInset = UIEdgeInsets(top: safeAreaTop, left: 0, bottom: contentBottomInset, right: 0)
         
