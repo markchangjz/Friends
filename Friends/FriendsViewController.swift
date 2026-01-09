@@ -295,7 +295,7 @@ class FriendsViewController: UIViewController {
         present(alert, animated: true)
     }
     
-    @objc private func handleRefresh() {
+    @objc private func handleRefresh(_ sender: UIRefreshControl) {
         viewModel.loadFriendsData(for: viewModel.selectedOption)
     }
     
@@ -691,7 +691,7 @@ extension FriendsViewController {
         // 設置 refreshControl 的背景色（透過 tintColor 和背景視圖）
         refreshControl.tintColor = DesignConstants.Colors.lightGrey
         refreshControl.backgroundColor = DesignConstants.Colors.background
-        refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
+        refreshControl.addTarget(self, action: #selector(handleRefresh(_:)), for: .valueChanged)
         tableView.refreshControl = refreshControl
         
         tableView.register(PlaceholderSearchBarTableViewCell.self, forCellReuseIdentifier: PlaceholderSearchBarTableViewCell.identifier)
