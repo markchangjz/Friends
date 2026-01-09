@@ -69,10 +69,8 @@ class CustomTabBarView: UIView {
         updateAppearance()
         
         // Register for trait changes
-        if #available(iOS 17.0, *) {
-            registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, previousTraitCollection: UITraitCollection) in
-                self.updateAppearance()
-            }
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, previousTraitCollection: UITraitCollection) in
+            self.updateAppearance()
         }
     }
     
@@ -355,12 +353,12 @@ class CustomTabBarView: UIView {
         ])
         
         // Add tap gesture to the entire container
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tabContainerTapped(_:)))
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTabSelection(_:)))
         container.addGestureRecognizer(tapGesture)
         container.isUserInteractionEnabled = true
         
         // Also add target to button as backup
-        button.addTarget(self, action: #selector(tabButtonTapped(_:)), for: .touchUpInside)
+        button.addTarget(self, action: #selector(handleTabSelection(_:)), for: .touchUpInside)
         
         // Store references for later updates
         button.accessibilityIdentifier = "button_\(index)"
@@ -397,7 +395,7 @@ class CustomTabBarView: UIView {
         centerButtonContainer.addSubview(centerButton)
         
         // Add target
-        centerButton.addTarget(self, action: #selector(tabButtonTapped(_:)), for: .touchUpInside)
+        centerButton.addTarget(self, action: #selector(handleTabSelection(_:)), for: .touchUpInside)
         
         // Constraints
         NSLayoutConstraint.activate([
@@ -417,16 +415,20 @@ class CustomTabBarView: UIView {
     
     // MARK: - Actions
     
-    @objc private func tabContainerTapped(_ gesture: UITapGestureRecognizer) {
-        guard let container = gesture.view else { return }
-        let index = container.tag
-        selectedIndex = index
-        updateAppearance()
-        delegate?.tabBarView(self, didSelectTabAt: index)
-    }
-    
-    @objc private func tabButtonTapped(_ sender: UIButton) {
-        let index = sender.tag
+    /// 處理 Tab 選擇（統一處理 container gesture 和 button target）
+    @objc private func handleTabSelection(_ sender: Any) {
+        let index: Int
+        
+        // 處理兩種情況：UITapGestureRecognizer 或 UIButton
+        if let gesture = sender as? UITapGestureRecognizer {
+            guard let container = gesture.view else { return }
+            index = container.tag
+        } else if let button = sender as? UIButton {
+            index = button.tag
+        } else {
+            return
+        }
+        
         selectedIndex = index
         updateAppearance()
         delegate?.tabBarView(self, didSelectTabAt: index)
@@ -465,22 +467,17 @@ class CustomTabBarView: UIView {
     }
     
     private func updateContainerAppearance(_ view: UIView, isSelected: Bool, color: UIColor, index: Int) {
+        // 根據 createTabContainer 的結構，container 只有一個 subview（verticalStack）
+        // button 和 label 都在 verticalStack 的 arrangedSubviews 中
         for subview in view.subviews {
-            if let button = subview as? UIButton, button.accessibilityIdentifier == "button_\(index)" {
-                button.tintColor = color
-            } else if let label = subview as? UILabel, label.accessibilityIdentifier == "label_\(index)" {
-                label.textColor = color
-                // Use system font with appropriate weight
-                label.font = UIFont.systemFont(ofSize: tabLabelFontSize, weight: isSelected ? .medium : .regular)
-            } else if let stackView = subview as? UIStackView {
-                // Handle UIStackView case
+            if let stackView = subview as? UIStackView {
+                // 在 stackView 的 arrangedSubviews 中尋找 button 和 label
                 for arrangedSubview in stackView.arrangedSubviews {
                     if let button = arrangedSubview as? UIButton, button.accessibilityIdentifier == "button_\(index)" {
                         button.tintColor = color
                     } else if let label = arrangedSubview as? UILabel, label.accessibilityIdentifier == "label_\(index)" {
                         label.textColor = color
-                        // Use system font with appropriate weight
-                        label.font = UIFont.systemFont(ofSize: 12, weight: isSelected ? .medium : .regular)
+                        label.font = UIFont.systemFont(ofSize: tabLabelFontSize, weight: isSelected ? .medium : .regular)
                     }
                 }
             }
@@ -494,16 +491,5 @@ class CustomTabBarView: UIView {
         default:
             centerButton.layer.shadowColor = UIColor.black.cgColor
         }
-    }
-    
-    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        // Extend hit test area for center button
-        if centerButtonContainer.frame.contains(point) {
-            let convertedPoint = convert(point, to: centerButtonContainer)
-            if centerButton.frame.contains(convertedPoint) {
-                return centerButton
-            }
-        }
-        return super.hitTest(point, with: event)
     }
 }
