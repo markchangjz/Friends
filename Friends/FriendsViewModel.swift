@@ -113,7 +113,8 @@ class FriendsViewModel {
     // MARK: - Public Methods
     
     func loadFriendsData(for option: ViewOption) {
-        Task {
+        Task { [weak self] in
+            guard let self else { return }
             do {
                 // 取得好友資料
                 let friendsData = try await fetchFriendsData(for: option)
@@ -134,7 +135,8 @@ class FriendsViewModel {
     
     /// 同時載入使用者資料和好友資料，等兩者都完成後才一起更新 UI
     func loadAllData(for option: ViewOption) {
-        Task {
+        Task { [weak self] in
+            guard let self else { return }
             do {
                 // 並行執行兩個 API 呼叫
                 async let userProfileTask = repository.fetchUserProfile()

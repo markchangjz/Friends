@@ -127,12 +127,14 @@ class FriendsViewController: UIViewController {
             userProfileHeaderView.ensureInitialLayout()
             view.layoutIfNeeded()
             
-            UIView.animate(withDuration: 0.3, delay: 0, options: [.curveEaseInOut]) {
+            UIView.animate(withDuration: 0.3, delay: 0, options: [.curveEaseInOut]) { [weak self] in
+                guard let self else { return }
                 // 在動畫塊內觸發佈局更新
                 self.tableHeaderContainerView.frame = CGRect(x: 0, y: 0, width: width, height: containerHeight)
                 self.tableHeaderContainerView.layoutIfNeeded()
                 self.userProfileHeaderView.layoutIfNeeded()
-            } completion: { _ in
+            } completion: { [weak self] _ in
+                guard let self else { return }
                 // 動畫完成後重新設定 tableHeaderView 以確保正確
                 self.tableView.tableHeaderView = self.tableHeaderContainerView
                 // 更新 scrollIndicatorInsets 以確保底部對齊
@@ -287,6 +289,7 @@ class FriendsViewController: UIViewController {
         tableView.tableFooterView = nil
         tableView.isHidden = false
         loadingIndicator.startAnimating()
+        
     }
     
     private func showErrorAlert(message: String) {
@@ -488,7 +491,8 @@ extension FriendsViewController: UserProfileHeaderViewDelegate {
         userProfileHeaderView.setExpandedState(viewModel.isRequestsSectionExpanded)
         
         // 動畫到目標狀態
-        UIView.animate(withDuration: 0.3, delay: 0, options: [.curveEaseInOut]) {
+        UIView.animate(withDuration: 0.3, delay: 0, options: [.curveEaseInOut]) { [weak self] in
+            guard let self else { return }
             // 更新容器高度
             self.tableHeaderContainerView.frame.size.height = containerHeight
             self.tableHeaderContainerView.layoutIfNeeded()
@@ -497,7 +501,8 @@ extension FriendsViewController: UserProfileHeaderViewDelegate {
             self.tableView.beginUpdates()
             self.tableView.tableHeaderView = self.tableHeaderContainerView
             self.tableView.endUpdates()
-        } completion: { _ in
+        } completion: { [weak self] _ in
+            guard let self else { return }
             // 動畫完成後更新 scrollIndicatorInsets 以確保底部對齊
             self.updateTableViewContentInset()
         }
@@ -767,7 +772,8 @@ extension FriendsViewController {
         // 左移 16 位才能正確轉換為 UIView.AnimationOptions 格式
         let options = UIView.AnimationOptions(rawValue: curveValue << 16)
         
-        UIView.animate(withDuration: duration, delay: 0, options: options) {
+        UIView.animate(withDuration: duration, delay: 0, options: options) { [weak self] in
+            guard let self else { return }
             self.updateTableViewContentInset()
             self.view.layoutIfNeeded()
         }

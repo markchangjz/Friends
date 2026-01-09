@@ -169,14 +169,16 @@ class EmptyStateView: UIView {
     // MARK: - Actions
     
     @objc private func buttonTouchDown() {
-        UIView.animate(withDuration: 0.1) {
+        UIView.animate(withDuration: 0.1) { [weak self] in
+            guard let self else { return }
             self.addFriendButton.transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
             self.addFriendButton.alpha = 0.8
         }
     }
     
     @objc private func buttonTouchUp() {
-        UIView.animate(withDuration: 0.1) {
+        UIView.animate(withDuration: 0.1) { [weak self] in
+            guard let self else { return }
             self.addFriendButton.transform = .identity
             self.addFriendButton.alpha = 1.0
         }

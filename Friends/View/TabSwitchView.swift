@@ -283,8 +283,8 @@ class TabSwitchView: UIView {
         indicatorLeadingConstraint?.isActive = true
         
         if animated {
-            UIView.animate(withDuration: 0.2) {
-                self.layoutIfNeeded()
+            UIView.animate(withDuration: 0.2) { [weak self] in
+                self?.layoutIfNeeded()
             }
         } else {
             // 不執行動畫，直接更新布局
