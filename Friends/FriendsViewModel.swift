@@ -29,8 +29,6 @@ class FriendsViewModel {
     // 當前選中的選項 - 使用 @Published 自動發布變更
     @Published private(set) var selectedOption: ViewOption = .noFriends
     
-    // 搜尋文字 - 使用 @Published 自動發布變更
-    @Published var searchText: String = ""
     
     // 使用者資料載入狀態 - 使用 PassthroughSubject 發布事件
     let userProfileDataLoadedPublisher = PassthroughSubject<Void, Never>()
@@ -192,7 +190,8 @@ class FriendsViewModel {
     // MARK: - Data Access
     
     /// 根據搜尋文字過濾好友資料
-    func filterFriends() {
+    /// - Parameter searchText: 搜尋關鍵字，空字串表示不過濾
+    func filterFriends(with searchText: String = "") {
         // 先從 allFriends 分類
         let requestFriends = allFriends.filter { $0.status == .requestSent }
         let confirmedFriends = allFriends.filter { $0.status == .accepted || $0.status == .pending }
@@ -215,8 +214,7 @@ class FriendsViewModel {
     
     /// 清除搜尋文字並重置過濾
     func clearSearch() {
-        searchText = ""
-        filterFriends()
+        filterFriends(with: "")
     }
     
     /// 開始搜尋（強制展開 cardViews）
