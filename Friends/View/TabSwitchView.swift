@@ -13,6 +13,10 @@ protocol TabSwitchViewDelegate: AnyObject {
 
 class TabSwitchView: UIView {
     
+    // MARK: - Constants
+    
+    static let tabSwitchHeight: CGFloat = 28
+    
     // MARK: - Properties
     
     weak var delegate: TabSwitchViewDelegate?

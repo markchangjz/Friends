@@ -112,8 +112,7 @@ class FriendsViewController: UIViewController {
             requestCount: requestCount
         )
         
-        let tabSwitchHeight: CGFloat = 28
-        let containerHeight = userProfileHeight + tabSwitchHeight
+        let containerHeight = userProfileHeight + TabSwitchView.tabSwitchHeight
         
         // 更新高度約束
         userProfileHeaderViewHeightConstraint.constant = userProfileHeight
@@ -466,8 +465,7 @@ extension FriendsViewController: UserProfileHeaderViewDelegate {
             isExpanded: viewModel.isRequestsSectionExpanded,
             requestCount: requestCount
         )
-        let tabSwitchHeight: CGFloat = 28
-        let containerHeight = userProfileHeight + tabSwitchHeight
+        let containerHeight = userProfileHeight + TabSwitchView.tabSwitchHeight
         
         // 更新約束常數
         userProfileHeaderViewHeightConstraint.constant = userProfileHeight
@@ -537,8 +535,7 @@ extension FriendsViewController: UISearchBarDelegate {
             isExpanded: viewModel.isRequestsSectionExpanded,
             requestCount: requestCount
         )
-        let tabSwitchHeight: CGFloat = 28
-        let targetContainerHeight = targetHeaderHeight + tabSwitchHeight
+        let targetContainerHeight = targetHeaderHeight + TabSwitchView.tabSwitchHeight
         
         transitionManager.deactivateSearchWithHeaderAnimation(
             placeholderSearchBar: placeholderSearchBar,
