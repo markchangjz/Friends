@@ -648,4 +648,170 @@ final class FriendsViewModelTests: XCTestCase {
         XCTAssertEqual(FriendsViewModel.ViewOption.friendsListOnly.rawValue, "只有好友列表")
         XCTAssertEqual(FriendsViewModel.ViewOption.friendsListWithInvitation.rawValue, "好友列表含邀請")
     }
+    
+    // MARK: - 測試錯誤處理 (shouldThrowError = true)
+    
+    func testLoadFriendsData_ShouldThrowError_NoFriends() async throws {
+        // Given - 設定 mock repository 會拋出錯誤
+        mockRepository.shouldThrowError = true
+        let errorExpectation = XCTestExpectation(description: "Error should be published")
+        let dataLoadedExpectation = XCTestExpectation(description: "Data loaded publisher should still fire")
+        
+        var receivedError: Error?
+        viewModel.errorPublisher
+            .sink { error in
+                receivedError = error
+                errorExpectation.fulfill()
+            }
+            .store(in: &cancellables)
+        
+        viewModel.friendsDataLoadedPublisher
+            .sink { _ in
+                dataLoadedExpectation.fulfill()
+            }
+            .store(in: &cancellables)
+        
+        // When
+        viewModel.loadFriendsData(for: .noFriends)
+        
+        // Then - 等待錯誤和資料載入事件
+        await fulfillment(of: [errorExpectation, dataLoadedExpectation], timeout: 2.0)
+        
+        // 驗證錯誤類型
+        XCTAssertNotNil(receivedError)
+        if let repositoryError = receivedError as? RepositoryError {
+            switch repositoryError {
+            case .invalidURL:
+                // 正確的錯誤類型
+                break
+            default:
+                XCTFail("應該收到 RepositoryError.invalidURL")
+            }
+        } else {
+            XCTFail("應該收到 RepositoryError.invalidURL")
+        }
+    }
+    
+    func testLoadFriendsData_ShouldThrowError_WithInvitation() async throws {
+        // Given - 設定 mock repository 會拋出錯誤
+        mockRepository.shouldThrowError = true
+        let errorExpectation = XCTestExpectation(description: "Error should be published")
+        let dataLoadedExpectation = XCTestExpectation(description: "Data loaded publisher should still fire")
+        
+        var receivedError: Error?
+        viewModel.errorPublisher
+            .sink { error in
+                receivedError = error
+                errorExpectation.fulfill()
+            }
+            .store(in: &cancellables)
+        
+        viewModel.friendsDataLoadedPublisher
+            .sink { _ in
+                dataLoadedExpectation.fulfill()
+            }
+            .store(in: &cancellables)
+        
+        // When
+        viewModel.loadFriendsData(for: .friendsListWithInvitation)
+        
+        // Then - 等待錯誤和資料載入事件
+        await fulfillment(of: [errorExpectation, dataLoadedExpectation], timeout: 2.0)
+        
+        // 驗證錯誤類型
+        XCTAssertNotNil(receivedError)
+        if let repositoryError = receivedError as? RepositoryError {
+            switch repositoryError {
+            case .invalidURL:
+                // 正確的錯誤類型
+                break
+            default:
+                XCTFail("應該收到 RepositoryError.invalidURL")
+            }
+        } else {
+            XCTFail("應該收到 RepositoryError.invalidURL")
+        }
+    }
+    
+    func testLoadFriendsData_ShouldThrowError_FriendsListOnly() async throws {
+        // Given - 設定 mock repository 會拋出錯誤
+        mockRepository.shouldThrowError = true
+        let errorExpectation = XCTestExpectation(description: "Error should be published")
+        let dataLoadedExpectation = XCTestExpectation(description: "Data loaded publisher should still fire")
+        
+        var receivedError: Error?
+        viewModel.errorPublisher
+            .sink { error in
+                receivedError = error
+                errorExpectation.fulfill()
+            }
+            .store(in: &cancellables)
+        
+        viewModel.friendsDataLoadedPublisher
+            .sink { _ in
+                dataLoadedExpectation.fulfill()
+            }
+            .store(in: &cancellables)
+        
+        // When
+        viewModel.loadFriendsData(for: .friendsListOnly)
+        
+        // Then - 等待錯誤和資料載入事件
+        await fulfillment(of: [errorExpectation, dataLoadedExpectation], timeout: 2.0)
+        
+        // 驗證錯誤類型
+        XCTAssertNotNil(receivedError)
+        if let repositoryError = receivedError as? RepositoryError {
+            switch repositoryError {
+            case .invalidURL:
+                // 正確的錯誤類型
+                break
+            default:
+                XCTFail("應該收到 RepositoryError.invalidURL")
+            }
+        } else {
+            XCTFail("應該收到 RepositoryError.invalidURL")
+        }
+    }
+    
+    func testLoadAllData_ShouldThrowError() async throws {
+        // Given - 設定 mock repository 會拋出錯誤
+        mockRepository.shouldThrowError = true
+        let errorExpectation = XCTestExpectation(description: "Error should be published")
+        let friendsDataLoadedExpectation = XCTestExpectation(description: "Friends data loaded publisher should still fire")
+        
+        var receivedError: Error?
+        viewModel.errorPublisher
+            .sink { error in
+                receivedError = error
+                errorExpectation.fulfill()
+            }
+            .store(in: &cancellables)
+        
+        viewModel.friendsDataLoadedPublisher
+            .sink { _ in
+                friendsDataLoadedExpectation.fulfill()
+            }
+            .store(in: &cancellables)
+        
+        // When
+        viewModel.loadAllData(for: .noFriends)
+        
+        // Then - 等待錯誤和資料載入事件
+        await fulfillment(of: [errorExpectation, friendsDataLoadedExpectation], timeout: 2.0)
+        
+        // 驗證錯誤類型
+        XCTAssertNotNil(receivedError)
+        if let repositoryError = receivedError as? RepositoryError {
+            switch repositoryError {
+            case .invalidURL:
+                // 正確的錯誤類型
+                break
+            default:
+                XCTFail("應該收到 RepositoryError.invalidURL")
+            }
+        } else {
+            XCTFail("應該收到 RepositoryError.invalidURL")
+        }
+    }
 }
