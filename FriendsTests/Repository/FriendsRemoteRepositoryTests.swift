@@ -47,8 +47,8 @@ final class FriendsRemoteRepositoryTests: XCTestCase {
         // When
         let friends = try await repository.fetchFriends_noFriends()
         
-        // Then
-        XCTAssertTrue(friends.isEmpty || !friends.isEmpty, "應該能成功載入好友資料")
+        // Then - friend4.json 是空陣列
+        XCTAssertTrue(friends.isEmpty, "應該返回空陣列")
     }
     
     func testFriendsRemoteRepository_FetchFriends_WithInvitation_Integration() async throws {
@@ -57,8 +57,12 @@ final class FriendsRemoteRepositoryTests: XCTestCase {
         // When
         let friends = try await repository.fetchFriends_hasFriends_hasInvitation()
         
-        // Then
-        XCTAssertTrue(friends.isEmpty || !friends.isEmpty, "應該能成功載入好友資料")
+        // Then - friend3.json 包含多個好友
+        XCTAssertFalse(friends.isEmpty, "應該返回非空陣列")
+        XCTAssertTrue(friends.count > 0, "應該包含至少一個好友")
+        // 驗證資料結構正確
+        XCTAssertFalse(friends.first?.name.isEmpty ?? true, "好友名稱不應該為空")
+        XCTAssertFalse(friends.first?.fid.isEmpty ?? true, "好友 ID 不應該為空")
     }
     
     func testFriendsRemoteRepository_FetchFriends1_Integration() async throws {
@@ -67,8 +71,12 @@ final class FriendsRemoteRepositoryTests: XCTestCase {
         // When
         let friends = try await repository.fetchFriends1()
         
-        // Then
-        XCTAssertTrue(friends.isEmpty || !friends.isEmpty, "應該能成功載入好友資料")
+        // Then - friend1.json 包含多個好友
+        XCTAssertFalse(friends.isEmpty, "應該返回非空陣列")
+        XCTAssertTrue(friends.count > 0, "應該包含至少一個好友")
+        // 驗證資料結構正確
+        XCTAssertFalse(friends.first?.name.isEmpty ?? true, "好友名稱不應該為空")
+        XCTAssertFalse(friends.first?.fid.isEmpty ?? true, "好友 ID 不應該為空")
     }
     
     func testFriendsRemoteRepository_FetchFriends2_Integration() async throws {
@@ -77,8 +85,12 @@ final class FriendsRemoteRepositoryTests: XCTestCase {
         // When
         let friends = try await repository.fetchFriends2()
         
-        // Then
-        XCTAssertTrue(friends.isEmpty || !friends.isEmpty, "應該能成功載入好友資料")
+        // Then - friend2.json 包含多個好友
+        XCTAssertFalse(friends.isEmpty, "應該返回非空陣列")
+        XCTAssertTrue(friends.count > 0, "應該包含至少一個好友")
+        // 驗證資料結構正確
+        XCTAssertFalse(friends.first?.name.isEmpty ?? true, "好友名稱不應該為空")
+        XCTAssertFalse(friends.first?.fid.isEmpty ?? true, "好友 ID 不應該為空")
     }
     
     // MARK: - 測試 RepositoryError
