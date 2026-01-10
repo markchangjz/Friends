@@ -105,26 +105,24 @@ class FriendsViewModel {
     // MARK: - Data Loading
     
     func loadFriendsData(for option: ViewOption) {
-        Task { [weak self] in
-            guard let self else { return }
+        Task {
             do {
                 // 取得好友資料
                 let friendsData = try await fetchFriendsData(for: option)
                 
                 // 所有資料都載入完成後，一起更新 UI
-                self.processFriendsData(friendsData)
-                self.friendsDataLoadedPublisher.send()
+                processFriendsData(friendsData)
+                friendsDataLoadedPublisher.send()
             } catch {
-                self.errorPublisher.send(error)
-                self.friendsDataLoadedPublisher.send()
+                errorPublisher.send(error)
+                friendsDataLoadedPublisher.send()
             }
         }
     }
     
     /// 同時載入使用者資料和好友資料，等兩者都完成後才一起更新 UI
     func loadAllData(for option: ViewOption) {
-        Task { [weak self] in
-            guard let self else { return }
+        Task {
             do {
                 // 並行執行兩個 API 呼叫
                 async let userProfileTask = repository.fetchUserProfile()
@@ -135,16 +133,16 @@ class FriendsViewModel {
                 
                 // 所有資料都載入完成後，一起更新 UI
                 // 更新使用者資料
-                self.userName = userProfile.name
-                self.userKokoId = userProfile.kokoid
-                self.userProfileDataLoadedPublisher.send()
+                userName = userProfile.name
+                userKokoId = userProfile.kokoid
+                userProfileDataLoadedPublisher.send()
                 
                 // 更新好友資料
-                self.processFriendsData(friendsData)
-                self.friendsDataLoadedPublisher.send()
+                processFriendsData(friendsData)
+                friendsDataLoadedPublisher.send()
             } catch {
-                self.errorPublisher.send(error)
-                self.friendsDataLoadedPublisher.send()
+                errorPublisher.send(error)
+                friendsDataLoadedPublisher.send()
             }
         }
     }
