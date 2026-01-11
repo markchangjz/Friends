@@ -109,19 +109,15 @@ class CustomTabBarView: UIView {
         // 確保 centerButton 和 container 的 frame 已準備好
         // 如果 frame 還沒準備好，延遲到下一個 run loop 再試一次
         // 因為 Auto Layout 的計算可能還沒完成，需要等待 layout pass 完成
-        guard getValidFrames() != nil else {
-            DispatchQueue.main.async { [weak self] in
-                self?.createBorderWithCutout()
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            createBorderWithCutout()
+            if let topBorderLine = topBorderLine {
+                bringSubviewToFront(topBorderLine)
             }
-            return
-        }
-        
-        createBorderWithCutout()
-        if let topBorderLine = topBorderLine {
-            bringSubviewToFront(topBorderLine)
-        }
-        if let centerButtonContainer = centerButtonContainer {
-            bringSubviewToFront(centerButtonContainer)
+            if let centerButtonContainer = centerButtonContainer {
+                bringSubviewToFront(centerButtonContainer)
+            }
         }
     }
     
