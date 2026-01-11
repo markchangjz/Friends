@@ -168,7 +168,7 @@ class UserProfileHeaderView: UIView {
         addSubview(requestsContainer)
         
         // 點擊手勢
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleRequestsTap))
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleRequestsTap(_:)))
         requestsContainer.addGestureRecognizer(tapGesture)
         requestsContainer.isUserInteractionEnabled = true
     }
@@ -486,7 +486,7 @@ class UserProfileHeaderView: UIView {
     
     // MARK: - Actions
     
-    @objc private func handleRequestsTap() {
+    @objc private func handleRequestsTap(_ sender: UITapGestureRecognizer) {
         // 如果強制展開（搜尋中），不允許折疊
         guard !isForcedExpanded else { return }
         // 只有當邀請數量大於 1 時才允許展開/收合

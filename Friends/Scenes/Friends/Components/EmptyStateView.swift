@@ -83,8 +83,8 @@ class EmptyStateView: UIView {
         addFriendButton.layer.shadowOpacity = 1.0
         
         // 點擊高亮效果處理
-        addFriendButton.addTarget(self, action: #selector(buttonTouchDown), for: .touchDown)
-        addFriendButton.addTarget(self, action: #selector(buttonTouchUp), for: [.touchUpInside, .touchUpOutside, .touchCancel])
+        addFriendButton.addTarget(self, action: #selector(buttonTouchDown(_:)), for: .touchDown)
+        addFriendButton.addTarget(self, action: #selector(buttonTouchUp(_:)), for: [.touchUpInside, .touchUpOutside, .touchCancel])
         
         // 加好友按鈕內容設定 - 實現文字置中、圖示固定靠右
         buttonLabel.text = "加好友"
@@ -168,7 +168,7 @@ class EmptyStateView: UIView {
     
     // MARK: - Actions
     
-    @objc private func buttonTouchDown() {
+    @objc private func buttonTouchDown(_ sender: UIButton) {
         UIView.animate(withDuration: 0.1) { [weak self] in
             guard let self else { return }
             self.addFriendButton.transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
@@ -176,7 +176,7 @@ class EmptyStateView: UIView {
         }
     }
     
-    @objc private func buttonTouchUp() {
+    @objc private func buttonTouchUp(_ sender: UIButton) {
         UIView.animate(withDuration: 0.1) { [weak self] in
             guard let self else { return }
             self.addFriendButton.transform = .identity

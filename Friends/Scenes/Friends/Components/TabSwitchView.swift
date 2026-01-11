@@ -66,7 +66,7 @@ class TabSwitchView: UIView {
         friendsButton.titleLabel?.font = .systemFont(ofSize: tabButtonFontSize, weight: .medium)
         friendsButton.setTitleColor(DesignConstants.Colors.lightGrey, for: .normal)
         friendsButton.translatesAutoresizingMaskIntoConstraints = false
-        friendsButton.addTarget(self, action: #selector(friendsButtonTapped), for: .touchUpInside)
+        friendsButton.addTarget(self, action: #selector(friendsButtonTapped(_:)), for: .touchUpInside)
         addSubview(friendsButton)
         
         // 聊天按鈕
@@ -74,7 +74,7 @@ class TabSwitchView: UIView {
         chatButton.titleLabel?.font = .systemFont(ofSize: tabButtonFontSize, weight: .regular)
         chatButton.setTitleColor(DesignConstants.Colors.lightGrey, for: .normal)
         chatButton.translatesAutoresizingMaskIntoConstraints = false
-        chatButton.addTarget(self, action: #selector(chatButtonTapped), for: .touchUpInside)
+        chatButton.addTarget(self, action: #selector(chatButtonTapped(_:)), for: .touchUpInside)
         addSubview(chatButton)
         
         // 選中指示器
@@ -181,11 +181,11 @@ class TabSwitchView: UIView {
     
     // MARK: - Actions
     
-    @objc private func friendsButtonTapped() {
+    @objc private func friendsButtonTapped(_ sender: UIButton) {
         selectTab(.friends)
     }
     
-    @objc private func chatButtonTapped() {
+    @objc private func chatButtonTapped(_ sender: UIButton) {
         selectTab(.chat)
     }
     
