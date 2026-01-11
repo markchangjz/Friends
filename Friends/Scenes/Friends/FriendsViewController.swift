@@ -178,8 +178,6 @@ class FriendsViewController: UIViewController {
             viewModel.displayRequestFriends,
             isExpanded: viewModel.isRequestsSectionExpanded
         )
-        // 強制同步狀態，避免因為數據更新導致狀態不一致
-        userProfileHeaderView.setExpandedState(viewModel.isRequestsSectionExpanded)
         
         // 更新 badge 數量（使用未過濾的 pending 數量，確保搜尋時數字不變）
         userProfileHeaderView.updateTabSwitchBadgeCount(viewModel.pendingFriendCount, for: .friends)
@@ -466,9 +464,6 @@ extension FriendsViewController: UISearchBarDelegate {
             viewModel.displayRequestFriends,
             isExpanded: viewModel.isRequestsSectionExpanded
         )
-        
-        // 立即同步 UserProfileHeaderView 的狀態（但不立即更新佈局）
-        userProfileHeaderView.setExpandedState(viewModel.isRequestsSectionExpanded)
         
         // 計算目標 header 高度（已包含 tabSwitchView）
         let hasRequests = viewModel.hasFriendRequests
