@@ -27,7 +27,8 @@ class FriendSearchTransitionManager {
         guard !isUsingRealSearchController else { return }
         
         // 建立快照
-        guard let snapshotView = placeholderSearchBar.snapshotView(afterScreenUpdates: false) else {
+        guard let snapshotView = placeholderSearchBar.snapshotView(afterScreenUpdates: false),
+              let view = viewController.view else {
             activateRealSearchControllerWithoutAnimation(
                 realSearchController: realSearchController,
                 tableView: tableView,
@@ -36,8 +37,6 @@ class FriendSearchTransitionManager {
             )
             return
         }
-        
-        let view = viewController.view!
         
         // 設定快照初始位置
         let searchBarFrame = placeholderSearchBar.convert(placeholderSearchBar.bounds, to: view)
@@ -114,7 +113,8 @@ class FriendSearchTransitionManager {
         }
 
         // 建立快照
-        guard let snapshotView = realSearchController.searchBar.snapshotView(afterScreenUpdates: false) else {
+        guard let snapshotView = realSearchController.searchBar.snapshotView(afterScreenUpdates: false),
+              let view = viewController.view else {
             deactivateRealSearchControllerWithoutAnimation(
                 viewController: viewController,
                 tableView: tableView
@@ -122,8 +122,6 @@ class FriendSearchTransitionManager {
             completion?()
             return
         }
-
-        let view = viewController.view!
 
         let searchBarFrame = realSearchController.searchBar.convert(realSearchController.searchBar.bounds, to: view)
         snapshotView.frame = searchBarFrame

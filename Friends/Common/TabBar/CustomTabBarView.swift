@@ -19,9 +19,9 @@ class CustomTabBarView: UIView {
     private var selectedIndex: Int = 1
     
     private var tabContainers: [UIView] = [] // Tab 容器陣列（包含 icon 和 label）
-    private var centerButton: UIButton!
-    private var centerButtonContainer: UIView!
-    private var topBorderLine: UIView! // Add top border line
+    private var centerButton: UIButton?
+    private var centerButtonContainer: UIView?
+    private var topBorderLine: UIView?
     
     private let tabItems: [TabBarItem] = [.products, .friends, .home, .manage, .settings]
     
@@ -88,17 +88,18 @@ class CustomTabBarView: UIView {
     }
     
     private func setupTopBorder() {
-        topBorderLine = UIView()
-        topBorderLine.backgroundColor = .clear
-        topBorderLine.isUserInteractionEnabled = false
-        topBorderLine.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(topBorderLine)
+        let borderLine = UIView()
+        borderLine.backgroundColor = .clear
+        borderLine.isUserInteractionEnabled = false
+        borderLine.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(borderLine)
+        topBorderLine = borderLine
         
         NSLayoutConstraint.activate([
-            topBorderLine.topAnchor.constraint(equalTo: topAnchor),
-            topBorderLine.leadingAnchor.constraint(equalTo: leadingAnchor),
-            topBorderLine.trailingAnchor.constraint(equalTo: trailingAnchor),
-            topBorderLine.heightAnchor.constraint(equalToConstant: 0.5)
+            borderLine.topAnchor.constraint(equalTo: topAnchor),
+            borderLine.leadingAnchor.constraint(equalTo: leadingAnchor),
+            borderLine.trailingAnchor.constraint(equalTo: trailingAnchor),
+            borderLine.heightAnchor.constraint(equalToConstant: 0.5)
         ])
     }
     
@@ -116,8 +117,12 @@ class CustomTabBarView: UIView {
         }
         
         createBorderWithCutout()
-        bringSubviewToFront(topBorderLine)
-        bringSubviewToFront(centerButtonContainer)
+        if let topBorderLine = topBorderLine {
+            bringSubviewToFront(topBorderLine)
+        }
+        if let centerButtonContainer = centerButtonContainer {
+            bringSubviewToFront(centerButtonContainer)
+        }
     }
     
     /// 取得有效的 frame，如果無效則返回 nil
@@ -132,6 +137,7 @@ class CustomTabBarView: UIView {
     }
     
     private func createBorderWithCutout() {
+        guard let topBorderLine = topBorderLine else { return }
         topBorderLine.layer.sublayers?.removeAll()
         
         // 確保 centerButton 和 container 的 frame 已準備好，才能計算正確的邊框位置
@@ -140,7 +146,6 @@ class CustomTabBarView: UIView {
         }
         
         let centerButtonFrame = frames.centerButton
-        let containerFrame = frames.container
         
         let borderWidth = bounds.width
         let centerX = bounds.width / 2
@@ -148,6 +153,7 @@ class CustomTabBarView: UIView {
         
         // Get center button's position in our coordinate system
         // Convert from container's coordinate system to view's coordinate system
+        guard let centerButtonContainer = centerButtonContainer else { return }
         let buttonGlobalFrame = centerButtonContainer.convert(centerButtonFrame, to: self)
         let buttonCenterY = buttonGlobalFrame.midY
         
@@ -333,47 +339,49 @@ class CustomTabBarView: UIView {
     
     private func setupCenterButton() {
         // Container for elevated button
-        centerButtonContainer = UIView()
-        centerButtonContainer.backgroundColor = .clear
-        centerButtonContainer.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(centerButtonContainer)
+        let container = UIView()
+        container.backgroundColor = .clear
+        container.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(container)
+        centerButtonContainer = container
         
         // Center button
-        centerButton = UIButton(type: .custom)
-        centerButton.backgroundColor = DesignConstants.Colors.background
-        centerButton.layer.cornerRadius = 30
-        centerButton.layer.shadowOffset = CGSize(width: 0, height: 12)
-        centerButton.layer.shadowRadius = 12
-        centerButton.layer.shadowOpacity = 0.1
-        centerButton.tag = homeTabIndex
-        centerButton.translatesAutoresizingMaskIntoConstraints = false
+        let button = UIButton(type: .custom)
+        button.backgroundColor = DesignConstants.Colors.background
+        button.layer.cornerRadius = 30
+        button.layer.shadowOffset = CGSize(width: 0, height: 12)
+        button.layer.shadowRadius = 12
+        button.layer.shadowOpacity = 0.1
+        button.tag = homeTabIndex
+        button.translatesAutoresizingMaskIntoConstraints = false
         
         // Set home icon
         if let homeImage = UIImage(systemName: TabBarItem.home.imageName) {
             let config = UIImage.SymbolConfiguration(pointSize: 50, weight: .medium)
             let resizedImage = homeImage.withConfiguration(config)
-            centerButton.setImage(resizedImage, for: .normal)
+            button.setImage(resizedImage, for: .normal)
         }
-        centerButton.tintColor = DesignConstants.Colors.warmGrey
+        button.tintColor = DesignConstants.Colors.warmGrey
         
-        centerButtonContainer.addSubview(centerButton)
+        container.addSubview(button)
+        centerButton = button
         
         // Add target
-        centerButton.addTarget(self, action: #selector(handleTabSelection(_:)), for: .touchUpInside)
+        button.addTarget(self, action: #selector(handleTabSelection(_:)), for: .touchUpInside)
         
         // Constraints
         NSLayoutConstraint.activate([
             // Container constraints
-            centerButtonContainer.centerXAnchor.constraint(equalTo: centerXAnchor),
-            centerButtonContainer.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: -25),
-            centerButtonContainer.widthAnchor.constraint(equalToConstant: 85),
-            centerButtonContainer.heightAnchor.constraint(equalToConstant: 65),
+            container.centerXAnchor.constraint(equalTo: centerXAnchor),
+            container.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: -25),
+            container.widthAnchor.constraint(equalToConstant: 85),
+            container.heightAnchor.constraint(equalToConstant: 65),
             
             // Button constraints
-            centerButton.centerXAnchor.constraint(equalTo: centerButtonContainer.centerXAnchor),
-            centerButton.centerYAnchor.constraint(equalTo: centerButtonContainer.centerYAnchor, constant: 5),
-            centerButton.widthAnchor.constraint(equalToConstant: 60),
-            centerButton.heightAnchor.constraint(equalToConstant: 60)
+            button.centerXAnchor.constraint(equalTo: container.centerXAnchor),
+            button.centerYAnchor.constraint(equalTo: container.centerYAnchor, constant: 5),
+            button.widthAnchor.constraint(equalToConstant: 60),
+            button.heightAnchor.constraint(equalToConstant: 60)
         ])
     }
     
@@ -428,7 +436,7 @@ class CustomTabBarView: UIView {
         
         // Update center button
         let isCenterSelected = selectedIndex == homeTabIndex
-        centerButton.tintColor = isCenterSelected ? DesignConstants.Colors.hotPink : DesignConstants.Colors.warmGrey
+        centerButton?.tintColor = isCenterSelected ? DesignConstants.Colors.hotPink : DesignConstants.Colors.warmGrey
     }
     
     private func updateContainerAppearance(_ view: UIView, isSelected: Bool, color: UIColor, index: Int) {
@@ -445,6 +453,7 @@ class CustomTabBarView: UIView {
     }
     
     private func updateCenterButtonShadow() {
+        guard let centerButton = centerButton else { return }
         centerButton.layer.shadowColor = traitCollection.userInterfaceStyle == .dark
             ? UIColor.black.withAlphaComponent(0.5).cgColor
             : UIColor.black.cgColor
