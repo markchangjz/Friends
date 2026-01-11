@@ -211,12 +211,9 @@ class FriendsViewController: UIViewController {
         view.layoutIfNeeded()
         userProfileHeaderView.layoutIfNeeded()
         
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            self.tableView.tableHeaderView = self.userProfileHeaderView
-            // 更新 scrollIndicatorInsets 以確保底部對齊
-            self.updateTableViewContentInset()
-        }
+        tableView.tableHeaderView = userProfileHeaderView
+        // 更新 scrollIndicatorInsets 以確保底部對齊
+        updateTableViewContentInset()
     }
     
     private func updateTableViewContentInset() {
