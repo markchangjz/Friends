@@ -235,7 +235,7 @@ class FriendsViewController: UIViewController {
         
         // Indicator Inset：
         // 1. 停用自動調整（在 setupTableView 中設定），避免系統重複加入 Safe Area
-        // 2. 為了讓滾動條與內容正確對齊，scrollIndicatorInsets 應該與 contentInset 的 top 和 bottom 保持一致
+        // 2. 為了讓滾動條與內容正確對齊，verticalScrollIndicatorInsets 應該與 contentInset 的 top 和 bottom 保持一致
         // 3. 這樣滾動條會在導覽列下方開始，並在 tab bar 頂部結束
         let indicatorInsets = UIEdgeInsets(
             top: safeAreaTop,
@@ -243,7 +243,6 @@ class FriendsViewController: UIViewController {
             bottom: contentBottomInset,
             right: 0
         )
-        tableView.scrollIndicatorInsets = indicatorInsets
         tableView.verticalScrollIndicatorInsets = indicatorInsets
     }
     
