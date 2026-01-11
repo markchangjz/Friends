@@ -203,17 +203,14 @@ class TabSwitchView: UIView {
     func updateBadgeCount(_ count: Int, for tab: Tab) {
         let badgeView: UIView
         let badgeLabel: UILabel
-        var badgeWidthConstraint: NSLayoutConstraint?
         
         switch tab {
         case .friends:
             badgeView = friendsBadgeView
             badgeLabel = friendsBadgeLabel
-            badgeWidthConstraint = friendsBadgeWidthConstraint
         case .chat:
             badgeView = chatBadgeView
             badgeLabel = chatBadgeLabel
-            badgeWidthConstraint = chatBadgeWidthConstraint
         }
         
         guard count > 0 else {
@@ -249,16 +246,12 @@ class TabSwitchView: UIView {
         let minWidth: CGFloat = 18  // 最小寬度（圓形 badge）
         let calculatedWidth = max(ceil(textSize.width) + horizontalPadding, minWidth)
         
-        // 更新寬度約束
-        badgeWidthConstraint?.isActive = false
-        
+        // 更新寬度約束（直接修改 constant，避免重新創建約束）
         switch tab {
         case .friends:
-            friendsBadgeWidthConstraint = badgeView.widthAnchor.constraint(equalToConstant: calculatedWidth)
-            friendsBadgeWidthConstraint?.isActive = true
+            friendsBadgeWidthConstraint?.constant = calculatedWidth
         case .chat:
-            chatBadgeWidthConstraint = badgeView.widthAnchor.constraint(equalToConstant: calculatedWidth)
-            chatBadgeWidthConstraint?.isActive = true
+            chatBadgeWidthConstraint?.constant = calculatedWidth
         }
     }
     
