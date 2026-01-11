@@ -373,7 +373,6 @@ extension FriendsViewController: UISearchResultsUpdating {
         viewModel.filterFriends(name: searchText)
         // 搜尋關鍵字更新時，同步更新 cardViews 過濾結果
         updateRequestsSection()
-        updateEmptyState()
         tableView.reloadData()
     }
 }
