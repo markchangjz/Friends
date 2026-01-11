@@ -420,8 +420,7 @@ extension FriendsViewController: UserProfileHeaderViewDelegate {
         userProfileHeaderView.setExpandedState(viewModel.isRequestsSectionExpanded)
         
         // 動畫到目標狀態
-        UIView.animate(withDuration: 0.3, delay: 0, options: [.curveEaseInOut]) { [weak self] in
-            guard let self else { return }
+        UIView.animate(withDuration: 0.3, delay: 0, options: [.curveEaseInOut]) {
             // 更新 header 高度
             self.userProfileHeaderView.frame.size.height = headerHeight
             self.userProfileHeaderView.layoutIfNeeded()
@@ -430,8 +429,7 @@ extension FriendsViewController: UserProfileHeaderViewDelegate {
             self.tableView.beginUpdates()
             self.tableView.tableHeaderView = self.userProfileHeaderView
             self.tableView.endUpdates()
-        } completion: { [weak self] _ in
-            guard let self else { return }
+        } completion: { _ in
             // 動畫完成後更新 scrollIndicatorInsets 以確保底部對齊
             self.updateTableViewContentInset()
         }
