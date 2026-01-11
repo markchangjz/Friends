@@ -88,10 +88,9 @@ class CustomTabBarView: UIView {
     }
     
     private func setupTopBorder() {
-        // Create a custom view that will contain the border with cutout
         topBorderLine = UIView()
-        topBorderLine.backgroundColor = UIColor.clear // Make container transparent
-        topBorderLine.isUserInteractionEnabled = false // Allow touches to pass through
+        topBorderLine.backgroundColor = .clear
+        topBorderLine.isUserInteractionEnabled = false
         topBorderLine.translatesAutoresizingMaskIntoConstraints = false
         addSubview(topBorderLine)
         
@@ -106,39 +105,42 @@ class CustomTabBarView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
         
-        // Ensure layout is complete before creating border
-        // Check if center button has valid frame
-        if let centerButtonFrame = centerButton?.frame,
-           let containerFrame = centerButtonContainer?.frame,
-           centerButtonFrame.width > 0 && centerButtonFrame.height > 0,
-           containerFrame.width > 0 && containerFrame.height > 0 {
-            // Create the border path with cutout for center button
-            createBorderWithCutout()
-        } else {
-            // If frames are not ready, delay to next run loop
+        // 確保 centerButton 和 container 的 frame 已準備好
+        // 如果 frame 還沒準備好，延遲到下一個 run loop 再試一次
+        // 因為 Auto Layout 的計算可能還沒完成，需要等待 layout pass 完成
+        guard getValidFrames() != nil else {
             DispatchQueue.main.async { [weak self] in
                 self?.createBorderWithCutout()
             }
+            return
         }
         
-        // Ensure border is above button and its shadow so it's not obscured
-        // topBorderLine has isUserInteractionEnabled = false, so touches pass through
-        // Bring button first, then border on top to ensure border is visible above shadow
-        bringSubviewToFront(centerButtonContainer)
+        createBorderWithCutout()
         bringSubviewToFront(topBorderLine)
+        bringSubviewToFront(centerButtonContainer)
     }
     
-    private func createBorderWithCutout() {
-        // Remove existing border layers
-        topBorderLine.layer.sublayers?.removeAll()
-        
-        // Get center button's actual position and size
+    /// 取得有效的 frame，如果無效則返回 nil
+    private func getValidFrames() -> (centerButton: CGRect, container: CGRect)? {
         guard let centerButtonFrame = centerButton?.frame,
               let containerFrame = centerButtonContainer?.frame,
               centerButtonFrame.width > 0 && centerButtonFrame.height > 0,
               containerFrame.width > 0 && containerFrame.height > 0 else {
+            return nil
+        }
+        return (centerButtonFrame, containerFrame)
+    }
+    
+    private func createBorderWithCutout() {
+        topBorderLine.layer.sublayers?.removeAll()
+        
+        // 確保 centerButton 和 container 的 frame 已準備好，才能計算正確的邊框位置
+        guard let frames = getValidFrames() else {
             return
         }
+        
+        let centerButtonFrame = frames.centerButton
+        let containerFrame = frames.container
         
         let borderWidth = bounds.width
         let centerX = bounds.width / 2
@@ -186,25 +188,6 @@ class CustomTabBarView: UIView {
         let leftAngle = atan2(-verticalDistance, -horizontalDistance)
         let rightAngle = atan2(-verticalDistance, horizontalDistance)
         
-        // Create a single combined path to ensure seamless connection
-        let combinedPath = UIBezierPath()
-        
-        // Left border line
-        combinedPath.move(to: CGPoint(x: 0, y: borderY))
-        combinedPath.addLine(to: leftConnectionPoint)
-        
-        // Arc (semicircle going upward from left to right, above the border)
-        combinedPath.addArc(
-            withCenter: CGPoint(x: centerX, y: arcCenterY),
-            radius: cutoutRadius,
-            startAngle: leftAngle,   // Start from left connection point
-            endAngle: rightAngle,    // End at right connection point
-            clockwise: true        // clockwise to go upward
-        )
-        
-        // Right border line
-        combinedPath.addLine(to: CGPoint(x: borderWidth, y: borderY))
-        
         // Create separate layers for straight lines and arc to handle shadow occlusion
         // Arc part may appear thinner due to button shadow, so we'll render it separately
         let borderLineWidth: CGFloat = 0.5
@@ -231,39 +214,27 @@ class CustomTabBarView: UIView {
         let shadowColor = isDark ? UIColor.white.cgColor : UIColor.black.cgColor
         let shadowOpacity: Float = isDark ? 0.25 : 0.3
         
-        // Create layer for straight lines
-        let straightLayer = CAShapeLayer()
-        straightLayer.path = straightPath.cgPath
-        straightLayer.strokeColor = DesignConstants.Colors.tabBarTopBorder.cgColor
-        straightLayer.fillColor = UIColor.clear.cgColor
-        straightLayer.lineWidth = borderLineWidth
-        straightLayer.lineCap = .round
-        straightLayer.lineJoin = .round
+        // Create layers with helper method
+        let straightLayer = createBorderLayer(path: straightPath, lineWidth: borderLineWidth, shadowColor: shadowColor, shadowOpacity: shadowOpacity)
+        let arcLayer = createBorderLayer(path: arcPath, lineWidth: borderLineWidth + 0.2, shadowColor: shadowColor, shadowOpacity: shadowOpacity)
         
-        // Add shadow
-        straightLayer.shadowColor = shadowColor
-        straightLayer.shadowOffset = CGSize(width: 0, height: -2) // Upwards
-        straightLayer.shadowRadius = 2
-        straightLayer.shadowOpacity = shadowOpacity
-        
-        // Create layer for arc with slightly thicker line to compensate for shadow
-        let arcLayer = CAShapeLayer()
-        arcLayer.path = arcPath.cgPath
-        arcLayer.strokeColor = DesignConstants.Colors.tabBarTopBorder.cgColor
-        arcLayer.fillColor = UIColor.clear.cgColor
-        arcLayer.lineWidth = borderLineWidth + 0.2 // Slightly thicker to compensate for shadow
-        arcLayer.lineCap = .round
-        arcLayer.lineJoin = .round
-        
-        // Add shadow
-        arcLayer.shadowColor = shadowColor
-        arcLayer.shadowOffset = CGSize(width: 0, height: -2) // Upwards
-        arcLayer.shadowRadius = 2
-        arcLayer.shadowOpacity = shadowOpacity
-        
-        // Add both layers
         topBorderLine.layer.addSublayer(straightLayer)
         topBorderLine.layer.addSublayer(arcLayer)
+    }
+    
+    private func createBorderLayer(path: UIBezierPath, lineWidth: CGFloat, shadowColor: CGColor, shadowOpacity: Float) -> CAShapeLayer {
+        let layer = CAShapeLayer()
+        layer.path = path.cgPath
+        layer.strokeColor = DesignConstants.Colors.tabBarTopBorder.cgColor
+        layer.fillColor = UIColor.clear.cgColor
+        layer.lineWidth = lineWidth
+        layer.lineCap = .round
+        layer.lineJoin = .round
+        layer.shadowColor = shadowColor
+        layer.shadowOffset = CGSize(width: 0, height: -2)
+        layer.shadowRadius = 2
+        layer.shadowOpacity = shadowOpacity
+        return layer
     }
     
     private func setupTabButtons() {
@@ -413,15 +384,13 @@ class CustomTabBarView: UIView {
     /// - UIButton: centerButton 的點擊事件
     @objc private func handleTabSelection(_ sender: Any) {
         let index: Int
-        
-        if let gesture = sender as? UITapGestureRecognizer {
-            // Tab 容器的點擊手勢
+        switch sender {
+        case let gesture as UITapGestureRecognizer:
             guard let container = gesture.view else { return }
             index = container.tag
-        } else if let button = sender as? UIButton {
-            // Center button 的點擊事件
+        case let button as UIButton:
             index = button.tag
-        } else {
+        default:
             return
         }
         
@@ -463,16 +432,12 @@ class CustomTabBarView: UIView {
     }
     
     private func updateContainerAppearance(_ view: UIView, isSelected: Bool, color: UIColor, index: Int) {
-        // 直接取得 stackView（container 的第一個 subview）
         guard let stackView = view.subviews.first as? UIStackView else { return }
         
-        // 使用 accessibilityIdentifier 找到對應的 UI 元素
-        for arrangedSubview in stackView.arrangedSubviews {
-            if let iconImageView = arrangedSubview as? UIImageView, 
-               iconImageView.accessibilityIdentifier == "icon_\(index)" {
-                iconImageView.tintColor = color
-            } else if let label = arrangedSubview as? UILabel, 
-                      label.accessibilityIdentifier == "label_\(index)" {
+        stackView.arrangedSubviews.forEach { subview in
+            if let iconView = subview as? UIImageView, iconView.accessibilityIdentifier == "icon_\(index)" {
+                iconView.tintColor = color
+            } else if let label = subview as? UILabel, label.accessibilityIdentifier == "label_\(index)" {
                 label.textColor = color
                 label.font = UIFont.systemFont(ofSize: tabLabelFontSize, weight: isSelected ? .medium : .regular)
             }
@@ -480,11 +445,8 @@ class CustomTabBarView: UIView {
     }
     
     private func updateCenterButtonShadow() {
-        switch traitCollection.userInterfaceStyle {
-        case .dark:
-            centerButton.layer.shadowColor = UIColor.black.withAlphaComponent(0.5).cgColor
-        default:
-            centerButton.layer.shadowColor = UIColor.black.cgColor
-        }
+        centerButton.layer.shadowColor = traitCollection.userInterfaceStyle == .dark
+            ? UIColor.black.withAlphaComponent(0.5).cgColor
+            : UIColor.black.cgColor
     }
 }
