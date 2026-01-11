@@ -115,7 +115,6 @@ class FriendsViewModel {
                 friendsDataLoadedPublisher.send()
             } catch {
                 errorPublisher.send(error)
-                friendsDataLoadedPublisher.send()
             }
         }
     }
@@ -142,7 +141,6 @@ class FriendsViewModel {
                 friendsDataLoadedPublisher.send()
             } catch {
                 errorPublisher.send(error)
-                friendsDataLoadedPublisher.send()
             }
         }
     }

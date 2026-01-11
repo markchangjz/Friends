@@ -100,6 +100,8 @@ class FriendsViewController: UIViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] error in
                 guard let self else { return }
+                refreshControl.endRefreshing()
+                loadingIndicator.stopAnimating()
                 showErrorAlert(message: error.localizedDescription)
             }
             .store(in: &cancellables)
