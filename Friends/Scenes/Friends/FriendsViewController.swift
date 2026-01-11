@@ -135,13 +135,7 @@ class FriendsViewController: UIViewController {
             // 無資料時，設定 tableFooterView 顯示 EmptyStateView
             emptyStateView.isHidden = false
             
-            // 計算 EmptyStateView 實際需要的內容高度
-            // 先設定一個足夠大的高度，讓系統能夠正確計算約束
-            emptyStateView.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: 1000)
-            emptyStateView.setNeedsLayout()
-            emptyStateView.layoutIfNeeded()
-            
-            // 計算實際需要的尺寸（根據約束）
+            // 計算 EmptyStateView 實際需要的內容高度（根據約束）
             let targetSize = CGSize(width: view.bounds.width, height: UIView.layoutFittingCompressedSize.height)
             let fittingSize = emptyStateView.systemLayoutSizeFitting(
                 targetSize,
@@ -617,8 +611,8 @@ extension FriendsViewController {
     }
     
     private func setupEmptyStateView() {
-        // 設定 frame 但不立即設為 footer，避免初始高度造成 ScrollIndicator 出現
-        emptyStateView.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: 600)
+        // 初始設定，避免初始高度造成 ScrollIndicator 出現
+        emptyStateView.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: 0)
         emptyStateView.isHidden = true
     }
     
