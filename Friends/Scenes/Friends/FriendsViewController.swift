@@ -121,12 +121,6 @@ class FriendsViewController: UIViewController {
     // MARK: - UI Update
     
     private func updateEmptyState() {
-        // 如果當前是聊天 tab，顯示聊天專用的空狀態
-        if viewModel.currentTab == .chat {
-            showChatEmptyState()
-            return
-        }
-        
         // 只有在沒有原始資料時才顯示「尚無好友」
         // 如果有原始資料但搜尋結果為空，只顯示空白 TableView
         tableView.isHidden = false
