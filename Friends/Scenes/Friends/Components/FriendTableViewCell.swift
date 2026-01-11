@@ -25,7 +25,7 @@ class FriendTableViewCell: UITableViewCell {
     private let nameLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16, weight: .regular)
-        label.textColor = DesignConstants.Colors.lightGrey
+        label.textColor = .koLightGrey
         label.translatesAutoresizingMaskIntoConstraints = false
         label.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         return label
@@ -34,7 +34,7 @@ class FriendTableViewCell: UITableViewCell {
     private let starImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(systemName: "star.fill")
-        imageView.tintColor = DesignConstants.Colors.starBackground
+        imageView.tintColor = .koStarBackground
         imageView.contentMode = .scaleAspectFit
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.isHidden = true
@@ -45,9 +45,9 @@ class FriendTableViewCell: UITableViewCell {
         let button = UIButton(type: .system)
         button.setTitle("轉帳", for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 14, weight: .medium)
-        button.setTitleColor(DesignConstants.Colors.hotPink, for: .normal)
+        button.setTitleColor(.koHotPink, for: .normal)
         button.layer.borderWidth = 1.2
-        button.layer.borderColor = DesignConstants.Colors.hotPink.cgColor
+        button.layer.borderColor = UIColor.koHotPink.cgColor
         button.layer.cornerRadius = 2
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
@@ -58,7 +58,7 @@ class FriendTableViewCell: UITableViewCell {
         // 使用較粗的圖標配置，根據設計稿 ic_friends_more 的粗度
         let config = UIImage.SymbolConfiguration(pointSize: 12, weight: .bold)
         button.setImage(UIImage(systemName: "ellipsis", withConfiguration: config), for: .normal)
-        button.tintColor = DesignConstants.Colors.buttonBorderGray
+        button.tintColor = .koButtonBorderGray
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -67,9 +67,9 @@ class FriendTableViewCell: UITableViewCell {
         let button = UIButton(type: .system)
         button.setTitle("邀請中", for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 14, weight: .medium)
-        button.setTitleColor(DesignConstants.Colors.warmGrey, for: .normal)
+        button.setTitleColor(.koWarmGrey, for: .normal)
         button.layer.borderWidth = 1.2
-        button.layer.borderColor = DesignConstants.Colors.buttonBorderGray.cgColor
+        button.layer.borderColor = UIColor.koButtonBorderGray.cgColor
         button.layer.cornerRadius = 2
         button.translatesAutoresizingMaskIntoConstraints = false
         button.isHidden = true
@@ -100,10 +100,10 @@ class FriendTableViewCell: UITableViewCell {
     
     private func setupUI() {
         // 設定 Cell 背景色（支援 Dark Mode）
-        backgroundColor = DesignConstants.Colors.cellBackground
-        contentView.backgroundColor = DesignConstants.Colors.cellBackground
+        backgroundColor = .koCellBackground
+        contentView.backgroundColor = .koCellBackground
         selectedBackgroundView = UIView()
-        selectedBackgroundView?.backgroundColor = DesignConstants.Colors.cellBackground
+        selectedBackgroundView?.backgroundColor = .koCellBackground
         
         contentView.addSubview(starImageView)
         contentView.addSubview(avatarImageView)
@@ -204,6 +204,6 @@ class FriendTableViewCell: UITableViewCell {
     
     /// 更新按鈕邊框顏色（處理 Dark Mode 切換）
     private func updateBorderColors() {
-        invitationButton.layer.borderColor = DesignConstants.Colors.buttonBorderGray.resolvedColor(with: traitCollection).cgColor
+        invitationButton.layer.borderColor = UIColor.koButtonBorderGray.resolvedColor(with: traitCollection).cgColor
     }
 }

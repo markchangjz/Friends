@@ -7,137 +7,6 @@
 
 import UIKit
 
-struct DesignConstants {
-    
-    // MARK: - Colors
-    
-    struct Colors {
-        
-        static let background = UIColor { traitCollection in
-            switch traitCollection.userInterfaceStyle {
-            case .dark:
-                return UIColor(hex: "1C1C1E")
-            default:
-                return UIColor(hex: "FCFCFC")
-            }
-        }
-        
-        static let lightGrey = UIColor { traitCollection in
-            switch traitCollection.userInterfaceStyle {
-            case .dark:
-                return UIColor(hex: "E5E5EA")
-            default:
-                return UIColor(hex: "474747")
-            }
-        }
-        
-        static let warmGrey = UIColor { traitCollection in
-            switch traitCollection.userInterfaceStyle {
-            case .dark:
-                return UIColor(hex: "AEAEB2")
-            default:
-                return UIColor(hex: "999999")
-            }
-        }
-        
-        static let steel = UIColor { traitCollection in
-            switch traitCollection.userInterfaceStyle {
-            case .dark:
-                return UIColor(hex: "AEAEB2")
-            default:
-                return UIColor(hex: "8E8E93")
-            }
-        }
-        
-        // 主色調
-        static let hotPink = UIColor(hex: "EC008C")
-        
-        static let divider = UIColor { traitCollection in
-            switch traitCollection.userInterfaceStyle {
-            case .dark:
-                return UIColor(hex: "3A3A3C")
-            default:
-                return UIColor(hex: "E4E4E4")
-            }
-        }
-        
-        static let dividerLight = UIColor { traitCollection in
-            switch traitCollection.userInterfaceStyle {
-            case .dark:
-                return UIColor(hex: "3A3A3C")
-            default:
-                return UIColor(hex: "EFEFEF")
-            }
-        }
-        
-        // 按鈕邊框
-        static let buttonBorderGray = UIColor { traitCollection in
-            switch traitCollection.userInterfaceStyle {
-            case .dark:
-                return UIColor(hex: "636366")
-            default:
-                return UIColor(hex: "C9C9C9")
-            }
-        }
-        
-        // 星號背景（不變）
-        static let starBackground = UIColor(hex: "F4B400")
-        
-        // 搜尋列背景（支援 Dark Mode）
-        static let searchBarBackground = UIColor { traitCollection in
-            switch traitCollection.userInterfaceStyle {
-            case .dark:
-                return UIColor(hex: "8E8E93", alpha: 0.24)
-            default:
-                return UIColor(hex: "8E8E93", alpha: 0.12)
-            }
-        }
-        
-        // Cell 背景色（支援 Dark Mode）
-        static let cellBackground = UIColor { traitCollection in
-            switch traitCollection.userInterfaceStyle {
-            case .dark:
-                return UIColor(hex: "1C1C1E")
-            default:
-                return UIColor(hex: "FCFCFC")
-            }
-        }
-        
-        // Tab Bar 背景色
-        static let tabBarBackground = UIColor { traitCollection in
-            switch traitCollection.userInterfaceStyle {
-            case .dark:
-                return UIColor(hex: "161618")
-            default:
-                return UIColor(hex: "F8F8F8")
-            }
-        }
-        
-        // Tab Bar 上邊框線
-        static let tabBarTopBorder = UIColor { traitCollection in
-            switch traitCollection.userInterfaceStyle {
-            case .dark:
-                return UIColor(hex: "636366")
-            default:
-                return UIColor(hex: "C8C8C8")
-            }
-        }
-        
-        // Badge 背景色
-        static let badgeBackground = UIColor(hex: "F9B2DC")
-        
-        // Badge 文字顏色（支援 Dark Mode）
-        static let badgeTextColor = UIColor { traitCollection in
-            switch traitCollection.userInterfaceStyle {
-            case .dark:
-                return .darkGray
-            default:
-                return .white
-            }
-        }
-    }
-}
-
 // MARK: - UIColor Extension
 
 extension UIColor {
@@ -158,5 +27,166 @@ extension UIColor {
         let blue = CGFloat(rgb & 0x0000FF) / 255.0
         
         self.init(red: red, green: green, blue: blue, alpha: alpha)
+    }
+    
+    // MARK: - Koko App 自訂顏色
+    
+    /// 背景色（支援 Dark Mode）
+    static var koBackground: UIColor {
+        UIColor { traitCollection in
+            switch traitCollection.userInterfaceStyle {
+            case .dark:
+                return UIColor(hex: "1C1C1E")
+            default:
+                return UIColor(hex: "FCFCFC")
+            }
+        }
+    }
+    
+    /// 淺灰色文字（支援 Dark Mode）
+    static var koLightGrey: UIColor {
+        UIColor { traitCollection in
+            switch traitCollection.userInterfaceStyle {
+            case .dark:
+                return UIColor(hex: "E5E5EA")
+            default:
+                return UIColor(hex: "474747")
+            }
+        }
+    }
+    
+    /// 暖灰色（支援 Dark Mode）
+    static var koWarmGrey: UIColor {
+        UIColor { traitCollection in
+            switch traitCollection.userInterfaceStyle {
+            case .dark:
+                return UIColor(hex: "AEAEB2")
+            default:
+                return UIColor(hex: "999999")
+            }
+        }
+    }
+    
+    /// 鋼鐵灰（支援 Dark Mode）
+    static var koSteel: UIColor {
+        UIColor { traitCollection in
+            switch traitCollection.userInterfaceStyle {
+            case .dark:
+                return UIColor(hex: "AEAEB2")
+            default:
+                return UIColor(hex: "8E8E93")
+            }
+        }
+    }
+    
+    /// 主色調（熱粉紅）
+    static var koHotPink: UIColor {
+        UIColor(hex: "EC008C")
+    }
+    
+    /// 分隔線顏色（支援 Dark Mode）
+    static var koDivider: UIColor {
+        UIColor { traitCollection in
+            switch traitCollection.userInterfaceStyle {
+            case .dark:
+                return UIColor(hex: "3A3A3C")
+            default:
+                return UIColor(hex: "E4E4E4")
+            }
+        }
+    }
+    
+    /// 淺色分隔線（支援 Dark Mode）
+    static var koDividerLight: UIColor {
+        UIColor { traitCollection in
+            switch traitCollection.userInterfaceStyle {
+            case .dark:
+                return UIColor(hex: "3A3A3C")
+            default:
+                return UIColor(hex: "EFEFEF")
+            }
+        }
+    }
+    
+    /// 按鈕邊框灰色（支援 Dark Mode）
+    static var koButtonBorderGray: UIColor {
+        UIColor { traitCollection in
+            switch traitCollection.userInterfaceStyle {
+            case .dark:
+                return UIColor(hex: "636366")
+            default:
+                return UIColor(hex: "C9C9C9")
+            }
+        }
+    }
+    
+    /// 星號背景色（不變）
+    static var koStarBackground: UIColor {
+        UIColor(hex: "F4B400")
+    }
+    
+    /// 搜尋列背景（支援 Dark Mode）
+    static var koSearchBarBackground: UIColor {
+        UIColor { traitCollection in
+            switch traitCollection.userInterfaceStyle {
+            case .dark:
+                return UIColor(hex: "8E8E93", alpha: 0.24)
+            default:
+                return UIColor(hex: "8E8E93", alpha: 0.12)
+            }
+        }
+    }
+    
+    /// Cell 背景色（支援 Dark Mode）
+    static var koCellBackground: UIColor {
+        UIColor { traitCollection in
+            switch traitCollection.userInterfaceStyle {
+            case .dark:
+                return UIColor(hex: "1C1C1E")
+            default:
+                return UIColor(hex: "FCFCFC")
+            }
+        }
+    }
+    
+    /// Tab Bar 背景色（支援 Dark Mode）
+    static var koTabBarBackground: UIColor {
+        UIColor { traitCollection in
+            switch traitCollection.userInterfaceStyle {
+            case .dark:
+                return UIColor(hex: "161618")
+            default:
+                return UIColor(hex: "F8F8F8")
+            }
+        }
+    }
+    
+    /// Tab Bar 上邊框線（支援 Dark Mode）
+    static var koTabBarTopBorder: UIColor {
+        UIColor { traitCollection in
+            switch traitCollection.userInterfaceStyle {
+            case .dark:
+                return UIColor(hex: "636366")
+            default:
+                return UIColor(hex: "C8C8C8")
+            }
+        }
+    }
+    
+    /// Badge 背景色
+    static var koBadgeBackground: UIColor {
+        UIColor(hex: "F9B2DC")
+    }
+    
+    /// Badge 文字顏色（支援 Dark Mode）
+    static var koBadgeTextColor: UIColor {
+        UIColor { traitCollection in
+            switch traitCollection.userInterfaceStyle {
+            case .dark:
+                return .darkGray
+            default:
+                return .white
+            }
+        }
     }
 }

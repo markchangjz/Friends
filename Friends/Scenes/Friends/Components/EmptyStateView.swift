@@ -34,7 +34,7 @@ class EmptyStateView: UIView {
     // MARK: - Setup
     
     private func setupUI() {
-        backgroundColor = DesignConstants.Colors.background
+        backgroundColor = .koBackground
         
         // 插圖設定
         illustrationImageView.image = UIImage(named: "imgFriendsEmpty")
@@ -45,7 +45,7 @@ class EmptyStateView: UIView {
         // 主標題設定
         titleLabel.text = "就從加好友開始吧：）"
         titleLabel.font = .systemFont(ofSize: 21, weight: .medium)
-        titleLabel.textColor = DesignConstants.Colors.lightGrey
+        titleLabel.textColor = .koLightGrey
         titleLabel.textAlignment = .center
         titleLabel.numberOfLines = 0
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -54,7 +54,7 @@ class EmptyStateView: UIView {
         // 副標題設定
         subtitleLabel.text = "與好友們一起用 KOKO 聊起來！\n還能互相收付款、發紅包喔：）"
         subtitleLabel.font = .systemFont(ofSize: 14, weight: .regular)
-        subtitleLabel.textColor = DesignConstants.Colors.warmGrey
+        subtitleLabel.textColor = .koWarmGrey
         subtitleLabel.textAlignment = .center
         subtitleLabel.numberOfLines = 0
         subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -107,8 +107,8 @@ class EmptyStateView: UIView {
         let helpText = "幫助好友更快找到你？設定 KOKO ID"
         let attributedString = NSMutableAttributedString(string: helpText)
         let range = (helpText as NSString).range(of: "設定 KOKO ID")
-        attributedString.addAttribute(.foregroundColor, value: DesignConstants.Colors.warmGrey, range: NSRange(location: 0, length: helpText.count))
-        attributedString.addAttribute(.foregroundColor, value: DesignConstants.Colors.hotPink, range: range)
+        attributedString.addAttribute(.foregroundColor, value: UIColor.koWarmGrey, range: NSRange(location: 0, length: helpText.count))
+        attributedString.addAttribute(.foregroundColor, value: UIColor.koHotPink, range: range)
         attributedString.addAttribute(.font, value: UIFont.systemFont(ofSize: 13, weight: .regular), range: NSRange(location: 0, length: helpText.count))
         attributedString.addAttribute(.underlineStyle, value: NSUnderlineStyle.single.rawValue, range: range)
         

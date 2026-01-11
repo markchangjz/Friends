@@ -38,8 +38,8 @@ class PlaceholderSearchBarTableViewCell: UITableViewCell {
     
     private func setupUI() {
         selectionStyle = .none
-        backgroundColor = DesignConstants.Colors.cellBackground
-        contentView.backgroundColor = DesignConstants.Colors.cellBackground
+        backgroundColor = .koCellBackground
+        contentView.backgroundColor = .koCellBackground
         
         contentView.addSubview(addFriendButton)
         addFriendButton.translatesAutoresizingMaskIntoConstraints = false

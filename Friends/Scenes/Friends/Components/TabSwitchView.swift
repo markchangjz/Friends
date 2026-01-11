@@ -54,17 +54,17 @@ class TabSwitchView: UIView {
     // MARK: - Setup
     
     private func setupUI() {
-        backgroundColor = DesignConstants.Colors.background
+        backgroundColor = .koBackground
         
         // 分隔線
-        dividerView.backgroundColor = DesignConstants.Colors.dividerLight
+        dividerView.backgroundColor = .koDividerLight
         dividerView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(dividerView)
         
         // 好友按鈕
         friendsButton.setTitle("好友", for: .normal)
         friendsButton.titleLabel?.font = .systemFont(ofSize: tabButtonFontSize, weight: .medium)
-        friendsButton.setTitleColor(DesignConstants.Colors.lightGrey, for: .normal)
+        friendsButton.setTitleColor(.koLightGrey, for: .normal)
         friendsButton.translatesAutoresizingMaskIntoConstraints = false
         friendsButton.addTarget(self, action: #selector(friendsButtonTapped(_:)), for: .touchUpInside)
         addSubview(friendsButton)
@@ -72,19 +72,19 @@ class TabSwitchView: UIView {
         // 聊天按鈕
         chatButton.setTitle("聊天", for: .normal)
         chatButton.titleLabel?.font = .systemFont(ofSize: tabButtonFontSize, weight: .regular)
-        chatButton.setTitleColor(DesignConstants.Colors.lightGrey, for: .normal)
+        chatButton.setTitleColor(.koLightGrey, for: .normal)
         chatButton.translatesAutoresizingMaskIntoConstraints = false
         chatButton.addTarget(self, action: #selector(chatButtonTapped(_:)), for: .touchUpInside)
         addSubview(chatButton)
         
         // 選中指示器
-        indicatorView.backgroundColor = DesignConstants.Colors.hotPink
+        indicatorView.backgroundColor = .koHotPink
         indicatorView.layer.cornerRadius = 2
         indicatorView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(indicatorView)
         
         // 好友 Badge（顯示待處理邀請數量）
-        friendsBadgeView.backgroundColor = DesignConstants.Colors.badgeBackground
+        friendsBadgeView.backgroundColor = .koBadgeBackground
         friendsBadgeView.layer.cornerRadius = 9
         friendsBadgeView.translatesAutoresizingMaskIntoConstraints = false
         friendsBadgeView.isHidden = true
@@ -92,7 +92,7 @@ class TabSwitchView: UIView {
         
         friendsBadgeLabel.text = "0"
         friendsBadgeLabel.font = .systemFont(ofSize: 12, weight: .medium)
-        friendsBadgeLabel.textColor = DesignConstants.Colors.badgeTextColor
+        friendsBadgeLabel.textColor = .koBadgeTextColor
         friendsBadgeLabel.textAlignment = .center
         friendsBadgeLabel.numberOfLines = 1
         friendsBadgeLabel.lineBreakMode = .byTruncatingTail
@@ -100,7 +100,7 @@ class TabSwitchView: UIView {
         friendsBadgeView.addSubview(friendsBadgeLabel)
         
         // 聊天 Badge
-        chatBadgeView.backgroundColor = DesignConstants.Colors.badgeBackground
+        chatBadgeView.backgroundColor = .koBadgeBackground
         chatBadgeView.layer.cornerRadius = 9
         chatBadgeView.translatesAutoresizingMaskIntoConstraints = false
         chatBadgeView.isHidden = true
@@ -108,7 +108,7 @@ class TabSwitchView: UIView {
         
         chatBadgeLabel.text = "0"
         chatBadgeLabel.font = .systemFont(ofSize: 12, weight: .medium)
-        chatBadgeLabel.textColor = DesignConstants.Colors.badgeTextColor
+        chatBadgeLabel.textColor = .koBadgeTextColor
         chatBadgeLabel.textAlignment = .center
         chatBadgeLabel.numberOfLines = 1
         chatBadgeLabel.lineBreakMode = .byTruncatingTail

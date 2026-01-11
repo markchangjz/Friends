@@ -93,7 +93,7 @@ class UserProfileHeaderView: UIView {
     // MARK: - Setup
     
     private func setupUI() {
-        backgroundColor = DesignConstants.Colors.background
+        backgroundColor = .koBackground
         
         setupUserProfileSection()
         setupRequestsSection()
@@ -107,7 +107,7 @@ class UserProfileHeaderView: UIView {
         addSubview(tabSwitchView)
         
         // 設定底部分隔線
-        bottomDividerView.backgroundColor = DesignConstants.Colors.dividerLight
+        bottomDividerView.backgroundColor = .koDividerLight
         bottomDividerView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(bottomDividerView)
     }
@@ -122,7 +122,7 @@ class UserProfileHeaderView: UIView {
         
         // Name Label 設定
         nameLabel.font = .systemFont(ofSize: 17, weight: .medium)
-        nameLabel.textColor = DesignConstants.Colors.lightGrey
+        nameLabel.textColor = .koLightGrey
         // 設置固定高度，確保即使沒有文字也會佔據空間
         nameLabel.numberOfLines = 1
         nameLabel.lineBreakMode = .byTruncatingTail
@@ -130,7 +130,7 @@ class UserProfileHeaderView: UIView {
         
         // KOKO ID Label 設定
         kokoIdLabel.font = .systemFont(ofSize: 13, weight: .regular)
-        kokoIdLabel.textColor = DesignConstants.Colors.lightGrey
+        kokoIdLabel.textColor = .koLightGrey
         // 設置固定高度，確保即使沒有文字也會佔據空間
         kokoIdLabel.numberOfLines = 1
         kokoIdLabel.lineBreakMode = .byTruncatingTail
@@ -138,7 +138,7 @@ class UserProfileHeaderView: UIView {
         
         // Chevron ">" 圖標設定
         chevronImageView.image = UIImage(systemName: "chevron.right")
-        chevronImageView.tintColor = DesignConstants.Colors.lightGrey
+        chevronImageView.tintColor = .koLightGrey
         chevronImageView.contentMode = .scaleAspectFit
         chevronImageView.isHidden = true  // 初始隱藏，載入完成後顯示
         addSubview(chevronImageView)

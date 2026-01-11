@@ -49,7 +49,7 @@ class CustomTabBarController: UITabBarController {
         var controllers: [UIViewController] = []
         
         // 1. Products Tab (錢錢)
-        let productsVC = createPlaceholderViewController(title: TabBarItem.products.title, backgroundColor: DesignConstants.Colors.background)
+        let productsVC = createPlaceholderViewController(title: TabBarItem.products.title, backgroundColor: .koBackground)
         let productsNavController = UINavigationController(rootViewController: productsVC)
         controllers.append(productsNavController)
         
@@ -59,17 +59,17 @@ class CustomTabBarController: UITabBarController {
         controllers.append(friendsNavController)
         
         // 3. Home Tab (首頁)
-        let homeVC = createPlaceholderViewController(title: TabBarItem.home.title, backgroundColor: DesignConstants.Colors.background)
+        let homeVC = createPlaceholderViewController(title: TabBarItem.home.title, backgroundColor: .koBackground)
         let homeNavController = UINavigationController(rootViewController: homeVC)
         controllers.append(homeNavController)
         
         // 4. Manage Tab (記帳)
-        let manageVC = createPlaceholderViewController(title: TabBarItem.manage.title, backgroundColor: DesignConstants.Colors.background)
+        let manageVC = createPlaceholderViewController(title: TabBarItem.manage.title, backgroundColor: .koBackground)
         let manageNavController = UINavigationController(rootViewController: manageVC)
         controllers.append(manageNavController)
         
         // 5. Settings Tab (設定)
-        let settingsVC = createPlaceholderViewController(title: TabBarItem.settings.title, backgroundColor: DesignConstants.Colors.background)
+        let settingsVC = createPlaceholderViewController(title: TabBarItem.settings.title, backgroundColor: .koBackground)
         let settingsNavController = UINavigationController(rootViewController: settingsVC)
         controllers.append(settingsNavController)
         
@@ -85,7 +85,7 @@ class CustomTabBarController: UITabBarController {
         let label = UILabel()
         label.text = title
         label.font = UIFont.systemFont(ofSize: 24, weight: .medium)
-        label.textColor = DesignConstants.Colors.lightGrey
+        label.textColor = .koLightGrey
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         

@@ -23,7 +23,7 @@ class FriendRequestCardView: UIView {
     private let nameLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16, weight: .regular)
-        label.textColor = DesignConstants.Colors.lightGrey
+        label.textColor = .koLightGrey
         return label
     }()
     
@@ -31,7 +31,7 @@ class FriendRequestCardView: UIView {
         let label = UILabel()
         label.text = "邀請你成為好友：）"
         label.font = .systemFont(ofSize: 13, weight: .regular)
-        label.textColor = DesignConstants.Colors.warmGrey
+        label.textColor = .koWarmGrey
         return label
     }()
     
@@ -39,8 +39,8 @@ class FriendRequestCardView: UIView {
         let button = UIButton(type: .system)
         let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .medium)
         button.setImage(UIImage(systemName: "checkmark", withConfiguration: config), for: .normal)
-        button.tintColor = DesignConstants.Colors.hotPink
-        button.backgroundColor = DesignConstants.Colors.background
+        button.tintColor = .koHotPink
+        button.backgroundColor = .koBackground
         button.layer.borderWidth = 2
         button.layer.cornerRadius = 15
         button.clipsToBounds = true
@@ -51,8 +51,8 @@ class FriendRequestCardView: UIView {
         let button = UIButton(type: .system)
         let config = UIImage.SymbolConfiguration(pointSize: 14, weight: .medium)
         button.setImage(UIImage(systemName: "xmark", withConfiguration: config), for: .normal)
-        button.tintColor = DesignConstants.Colors.warmGrey
-        button.backgroundColor = DesignConstants.Colors.background
+        button.tintColor = .koWarmGrey
+        button.backgroundColor = .koBackground
         button.layer.borderWidth = 2
         button.layer.cornerRadius = 15
         button.clipsToBounds = true
@@ -74,14 +74,14 @@ class FriendRequestCardView: UIView {
         updateButtonColors()
         registerForTraitChanges([UITraitUserInterfaceStyle.self]) { [weak self] (_: FriendRequestCardView, _: UITraitCollection) in
             self?.updateButtonColors()
-            self?.layer.borderColor = DesignConstants.Colors.divider.cgColor
+            self?.layer.borderColor = UIColor.koDivider.cgColor
         }
     }
     
     private func setupUI() {
-        backgroundColor = DesignConstants.Colors.background
+        backgroundColor = .koBackground
         layer.borderWidth = 0.5
-        layer.borderColor = DesignConstants.Colors.divider.cgColor
+        layer.borderColor = UIColor.koDivider.cgColor
         
         addSubview(avatarImageView)
         addSubview(nameLabel)
@@ -139,7 +139,7 @@ class FriendRequestCardView: UIView {
         )
         
         updateButtonColors()
-        layer.borderColor = DesignConstants.Colors.divider.cgColor
+        layer.borderColor = UIColor.koDivider.cgColor
     }
     
     func configure(with friend: Friend) {
@@ -148,7 +148,7 @@ class FriendRequestCardView: UIView {
     }
     
     private func updateButtonColors() {
-        acceptButton.layer.borderColor = DesignConstants.Colors.hotPink.resolvedColor(with: traitCollection).cgColor
-        rejectButton.layer.borderColor = DesignConstants.Colors.warmGrey.resolvedColor(with: traitCollection).cgColor
+        acceptButton.layer.borderColor = UIColor.koHotPink.resolvedColor(with: traitCollection).cgColor
+        rejectButton.layer.borderColor = UIColor.koWarmGrey.resolvedColor(with: traitCollection).cgColor
     }
 }

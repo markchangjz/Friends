@@ -289,7 +289,7 @@ class FriendsViewController: UIViewController {
         let emptyLabel = UILabel()
         emptyLabel.text = "無資料"
         emptyLabel.font = .systemFont(ofSize: 16, weight: .regular)
-        emptyLabel.textColor = DesignConstants.Colors.lightGrey
+        emptyLabel.textColor = .koLightGrey
         emptyLabel.textAlignment = .center
         emptyLabel.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: 200)
         
@@ -549,15 +549,15 @@ extension FriendsViewController {
         // 使用 searchTextField（公開 API，iOS 13+）
         let textField = searchBar.searchTextField
         textField.font = .systemFont(ofSize: 14, weight: .regular)
-        textField.textColor = DesignConstants.Colors.lightGrey
-        textField.backgroundColor = DesignConstants.Colors.searchBarBackground
+        textField.textColor = .koLightGrey
+        textField.backgroundColor = .koSearchBarBackground
         textField.layer.cornerRadius = 10
         textField.clipsToBounds = true
-        textField.leftView?.tintColor = DesignConstants.Colors.steel
+        textField.leftView?.tintColor = .koSteel
         
         // 設定 placeholder 樣式
         let placeholderAttributes: [NSAttributedString.Key: Any] = [
-            .foregroundColor: DesignConstants.Colors.steel,
+            .foregroundColor: UIColor.koSteel,
             .font: UIFont.systemFont(ofSize: 14, weight: .regular)
         ]
         textField.attributedPlaceholder = NSAttributedString(
@@ -567,7 +567,7 @@ extension FriendsViewController {
     }
     
     private func setupUI() {
-        view.backgroundColor = DesignConstants.Colors.background
+        view.backgroundColor = .koBackground
         
         // 設定 delegate
         userProfileHeaderView.delegate = self
@@ -581,12 +581,12 @@ extension FriendsViewController {
     }
     
     private func setupTableView() {
-        tableView.backgroundColor = DesignConstants.Colors.background
+        tableView.backgroundColor = .koBackground
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.delegate = self
         tableView.dataSource = self
         tableView.estimatedRowHeight = 80
-        tableView.separatorColor = DesignConstants.Colors.divider
+        tableView.separatorColor = .koDivider
         tableView.contentInsetAdjustmentBehavior = .never
         tableView.automaticallyAdjustsScrollIndicatorInsets = false
         
@@ -596,8 +596,8 @@ extension FriendsViewController {
         }
         
         // 設置 refreshControl 的背景色（透過 tintColor 和背景視圖）
-        refreshControl.tintColor = DesignConstants.Colors.lightGrey
-        refreshControl.backgroundColor = DesignConstants.Colors.background
+        refreshControl.tintColor = .koLightGrey
+        refreshControl.backgroundColor = .koBackground
         refreshControl.addTarget(self, action: #selector(handleRefresh(_:)), for: .valueChanged)
         tableView.refreshControl = refreshControl
         

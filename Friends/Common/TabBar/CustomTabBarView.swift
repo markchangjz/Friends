@@ -75,7 +75,7 @@ class CustomTabBarView: UIView {
     private func setupBackground() {
         // Background view with custom color
         let backgroundView = UIView()
-        backgroundView.backgroundColor = DesignConstants.Colors.tabBarBackground
+        backgroundView.backgroundColor = .koTabBarBackground
         backgroundView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(backgroundView)
         
@@ -231,7 +231,7 @@ class CustomTabBarView: UIView {
     private func createBorderLayer(path: UIBezierPath, lineWidth: CGFloat, shadowColor: CGColor, shadowOpacity: Float) -> CAShapeLayer {
         let layer = CAShapeLayer()
         layer.path = path.cgPath
-        layer.strokeColor = DesignConstants.Colors.tabBarTopBorder.cgColor
+        layer.strokeColor = UIColor.koTabBarTopBorder.cgColor
         layer.fillColor = UIColor.clear.cgColor
         layer.lineWidth = lineWidth
         layer.lineCap = .round
@@ -289,7 +289,7 @@ class CustomTabBarView: UIView {
         let iconImageView = UIImageView()
         iconImageView.translatesAutoresizingMaskIntoConstraints = false
         iconImageView.contentMode = .scaleAspectFit
-        iconImageView.tintColor = DesignConstants.Colors.warmGrey
+        iconImageView.tintColor = .koWarmGrey
         
         // Configure image
         if let image = UIImage(systemName: item.imageName) {
@@ -302,7 +302,7 @@ class CustomTabBarView: UIView {
         let label = UILabel()
         label.text = item.title
         label.font = UIFont.systemFont(ofSize: tabLabelFontSize, weight: .regular)
-        label.textColor = DesignConstants.Colors.warmGrey
+        label.textColor = .koWarmGrey
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         
@@ -347,7 +347,7 @@ class CustomTabBarView: UIView {
         
         // Center button
         let button = UIButton(type: .custom)
-        button.backgroundColor = DesignConstants.Colors.background
+        button.backgroundColor = .koBackground
         button.layer.cornerRadius = 30
         button.layer.shadowOffset = CGSize(width: 0, height: 12)
         button.layer.shadowRadius = 12
@@ -361,7 +361,7 @@ class CustomTabBarView: UIView {
             let resizedImage = homeImage.withConfiguration(config)
             button.setImage(resizedImage, for: .normal)
         }
-        button.tintColor = DesignConstants.Colors.warmGrey
+        button.tintColor = .koWarmGrey
         
         container.addSubview(button)
         centerButton = button
@@ -428,7 +428,7 @@ class CustomTabBarView: UIView {
             if arrayIndex == homeTabIndex { continue } // Skip center button (handled separately)
             
             let isSelected = arrayIndex == selectedIndex
-            let selectedColor = isSelected ? DesignConstants.Colors.hotPink : DesignConstants.Colors.warmGrey
+            let selectedColor = isSelected ? UIColor.koHotPink : UIColor.koWarmGrey
             
             // Find icon and label in container using recursive search
             updateContainerAppearance(container, isSelected: isSelected, color: selectedColor, index: arrayIndex)
@@ -436,7 +436,7 @@ class CustomTabBarView: UIView {
         
         // Update center button
         let isCenterSelected = selectedIndex == homeTabIndex
-        centerButton?.tintColor = isCenterSelected ? DesignConstants.Colors.hotPink : DesignConstants.Colors.warmGrey
+        centerButton?.tintColor = isCenterSelected ? UIColor.koHotPink : UIColor.koWarmGrey
     }
     
     private func updateContainerAppearance(_ view: UIView, isSelected: Bool, color: UIColor, index: Int) {

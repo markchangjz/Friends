@@ -22,7 +22,7 @@ class ShimmerView: UIView {
     }
     
     private func setupShimmer() {
-        backgroundColor = DesignConstants.Colors.divider
+        backgroundColor = .koDivider
         
         let light = UIColor.clear.cgColor
         let alpha = UIColor.white.withAlphaComponent(0.3).cgColor
@@ -36,7 +36,7 @@ class ShimmerView: UIView {
         
         // 監聽介面風格變化
         registerForTraitChanges([UITraitUserInterfaceStyle.self]) { [weak self] (_: ShimmerView, _: UITraitCollection) in
-            self?.backgroundColor = DesignConstants.Colors.divider
+            self?.backgroundColor = .koDivider
         }
     }
     
