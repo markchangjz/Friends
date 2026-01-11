@@ -88,8 +88,8 @@ class FriendsViewController: UIViewController {
                 guard let self else { return }
                 updateRequestsSection()
                 updateChatBadge()
-                updateEmptyState()
-                tableView.reloadData()
+                // 根據當前 tab 顯示正確的狀態（chat tab 顯示「無資料」，friends tab 顯示好友資料）
+                updateTableViewForCurrentTab()
                 refreshControl.endRefreshing()
                 loadingIndicator.stopAnimating()
             }
@@ -478,8 +478,8 @@ extension FriendsViewController: UISearchBarDelegate {
             targetHeaderHeight: targetHeaderHeight,
             in: self,
             completion: { [weak self] in
-                // 動畫完成後更新空白狀態
-                self?.updateEmptyState()
+                // 動畫完成後根據當前 tab 顯示正確的狀態
+                self?.updateTableViewForCurrentTab()
             }
         )
     }
@@ -571,6 +571,8 @@ extension FriendsViewController {
         
         // 設定 delegate
         userProfileHeaderView.delegate = self
+        // 同步 TabSwitchView 的初始狀態與 ViewModel
+        userProfileHeaderView.setInitialTab(viewModel.currentTab)
         
         setupTableView()
         setupSearchBarContainer()

@@ -175,8 +175,7 @@ class TabSwitchView: UIView {
         indicatorLeadingConstraint = indicatorView.leadingAnchor.constraint(equalTo: friendsButton.leadingAnchor, constant: 3)
         indicatorLeadingConstraint?.isActive = true
         
-        // 預設選中好友（不執行動畫，避免首次顯示時閃爍）
-        selectTab(.friends, animated: false)
+        // 注意：初始 tab 應該由外部通過 updateTabState 設定，這裡不設定預設值
     }
     
     // MARK: - Actions
@@ -195,6 +194,7 @@ class TabSwitchView: UIView {
         case friends
         case chat
     }
+    
     
     /// 更新指定 Tab 的 badge 數量
     /// - Parameters:
@@ -264,7 +264,15 @@ class TabSwitchView: UIView {
     
     private func selectTab(_ tab: Tab, animated: Bool = true) {
         guard currentTab != tab else { return }
-        
+        updateTabState(to: tab, animated: animated)
+        delegate?.tabSwitchView(self, didSelectTab: tab)
+    }
+    
+    /// 更新 Tab 狀態
+    /// - Parameters:
+    ///   - tab: 要切換到的 Tab
+    ///   - animated: 是否執行動畫
+    func updateTabState(to tab: Tab, animated: Bool = false) {
         currentTab = tab
         
         // 更新按鈕樣式
@@ -275,7 +283,6 @@ class TabSwitchView: UIView {
         case .chat:
             friendsButton.titleLabel?.font = .systemFont(ofSize: tabButtonFontSize, weight: .regular)
             chatButton.titleLabel?.font = .systemFont(ofSize: tabButtonFontSize, weight: .medium)
-            // 確保聊天按鈕標題為「聊天」
             chatButton.setTitle("聊天", for: .normal)
         }
         
@@ -294,9 +301,6 @@ class TabSwitchView: UIView {
             // 不執行動畫，直接更新布局
             layoutIfNeeded()
         }
-        
-        // 通知 delegate
-        delegate?.tabSwitchView(self, didSelectTab: tab)
     }
 }
 

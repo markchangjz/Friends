@@ -523,6 +523,11 @@ class UserProfileHeaderView: UIView {
         tabSwitchView.updateBadgeCount(count, for: tab)
     }
     
+    /// 設定 TabSwitchView 的初始 tab（不觸發 delegate，用於初始化時同步狀態）
+    func setInitialTab(_ tab: TabSwitchView.Tab) {
+        tabSwitchView.updateTabState(to: tab, animated: false)
+    }
+    
     // MARK: - Shimmer
     
     private func startShimmer() {
