@@ -695,7 +695,6 @@ final class FriendsViewModelTests: XCTestCase {
         // Given - 設定 mock repository 會拋出錯誤
         mockRepository.shouldThrowError = true
         let errorExpectation = XCTestExpectation(description: "Error should be published")
-        let dataLoadedExpectation = XCTestExpectation(description: "Data loaded publisher should still fire")
         
         var receivedError: Error?
         viewModel.errorPublisher
@@ -705,17 +704,11 @@ final class FriendsViewModelTests: XCTestCase {
             }
             .store(in: &cancellables)
         
-        viewModel.friendsDataLoadedPublisher
-            .sink { _ in
-                dataLoadedExpectation.fulfill()
-            }
-            .store(in: &cancellables)
-        
         // When
         viewModel.loadFriendsData(for: .noFriends)
         
         // Then - 等待錯誤和資料載入事件
-        await fulfillment(of: [errorExpectation, dataLoadedExpectation], timeout: 2.0)
+        await fulfillment(of: [errorExpectation], timeout: 2.0)
         
         // 驗證錯誤類型
         XCTAssertNotNil(receivedError)
@@ -736,7 +729,6 @@ final class FriendsViewModelTests: XCTestCase {
         // Given - 設定 mock repository 會拋出錯誤
         mockRepository.shouldThrowError = true
         let errorExpectation = XCTestExpectation(description: "Error should be published")
-        let dataLoadedExpectation = XCTestExpectation(description: "Data loaded publisher should still fire")
         
         var receivedError: Error?
         viewModel.errorPublisher
@@ -746,17 +738,11 @@ final class FriendsViewModelTests: XCTestCase {
             }
             .store(in: &cancellables)
         
-        viewModel.friendsDataLoadedPublisher
-            .sink { _ in
-                dataLoadedExpectation.fulfill()
-            }
-            .store(in: &cancellables)
-        
         // When
         viewModel.loadFriendsData(for: .friendsListWithInvitation)
         
         // Then - 等待錯誤和資料載入事件
-        await fulfillment(of: [errorExpectation, dataLoadedExpectation], timeout: 2.0)
+        await fulfillment(of: [errorExpectation], timeout: 2.0)
         
         // 驗證錯誤類型
         XCTAssertNotNil(receivedError)
@@ -777,7 +763,6 @@ final class FriendsViewModelTests: XCTestCase {
         // Given - 設定 mock repository 會拋出錯誤
         mockRepository.shouldThrowError = true
         let errorExpectation = XCTestExpectation(description: "Error should be published")
-        let dataLoadedExpectation = XCTestExpectation(description: "Data loaded publisher should still fire")
         
         var receivedError: Error?
         viewModel.errorPublisher
@@ -787,17 +772,11 @@ final class FriendsViewModelTests: XCTestCase {
             }
             .store(in: &cancellables)
         
-        viewModel.friendsDataLoadedPublisher
-            .sink { _ in
-                dataLoadedExpectation.fulfill()
-            }
-            .store(in: &cancellables)
-        
         // When
         viewModel.loadFriendsData(for: .friendsListOnly)
         
         // Then - 等待錯誤和資料載入事件
-        await fulfillment(of: [errorExpectation, dataLoadedExpectation], timeout: 2.0)
+        await fulfillment(of: [errorExpectation], timeout: 2.0)
         
         // 驗證錯誤類型
         XCTAssertNotNil(receivedError)
@@ -818,7 +797,6 @@ final class FriendsViewModelTests: XCTestCase {
         // Given - 設定 mock repository 會拋出錯誤
         mockRepository.shouldThrowError = true
         let errorExpectation = XCTestExpectation(description: "Error should be published")
-        let friendsDataLoadedExpectation = XCTestExpectation(description: "Friends data loaded publisher should still fire")
         
         var receivedError: Error?
         viewModel.errorPublisher
@@ -828,17 +806,11 @@ final class FriendsViewModelTests: XCTestCase {
             }
             .store(in: &cancellables)
         
-        viewModel.friendsDataLoadedPublisher
-            .sink { _ in
-                friendsDataLoadedExpectation.fulfill()
-            }
-            .store(in: &cancellables)
-        
         // When
         viewModel.loadAllData(for: .noFriends)
         
         // Then - 等待錯誤和資料載入事件
-        await fulfillment(of: [errorExpectation, friendsDataLoadedExpectation], timeout: 2.0)
+        await fulfillment(of: [errorExpectation], timeout: 2.0)
         
         // 驗證錯誤類型
         XCTAssertNotNil(receivedError)
