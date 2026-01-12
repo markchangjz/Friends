@@ -207,7 +207,10 @@ class FriendsViewController: UIViewController {
         
         tableView.tableHeaderView = userProfileHeaderView
         // 更新 scrollIndicatorInsets 以確保底部對齊
-        updateTableViewContentInset()
+        // 但在下拉更新完成後的短時間內跳過，避免干擾回彈動畫
+        if !refreshControl.isRefreshing {
+            updateTableViewContentInset()
+        }
     }
     
     private func updateTableViewContentInset() {
