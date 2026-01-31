@@ -67,42 +67,36 @@ class FriendsViewController: UIViewController {
                 guard let self else { return }
                 menuButton.menu = viewModel.createMenu()
                 // 顯示 loading 並同時載入使用者資料和好友資料
-                showLoading()
                 viewModel.loadAllData(for: option)
             }
             .store(in: &cancellables)
         
-        // 使用 Combine 訂閱使用者資料載入完成
-        viewModel.userProfileDataLoadedPublisher
+        // 使用 Combine 訂閱狀態變更
+        viewModel.$state
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] in
+            .sink { [weak self] state in
                 guard let self else { return }
-                updateUserProfileHeaderView()
-            }
-            .store(in: &cancellables)
-        
-        // 使用 Combine 訂閱好友資料載入完成
-        viewModel.friendsDataLoadedPublisher
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] in
-                guard let self else { return }
-                updateRequestsSection()
-                updateChatBadge()
-                // 根據當前 tab 顯示正確的狀態（chat tab 顯示「無資料」，friends tab 顯示好友資料）
-                updateTableViewForCurrentTab()
-                refreshControl.endRefreshing()
-                loadingIndicator.stopAnimating()
-            }
-            .store(in: &cancellables)
-        
-        // 使用 Combine 訂閱錯誤
-        viewModel.errorPublisher
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] error in
-                guard let self else { return }
-                refreshControl.endRefreshing()
-                loadingIndicator.stopAnimating()
-                showErrorAlert(message: error.localizedDescription)
+                switch state {
+                case .idle:
+                    break
+                case .loading:
+                    // 如果不是正在下拉更新，則顯示大 loading
+                    if !refreshControl.isRefreshing {
+                        showLoading()
+                    }
+                case .loaded:
+                    // 資料載入完成，更新 UI
+                    updateUserProfileHeaderView()
+                    updateRequestsSection()
+                    updateChatBadge()
+                    updateTableViewForCurrentTab()
+                    refreshControl.endRefreshing()
+                    loadingIndicator.stopAnimating()
+                case .error(let error):
+                    refreshControl.endRefreshing()
+                    loadingIndicator.stopAnimating()
+                    showErrorAlert(message: error.localizedDescription)
+                }
             }
             .store(in: &cancellables)
     }
@@ -110,7 +104,6 @@ class FriendsViewController: UIViewController {
     // MARK: - Data Loading
     
     private func loadData() {
-        showLoading()
         viewModel.loadAllData(for: viewModel.selectedOption)
     }
     
