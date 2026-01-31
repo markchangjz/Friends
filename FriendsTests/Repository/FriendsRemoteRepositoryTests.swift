@@ -93,13 +93,13 @@ final class FriendsRemoteRepositoryTests: XCTestCase {
         XCTAssertFalse(friends.first?.fid.isEmpty ?? true, "好友 ID 不應該為空")
     }
     
-    // MARK: - 測試 RepositoryError
+    // MARK: - 測試 NetworkError
     
-    func testRepositoryError_ErrorDescription() {
-        let error = RepositoryError.invalidURL
+    func testNetworkError_ErrorDescription() {
+        let error = NetworkError.invalidURL
         XCTAssertEqual(error.errorDescription, "URL 無效")
         
-        let networkError = RepositoryError.networkFailure(statusCode: 404)
+        let networkError = NetworkError.networkFailure(statusCode: 404)
         XCTAssertEqual(networkError.errorDescription, "網路請求失敗，狀態碼：404")
     }
 }

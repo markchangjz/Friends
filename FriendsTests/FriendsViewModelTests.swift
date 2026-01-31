@@ -26,24 +26,47 @@ final class FriendsViewModelTests: XCTestCase {
         super.tearDown()
     }
     
-    // MARK: - 測試載入好友資料
+    // MARK: - Helper
     
-    func testLoadFriendsData_NoFriends() async throws {
-        // Given - MockRepository 會從 friend4.json 讀取（該檔案為空陣列）
-        // 先訂閱 publisher，確保不會錯過事件
-        let expectation = XCTestExpectation(description: "Friends data loaded")
+    func waitForStateLoaded(timeout: TimeInterval = 2.0) async {
+        let expectation = XCTestExpectation(description: "State became loaded")
         
-        viewModel.friendsDataLoadedPublisher
-            .sink { _ in
-                expectation.fulfill()
+        viewModel.$state
+            .sink { state in
+                if case .loaded = state {
+                    expectation.fulfill()
+                }
             }
             .store(in: &cancellables)
+
+        await fulfillment(of: [expectation], timeout: timeout)
+    }
+
+    func waitForStateError(timeout: TimeInterval = 2.0) async -> Error? {
+        let expectation = XCTestExpectation(description: "State became error")
+        var resultError: Error?
         
+        viewModel.$state
+            .sink { state in
+                if case .error(let error) = state {
+                    resultError = error
+                    expectation.fulfill()
+                }
+            }
+            .store(in: &cancellables)
+
+        await fulfillment(of: [expectation], timeout: timeout)
+        return resultError
+    }
+
+    // MARK: - 測試載入好友資料
+
+    func testLoadFriendsData_NoFriends() async throws {
         // When
         viewModel.loadFriendsData(for: .noFriends)
         
-        // Then - 等待 publisher 發送事件
-        await fulfillment(of: [expectation], timeout: 2.0)
+        // Then
+        await waitForStateLoaded()
         
         // friend4.json 是空陣列
         XCTAssertEqual(viewModel.allFriends.count, 0)
@@ -51,21 +74,11 @@ final class FriendsViewModelTests: XCTestCase {
     }
     
     func testLoadFriendsData_WithConfirmedFriends() async throws {
-        // Given - MockRepository 會從 friend3.json 讀取資料
-        // 先訂閱 publisher，確保不會錯過事件
-        let expectation = XCTestExpectation(description: "Friends data loaded")
-        
-        viewModel.friendsDataLoadedPublisher
-            .sink { _ in
-                expectation.fulfill()
-            }
-            .store(in: &cancellables)
-        
         // When
         viewModel.loadFriendsData(for: .friendsListWithInvitation)
         
-        // Then - 等待 publisher 發送事件
-        await fulfillment(of: [expectation], timeout: 2.0)
+        // Then
+        await waitForStateLoaded()
         
         // friend3.json 包含多個好友，包含已確認和邀請狀態
         XCTAssertTrue(viewModel.allFriends.count > 0)
@@ -75,21 +88,11 @@ final class FriendsViewModelTests: XCTestCase {
     }
     
     func testLoadFriendsData_WithRequests() async throws {
-        // Given - MockRepository 會從 friend3.json 讀取資料（包含邀請和已確認好友）
-        // 先訂閱 publisher，確保不會錯過事件
-        let expectation = XCTestExpectation(description: "Friends data loaded")
-        
-        viewModel.friendsDataLoadedPublisher
-            .sink { _ in
-                expectation.fulfill()
-            }
-            .store(in: &cancellables)
-        
         // When
         viewModel.loadFriendsData(for: .friendsListWithInvitation)
         
-        // Then - 等待 publisher 發送事件
-        await fulfillment(of: [expectation], timeout: 2.0)
+        // Then
+        await waitForStateLoaded()
         
         // friend3.json 包含 status=0 (requestSent), status=1 (accepted), status=2 (pending)
         XCTAssertTrue(viewModel.allFriends.count > 0)
@@ -101,21 +104,11 @@ final class FriendsViewModelTests: XCTestCase {
     }
     
     func testLoadFriendsData_MergeFriends() async throws {
-        // Given - MockRepository 會從 friend1.json 和 friend2.json 讀取並合併資料
-        // 先訂閱 publisher，確保不會錯過事件
-        let expectation = XCTestExpectation(description: "Friends data loaded")
-        
-        viewModel.friendsDataLoadedPublisher
-            .sink { _ in
-                expectation.fulfill()
-            }
-            .store(in: &cancellables)
-        
         // When
         viewModel.loadFriendsData(for: .friendsListOnly)
         
-        // Then - 等待 publisher 發送事件
-        await fulfillment(of: [expectation], timeout: 2.0)
+        // Then
+        await waitForStateLoaded()
         
         // friend1.json 和 friend2.json 都有 fid "001"，但 updateDate 不同
         // friend1.json: fid "001" updateDate "20190801"
@@ -165,19 +158,9 @@ final class FriendsViewModelTests: XCTestCase {
     // MARK: - 測試搜尋功能
     
     func testFilterFriends_EmptySearch() async throws {
-        // Given - 從 friend3.json 載入資料
-        // 先訂閱 publisher，確保不會錯過事件
-        let expectation = XCTestExpectation(description: "Friends data loaded")
-        
-        viewModel.friendsDataLoadedPublisher
-            .sink { _ in
-                expectation.fulfill()
-            }
-            .store(in: &cancellables)
-        
+        // Given
         viewModel.loadFriendsData(for: .friendsListWithInvitation)
-        
-        await fulfillment(of: [expectation], timeout: 2.0)
+        await waitForStateLoaded()
         
         let initialConfirmedCount = viewModel.displayConfirmedFriends.count
         
@@ -189,19 +172,9 @@ final class FriendsViewModelTests: XCTestCase {
     }
     
     func testFilterFriends_WithSearchText() async throws {
-        // Given - 從 friend3.json 載入資料
-        // 先訂閱 publisher，確保不會錯過事件
-        let expectation = XCTestExpectation(description: "Friends data loaded")
-        
-        viewModel.friendsDataLoadedPublisher
-            .sink { _ in
-                expectation.fulfill()
-            }
-            .store(in: &cancellables)
-        
+        // Given
         viewModel.loadFriendsData(for: .friendsListWithInvitation)
-        
-        await fulfillment(of: [expectation], timeout: 2.0)
+        await waitForStateLoaded()
         
         // When - 搜尋 friend3.json 中的實際好友名稱（例如 "黃"）
         viewModel.filterFriends(name: "黃")
@@ -215,17 +188,9 @@ final class FriendsViewModelTests: XCTestCase {
     }
     
     func testClearSearch() async throws {
-        // Given - 載入資料並設定搜尋文字
-        let expectation = XCTestExpectation(description: "Friends data loaded")
-        
-        viewModel.friendsDataLoadedPublisher
-            .sink { _ in
-                expectation.fulfill()
-            }
-            .store(in: &cancellables)
-        
+        // Given
         viewModel.loadFriendsData(for: .friendsListWithInvitation)
-        await fulfillment(of: [expectation], timeout: 2.0)
+        await waitForStateLoaded()
         
         let initialConfirmedCount = viewModel.displayConfirmedFriends.count
         viewModel.filterFriends(name: "test")
@@ -240,17 +205,9 @@ final class FriendsViewModelTests: XCTestCase {
     // MARK: - 測試搜尋狀態管理
     
     func testStartSearching_WithFriendRequests() async throws {
-        // Given - 載入含有邀請的資料
-        let expectation = XCTestExpectation(description: "Friends data loaded")
-        
-        viewModel.friendsDataLoadedPublisher
-            .sink { _ in
-                expectation.fulfill()
-            }
-            .store(in: &cancellables)
-        
+        // Given
         viewModel.loadFriendsData(for: .friendsListWithInvitation)
-        await fulfillment(of: [expectation], timeout: 2.0)
+        await waitForStateLoaded()
         
         guard viewModel.hasFriendRequests else {
             throw XCTSkip("此測試需要包含邀請的資料")
@@ -273,17 +230,9 @@ final class FriendsViewModelTests: XCTestCase {
     }
     
     func testStartSearching_WithoutFriendRequests() async throws {
-        // Given - 載入沒有邀請的資料
-        let expectation = XCTestExpectation(description: "Friends data loaded")
-        
-        viewModel.friendsDataLoadedPublisher
-            .sink { _ in
-                expectation.fulfill()
-            }
-            .store(in: &cancellables)
-        
+        // Given
         viewModel.loadFriendsData(for: .friendsListOnly)
-        await fulfillment(of: [expectation], timeout: 2.0)
+        await waitForStateLoaded()
         
         // 預設折疊狀態
         viewModel.isRequestsSectionExpanded = false
@@ -302,17 +251,9 @@ final class FriendsViewModelTests: XCTestCase {
     }
     
     func testStopSearching() async throws {
-        // Given - 載入資料並開始搜尋
-        let expectation = XCTestExpectation(description: "Friends data loaded")
-        
-        viewModel.friendsDataLoadedPublisher
-            .sink { _ in
-                expectation.fulfill()
-            }
-            .store(in: &cancellables)
-        
+        // Given
         viewModel.loadFriendsData(for: .friendsListWithInvitation)
-        await fulfillment(of: [expectation], timeout: 2.0)
+        await waitForStateLoaded()
         
         // 設定初始狀態為折疊
         viewModel.isRequestsSectionExpanded = false
@@ -337,17 +278,9 @@ final class FriendsViewModelTests: XCTestCase {
     }
     
     func testStartSearching_StopSearching_CompleteFlow() async throws {
-        // Given - 載入含有邀請的資料
-        let expectation = XCTestExpectation(description: "Friends data loaded")
-        
-        viewModel.friendsDataLoadedPublisher
-            .sink { _ in
-                expectation.fulfill()
-            }
-            .store(in: &cancellables)
-        
+        // Given
         viewModel.loadFriendsData(for: .friendsListWithInvitation)
-        await fulfillment(of: [expectation], timeout: 2.0)
+        await waitForStateLoaded()
         
         guard viewModel.hasFriendRequests else {
             throw XCTSkip("此測試需要包含邀請的資料")
@@ -379,21 +312,9 @@ final class FriendsViewModelTests: XCTestCase {
     // MARK: - 測試排序功能
     
     func testFriendsSorting_ByIsTop() async throws {
-        // Given - 從 friend3.json 載入資料（包含 isTop="1" 和 isTop="0" 的好友）
-        // 先訂閱 publisher，確保不會錯過事件
-        let expectation = XCTestExpectation(description: "Friends data loaded")
-        
-        viewModel.friendsDataLoadedPublisher
-            .sink { _ in
-                expectation.fulfill()
-            }
-            .store(in: &cancellables)
-        
-        // When
+        // Given
         viewModel.loadFriendsData(for: .friendsListWithInvitation)
-        
-        // Then - 等待 publisher 發送事件
-        await fulfillment(of: [expectation], timeout: 2.0)
+        await waitForStateLoaded()
         
         // 驗證排序：isTop=true 的好友應該排在前面
         if viewModel.displayConfirmedFriends.count > 1 {
@@ -405,21 +326,9 @@ final class FriendsViewModelTests: XCTestCase {
     }
     
     func testFriendsSorting_ByUpdateDate() async throws {
-        // Given - 從 friend3.json 載入資料（包含不同 updateDate 的好友）
-        // 先訂閱 publisher，確保不會錯過事件
-        let expectation = XCTestExpectation(description: "Friends data loaded")
-        
-        viewModel.friendsDataLoadedPublisher
-            .sink { _ in
-                expectation.fulfill()
-            }
-            .store(in: &cancellables)
-        
-        // When
+        // Given
         viewModel.loadFriendsData(for: .friendsListWithInvitation)
-        
-        // Then - 等待 publisher 發送事件
-        await fulfillment(of: [expectation], timeout: 2.0)
+        await waitForStateLoaded()
         
         // 驗證排序：較新的日期應該排在前面（如果 isTop 相同）
         if viewModel.displayConfirmedFriends.count > 1 {
@@ -433,21 +342,9 @@ final class FriendsViewModelTests: XCTestCase {
     }
     
     func testFriendsSorting_CompleteRules() async throws {
-        // Given - 從 friend3.json 載入資料，驗證排序規則
-        // 先訂閱 publisher，確保不會錯過事件
-        let expectation = XCTestExpectation(description: "Friends data loaded")
-        
-        viewModel.friendsDataLoadedPublisher
-            .sink { _ in
-                expectation.fulfill()
-            }
-            .store(in: &cancellables)
-        
-        // When
+        // Given
         viewModel.loadFriendsData(for: .friendsListWithInvitation)
-        
-        // Then - 等待 publisher 發送事件
-        await fulfillment(of: [expectation], timeout: 2.0)
+        await waitForStateLoaded()
         
         let friends = viewModel.displayConfirmedFriends
         
@@ -503,24 +400,12 @@ final class FriendsViewModelTests: XCTestCase {
     // MARK: - 測試載入所有資料
     
     func testLoadAllData_Success() async throws {
-        // Given - MockRepository 會從 JSON 檔案讀取資料
-        // 先訂閱 publisher，確保不會錯過事件
-        let profileExpectation = XCTestExpectation(description: "User profile loaded")
-        let friendsExpectation = XCTestExpectation(description: "Friends data loaded")
-        
-        viewModel.userProfileDataLoadedPublisher
-            .sink { _ in profileExpectation.fulfill() }
-            .store(in: &cancellables)
-        
-        viewModel.friendsDataLoadedPublisher
-            .sink { _ in friendsExpectation.fulfill() }
-            .store(in: &cancellables)
-        
+        // Given
         // When
         viewModel.loadAllData(for: .noFriends)
         
-        // Then - 等待兩個 publisher 都發送事件
-        await fulfillment(of: [profileExpectation, friendsExpectation], timeout: 2.0)
+        // Then
+        await waitForStateLoaded()
         
         // 驗證從 JSON 檔案讀取的資料
         XCTAssertFalse(viewModel.userName.isEmpty)
@@ -533,17 +418,9 @@ final class FriendsViewModelTests: XCTestCase {
     // MARK: - 測試資料存取
     
     func testDisplayRequestFriends() async throws {
-        // Given - 載入含有邀請的資料
-        let expectation = XCTestExpectation(description: "Friends data loaded")
-        
-        viewModel.friendsDataLoadedPublisher
-            .sink { _ in
-                expectation.fulfill()
-            }
-            .store(in: &cancellables)
-        
+        // Given
         viewModel.loadFriendsData(for: .friendsListWithInvitation)
-        await fulfillment(of: [expectation], timeout: 2.0)
+        await waitForStateLoaded()
         
         // Pre-check
         guard viewModel.hasFriendRequests else {
@@ -559,17 +436,9 @@ final class FriendsViewModelTests: XCTestCase {
     }
     
     func testDisplayConfirmedFriends() async throws {
-        // Given - 載入含有已確認好友的資料
-        let expectation = XCTestExpectation(description: "Friends data loaded")
-        
-        viewModel.friendsDataLoadedPublisher
-            .sink { _ in
-                expectation.fulfill()
-            }
-            .store(in: &cancellables)
-        
+        // Given
         viewModel.loadFriendsData(for: .friendsListWithInvitation)
-        await fulfillment(of: [expectation], timeout: 2.0)
+        await waitForStateLoaded()
         
         // Pre-check
         guard viewModel.hasConfirmedFriends else {
@@ -599,6 +468,12 @@ final class FriendsViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.hasFriendRequests)
         XCTAssertFalse(viewModel.hasConfirmedFriends)
         XCTAssertEqual(viewModel.currentTab, .friends, "預設應該選中 Friends tab")
+        // 驗證初始狀態是 idle
+        if case .idle = viewModel.state {
+            // Success
+        } else {
+            XCTFail("Initial state should be idle")
+        }
     }
     
     // MARK: - 測試 currentTab
@@ -692,138 +567,96 @@ final class FriendsViewModelTests: XCTestCase {
     // MARK: - 測試錯誤處理 (shouldThrowError = true)
     
     func testLoadFriendsData_ShouldThrowError_NoFriends() async throws {
-        // Given - 設定 mock repository 會拋出錯誤
+        // Given
         mockRepository.shouldThrowError = true
-        let errorExpectation = XCTestExpectation(description: "Error should be published")
-        
-        var receivedError: Error?
-        viewModel.errorPublisher
-            .sink { error in
-                receivedError = error
-                errorExpectation.fulfill()
-            }
-            .store(in: &cancellables)
         
         // When
         viewModel.loadFriendsData(for: .noFriends)
         
-        // Then - 等待錯誤和資料載入事件
-        await fulfillment(of: [errorExpectation], timeout: 2.0)
+        // Then
+        let error = await waitForStateError()
+        XCTAssertNotNil(error)
         
-        // 驗證錯誤類型
-        XCTAssertNotNil(receivedError)
-        if let repositoryError = receivedError as? RepositoryError {
-            switch repositoryError {
+        // 驗證錯誤類型 - 應該是 NetworkError.invalidURL (因為 Mock 拋出這個)
+        if let networkError = error as? NetworkError {
+            switch networkError {
             case .invalidURL:
-                // 正確的錯誤類型
+                // Correct
                 break
             default:
-                XCTFail("應該收到 RepositoryError.invalidURL")
+                XCTFail("應該收到 NetworkError.invalidURL")
             }
         } else {
-            XCTFail("應該收到 RepositoryError.invalidURL")
+            XCTFail("應該收到 NetworkError")
         }
     }
     
     func testLoadFriendsData_ShouldThrowError_WithInvitation() async throws {
-        // Given - 設定 mock repository 會拋出錯誤
+        // Given
         mockRepository.shouldThrowError = true
-        let errorExpectation = XCTestExpectation(description: "Error should be published")
-        
-        var receivedError: Error?
-        viewModel.errorPublisher
-            .sink { error in
-                receivedError = error
-                errorExpectation.fulfill()
-            }
-            .store(in: &cancellables)
         
         // When
         viewModel.loadFriendsData(for: .friendsListWithInvitation)
         
-        // Then - 等待錯誤和資料載入事件
-        await fulfillment(of: [errorExpectation], timeout: 2.0)
+        // Then
+        let error = await waitForStateError()
+        XCTAssertNotNil(error)
         
-        // 驗證錯誤類型
-        XCTAssertNotNil(receivedError)
-        if let repositoryError = receivedError as? RepositoryError {
-            switch repositoryError {
+        if let networkError = error as? NetworkError {
+            switch networkError {
             case .invalidURL:
-                // 正確的錯誤類型
                 break
             default:
-                XCTFail("應該收到 RepositoryError.invalidURL")
+                XCTFail("應該收到 NetworkError.invalidURL")
             }
         } else {
-            XCTFail("應該收到 RepositoryError.invalidURL")
+            XCTFail("應該收到 NetworkError")
         }
     }
     
     func testLoadFriendsData_ShouldThrowError_FriendsListOnly() async throws {
-        // Given - 設定 mock repository 會拋出錯誤
+        // Given
         mockRepository.shouldThrowError = true
-        let errorExpectation = XCTestExpectation(description: "Error should be published")
-        
-        var receivedError: Error?
-        viewModel.errorPublisher
-            .sink { error in
-                receivedError = error
-                errorExpectation.fulfill()
-            }
-            .store(in: &cancellables)
         
         // When
         viewModel.loadFriendsData(for: .friendsListOnly)
         
-        // Then - 等待錯誤和資料載入事件
-        await fulfillment(of: [errorExpectation], timeout: 2.0)
+        // Then
+        let error = await waitForStateError()
+        XCTAssertNotNil(error)
         
-        // 驗證錯誤類型
-        XCTAssertNotNil(receivedError)
-        if let repositoryError = receivedError as? RepositoryError {
-            switch repositoryError {
+        if let networkError = error as? NetworkError {
+            switch networkError {
             case .invalidURL:
-                // 正確的錯誤類型
                 break
             default:
-                XCTFail("應該收到 RepositoryError.invalidURL")
+                XCTFail("應該收到 NetworkError.invalidURL")
             }
         } else {
-            XCTFail("應該收到 RepositoryError.invalidURL")
+            XCTFail("應該收到 NetworkError")
         }
     }
     
     func testLoadAllData_ShouldThrowError() async throws {
-        // Given - 設定 mock repository 會拋出錯誤
+        // Given
         mockRepository.shouldThrowError = true
-        let errorExpectation = XCTestExpectation(description: "Error should be published")
-        
-        var receivedError: Error?
-        viewModel.errorPublisher
-            .sink { error in
-                receivedError = error
-                errorExpectation.fulfill()
-            }
-            .store(in: &cancellables)
         
         // When
         viewModel.loadAllData(for: .noFriends)
         
-        // Then - 等待錯誤和資料載入事件
-        await fulfillment(of: [errorExpectation], timeout: 2.0)
+        // Then
+        let error = await waitForStateError()
+        XCTAssertNotNil(error)
         
-        // 驗證錯誤類型
-        XCTAssertNotNil(receivedError)
-        if let repositoryError = receivedError as? RepositoryError {
-            switch repositoryError {
+        if let networkError = error as? NetworkError {
+            switch networkError {
             case .invalidURL:
-                // 正確的錯誤類型
                 break
             default:
-                XCTFail("應該收到 RepositoryError.invalidURL")
+                XCTFail("應該收到 NetworkError.invalidURL")
             }
         } else {
-            XCTFail("應該收到 RepositoryError.invalidURL")
+            XCTFail("應該收到 NetworkError")
         }
     }
 }

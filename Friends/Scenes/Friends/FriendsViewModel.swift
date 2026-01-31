@@ -30,14 +30,16 @@ class FriendsViewModel {
     @Published private(set) var selectedOption: ViewOption = .noFriends
     
     
-    // 使用者資料載入狀態 - 使用 PassthroughSubject 發布事件
-    let userProfileDataLoadedPublisher = PassthroughSubject<Void, Never>()
+    // 狀態
+    enum State {
+        case idle
+        case loading
+        case loaded
+        case error(Error)
+    }
     
-    // 好友資料載入完成 - 使用 PassthroughSubject 發布事件
-    let friendsDataLoadedPublisher = PassthroughSubject<Void, Never>()
-    
-    // 錯誤處理 - 使用 PassthroughSubject 發布錯誤
-    let errorPublisher = PassthroughSubject<Error, Never>()
+    // 當前狀態 - 使用 @Published 自動發布變更
+    @Published private(set) var state: State = .idle
     
     // 是否有任何好友資料（包含邀請和已確認好友）
     var hasFriends: Bool {
@@ -106,15 +108,16 @@ class FriendsViewModel {
     
     func loadFriendsData(for option: ViewOption) {
         Task {
+            state = .loading
             do {
                 // 取得好友資料
                 let friendsData = try await fetchFriendsData(for: option)
                 
                 // 所有資料都載入完成後，一起更新 UI
                 processFriendsData(friendsData)
-                friendsDataLoadedPublisher.send()
+                state = .loaded
             } catch {
-                errorPublisher.send(error)
+                state = .error(error)
             }
         }
     }
@@ -122,6 +125,7 @@ class FriendsViewModel {
     /// 同時載入使用者資料和好友資料，等兩者都完成後才一起更新 UI
     func loadAllData(for option: ViewOption) {
         Task {
+            state = .loading
             do {
                 // 並行執行兩個 API 呼叫
                 async let userProfileTask = repository.fetchUserProfile()
@@ -134,13 +138,12 @@ class FriendsViewModel {
                 // 更新使用者資料
                 userName = userProfile.name
                 userKokoId = userProfile.kokoid
-                userProfileDataLoadedPublisher.send()
                 
                 // 更新好友資料
                 processFriendsData(friendsData)
-                friendsDataLoadedPublisher.send()
+                state = .loaded
             } catch {
-                errorPublisher.send(error)
+                state = .error(error)
             }
         }
     }

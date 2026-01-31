@@ -17,7 +17,7 @@ class MockFriendsRemoteRepository: FriendsRepositoryProtocol {
     
     func fetchUserProfile() async throws -> Person {
         if shouldThrowError {
-            throw RepositoryError.invalidURL
+            throw NetworkError.invalidURL
         }
         
         return try loadJSONFile(fileName: "man", type: Person.self)
@@ -25,7 +25,7 @@ class MockFriendsRemoteRepository: FriendsRepositoryProtocol {
     
     func fetchFriends_noFriends() async throws -> [Friend] {
         if shouldThrowError {
-            throw RepositoryError.invalidURL
+            throw NetworkError.invalidURL
         }
         
         return try loadJSONFile(fileName: "friend4", type: Friend.Response.self).response
@@ -33,7 +33,7 @@ class MockFriendsRemoteRepository: FriendsRepositoryProtocol {
     
     func fetchFriends_hasFriends_hasInvitation() async throws -> [Friend] {
         if shouldThrowError {
-            throw RepositoryError.invalidURL
+            throw NetworkError.invalidURL
         }
         
         return try loadJSONFile(fileName: "friend3", type: Friend.Response.self).response
@@ -41,7 +41,7 @@ class MockFriendsRemoteRepository: FriendsRepositoryProtocol {
     
     func fetchFriends1() async throws -> [Friend] {
         if shouldThrowError {
-            throw RepositoryError.invalidURL
+            throw NetworkError.invalidURL
         }
         
         return try loadJSONFile(fileName: "friend1", type: Friend.Response.self).response
@@ -49,7 +49,7 @@ class MockFriendsRemoteRepository: FriendsRepositoryProtocol {
     
     func fetchFriends2() async throws -> [Friend] {
         if shouldThrowError {
-            throw RepositoryError.invalidURL
+            throw NetworkError.invalidURL
         }
         
         return try loadJSONFile(fileName: "friend2", type: Friend.Response.self).response
@@ -67,7 +67,7 @@ class MockFriendsRemoteRepository: FriendsRepositoryProtocol {
         // JSON 檔案位於測試 bundle 的 "Mock API JSON files" 目錄下
         let bundle = Bundle(for: MockFriendsRemoteRepository.self)
         guard let fileURL = bundle.url(forResource: fileName, withExtension: "json") else {
-            throw RepositoryError.invalidURL
+            throw NetworkError.invalidURL
         }
         
         let data = try Data(contentsOf: fileURL)
